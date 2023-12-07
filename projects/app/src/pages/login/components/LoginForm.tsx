@@ -48,12 +48,12 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
           })
         );
         toast({
-          title: '登录成功',
+          title: 'login successful',
           status: 'success'
         });
       } catch (error: any) {
         toast({
-          title: error.message || '登录异常',
+          title: error.message || 'Login exception',
           status: 'error'
         });
       }
@@ -96,10 +96,10 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
       <form onSubmit={handleSubmit(onclickLogin)}>
         <FormControl mt={8} isInvalid={!!errors.username}>
           <Input
-            placeholder={isCommunityVersion ? '使用root用户登录' : '邮箱/手机号/用户名'}
+            placeholder={isCommunityVersion ? 'Log in as root user' : 'Email/Mobile phone number/Username'}
             size={['md', 'lg']}
             {...register('username', {
-              required: '邮箱/手机号/用户名不能为空'
+              required: 'Email/mobile phone number/username cannot be empty'
             })}
           ></Input>
           <FormErrorMessage position={'absolute'} fontSize="xs">
@@ -110,12 +110,12 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
           <Input
             type={'password'}
             size={['md', 'lg']}
-            placeholder={isCommunityVersion ? 'root密码为你设置的环境变量' : '密码'}
+            placeholder={isCommunityVersion ? 'The root password is the environment variable set for you.' : 'password'}
             {...register('password', {
-              required: '密码不能为空',
+              required: 'password can not be blank',
               maxLength: {
                 value: 20,
-                message: '密码最多 20 位'
+                message: 'Password maximum 20 characters'
               }
             })}
           ></Input>
@@ -132,7 +132,7 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
                 onClick={() => setPageType('forgetPassword')}
                 fontSize="sm"
               >
-                忘记密码?
+                forget the password?
               </Box>
               <Box
                 cursor={'pointer'}
@@ -140,18 +140,18 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
                 onClick={() => setPageType('register')}
                 fontSize="sm"
               >
-                注册账号
+                Registration account number
               </Box>
             </Flex>
             {feConfigs?.docUrl && (
               <Box textAlign={'center'} mt={2} fontSize={'sm'}>
-                使用即代表你同意我们的{' '}
+                By using it, you agree to our{' '}
                 <Link
                   href={getDocPath('/docs/agreement/disclaimer/')}
                   target={'_blank'}
                   color={'myBlue.600'}
                 >
-                  免责声明
+                  Disclaimer
                 </Link>
               </Box>
             )}
@@ -166,7 +166,7 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
           colorScheme="blue"
           isLoading={requesting}
         >
-          登录
+          Login
         </Button>
         {feConfigs?.show_register && (
           <>
