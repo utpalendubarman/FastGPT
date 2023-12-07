@@ -91,12 +91,14 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
   return (
     <>
       <Box fontWeight={'bold'} fontSize={'2xl'} textAlign={'center'}>
-        登录 {feConfigs?.systemTitle}
+        Login {feConfigs?.systemTitle}
       </Box>
       <form onSubmit={handleSubmit(onclickLogin)}>
         <FormControl mt={8} isInvalid={!!errors.username}>
           <Input
-            placeholder={isCommunityVersion ? 'Log in as root user' : 'Email/Mobile phone number/Username'}
+            placeholder={
+              isCommunityVersion ? 'Log in as root user' : 'Email/Mobile phone number/Username'
+            }
             size={['md', 'lg']}
             {...register('username', {
               required: 'Email/mobile phone number/username cannot be empty'
@@ -110,7 +112,11 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
           <Input
             type={'password'}
             size={['md', 'lg']}
-            placeholder={isCommunityVersion ? 'The root password is the environment variable set for you.' : 'password'}
+            placeholder={
+              isCommunityVersion
+                ? 'The root password is the environment variable set for you.'
+                : 'password'
+            }
             {...register('password', {
               required: 'password can not be blank',
               maxLength: {
