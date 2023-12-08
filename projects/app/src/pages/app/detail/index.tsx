@@ -15,6 +15,7 @@ import Loading from '@/components/Loading';
 import SimpleEdit from './components/SimpleEdit';
 import { serviceSideProps } from '@/web/common/utils/i18n';
 import { useAppStore } from '@/web/core/app/store/useAppStore';
+import Image from 'next/image';
 
 const AdEdit = dynamic(() => import('./components/AdEdit'), {
   loading: () => <Loading />
@@ -51,13 +52,13 @@ const AppDetail = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
 
   const tabList = useMemo(
     () => [
-      { label: '简易配置', id: TabEnum.simpleEdit, icon: 'overviewLight' },
+      { label: 'Simple configuration', id: TabEnum.simpleEdit, icon: 'overviewLight' },
       ...(feConfigs?.hide_app_flow
         ? []
-        : [{ label: '高级编排', id: TabEnum.adEdit, icon: 'settingLight' }]),
-      { label: '外部使用', id: TabEnum.outLink, icon: 'shareLight' },
-      { label: '对话日志', id: TabEnum.logs, icon: 'core/app/logsLight' },
-      { label: '立即对话', id: TabEnum.startChat, icon: 'chat' }
+        : [{ label: 'High -level arrangement', id: TabEnum.adEdit, icon: 'settingLight' }]),
+      { label: 'External use', id: TabEnum.outLink, icon: 'shareLight' },
+      { label: 'Dialog', id: TabEnum.logs, icon: 'core/app/logsLight' },
+      { label: 'Dialog', id: TabEnum.startChat, icon: 'chat' }
     ],
     []
   );
@@ -67,7 +68,8 @@ const AppDetail = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
       process.env.NODE_ENV === 'production'
         ? (e: any) => {
             e.preventDefault();
-            e.returnValue = '内容已修改，确认离开页面吗？';
+            e.returnValue =
+              'The content has been modified, do you confirm that you leave the page?';
           }
         : () => {};
     window.addEventListener('beforeunload', listen);
@@ -81,7 +83,7 @@ const AppDetail = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
   useQuery([appId], () => loadAppDetail(appId, true), {
     onError(err: any) {
       toast({
-        title: err?.message || '获取应用异常',
+        title: err?.message || 'Obtain abnormal application',
         status: 'error'
       });
       router.replace('/app/list');
@@ -103,7 +105,7 @@ const AppDetail = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
           borderRight={theme.borders.base}
         >
           <Flex mb={4} alignItems={'center'}>
-            <Avatar src={appDetail.avatar} w={'34px'} borderRadius={'lg'} />
+            <Image src={'/favicon.png'} alt={''} mr={2} width={24} height={24} />
             <Box ml={2} fontWeight={'bold'}>
               {appDetail.name}
             </Box>
@@ -142,7 +144,7 @@ const AppDetail = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
               borderRadius={'50%'}
               aria-label={''}
             />
-            我的应用
+            My Applications
           </Flex>
         </Box>
         {/* phone tab */}

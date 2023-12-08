@@ -3,8 +3,8 @@ import { DatasetSearchModeEnum } from '@fastgpt/global/core/dataset/constant';
 
 export const SimpleModeTemplate_FastGPT_Universal: AppSimpleEditConfigTemplateType = {
   id: 'fastgpt-universal',
-  name: '通用模板',
-  desc: '通用模板\n可完全自行配置AI属性和知识库',
+  name: 'Universal template',
+  desc: 'Universal template  n can completely configure AI attributes and knowledge bases',
   systemForm: {
     aiSettings: {
       model: true,

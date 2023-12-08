@@ -13,12 +13,12 @@ export const useSendCode = () => {
   const [codeCountDown, setCodeCountDown] = useState(0);
   const sendCodeText = useMemo(() => {
     if (codeCountDown >= 10) {
-      return `${codeCountDown}s后重新获取`;
+      return `${codeCountDown}s Resend`;
     }
     if (codeCountDown > 0) {
-      return `0${codeCountDown}s后重新获取`;
+      return `0${codeCountDown}s Resend`;
     }
-    return '获取验证码';
+    return 'get verification code';
   }, [codeCountDown]);
 
   const sendCode = useCallback(
@@ -40,13 +40,13 @@ export const useSendCode = () => {
           });
         }, 1000);
         toast({
-          title: '验证码已发送',
+          title: 'The verification code has been sent',
           status: 'success',
           position: 'top'
         });
       } catch (error: any) {
         toast({
-          title: getErrText(error, '验证码发送异常'),
+          title: getErrText(error, 'Verification code sending abnormalities'),
           status: 'error'
         });
       }

@@ -88,7 +88,7 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
   return (
     <>
       <Box fontWeight={'bold'} fontSize={'2xl'} textAlign={'center'}>
-        注册 {feConfigs?.systemTitle} 账号
+        Signup
       </Box>
       <form onSubmit={handleSubmit(onclickRegister)}>
         <FormControl mt={5} isInvalid={!!errors.username}>
@@ -161,7 +161,8 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
             placeholder="Confirm Password"
             size={['md', 'lg']}
             {...register('password2', {
-              validate: (val) => (getValues('password') === val ? true : 'Two passwords are inconsistent')
+              validate: (val) =>
+                getValues('password') === val ? true : 'Two passwords are inconsistent'
             })}
           ></Input>
           <FormErrorMessage position={'absolute'} fontSize="xs">

@@ -69,6 +69,7 @@ const Navbar = () => {
     cursor: 'pointer',
     transition: '0.5s',
     borderRadius: 'xl',
+    color: '#ffffff',
     fontSize: 'lg',
     _hover: {
       bg: 'myGray.100'
@@ -91,7 +92,7 @@ const Navbar = () => {
 
   return (
     <Box
-      bg={`rgba(255,255,255,${bgOpacity})`}
+      bg={`#7a61d0`}
       backdropFilter={'blur(24px)'}
       py={[3, 5]}
       px={5}
@@ -99,33 +100,13 @@ const Navbar = () => {
       h={isOpenMenu ? '100vh' : 'auto'}
     >
       <Flex maxW={'1300px'} m={'auto'} alignItems={'center'}>
-        <Avatar src="/icon/logo.svg" w={['30px', '38px']} />
-        <Box
-          className="textlg"
-          fontSize={['3xl', '4xl']}
-          fontWeight={'bold'}
-          ml={3}
-          fontStyle={'italic'}
-        >
-          {feConfigs?.systemTitle}
-        </Box>
+        <img src="https://www.tellselling.tech/images/logo.png" />
         <Box flex={1} />
         {isPc ? (
           <>
-            {menuList.map((item) => (
-              <Box key={item.key} {...menuStyles} onClick={item.onClick}>
-                {item.label}
-              </Box>
-            ))}
-            <Box px={4} color={'myGray.500'}>
-              |
-            </Box>
             <Box {...menuStyles} onClick={() => router.push('/login')}>
               {t('home.Login')}
             </Box>
-            <Button ml={4} h={'36px'} borderRadius={'3xl'} onClick={() => router.push('/app/list')}>
-              {t('home.Start Now')}
-            </Button>
           </>
         ) : (
           <MyIcon

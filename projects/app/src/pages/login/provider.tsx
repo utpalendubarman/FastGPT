@@ -53,7 +53,7 @@ const provider = ({ code, state }: { code: string; state: string }) => {
         if (!res) {
           toast({
             status: 'warning',
-            title: '登录异常'
+            title: 'Login abnormal'
           });
           return setTimeout(() => {
             router.replace('/login');
@@ -63,7 +63,7 @@ const provider = ({ code, state }: { code: string; state: string }) => {
       } catch (error) {
         toast({
           status: 'warning',
-          title: getErrText(error, '登录异常')
+          title: getErrText(error, 'Login abnormal')
         });
         setTimeout(() => {
           router.replace('/login');
@@ -81,7 +81,7 @@ const provider = ({ code, state }: { code: string; state: string }) => {
     if (state !== loginStore?.state) {
       toast({
         status: 'warning',
-        title: '安全校验失败'
+        title: 'Safety verification failure'
       });
       setTimeout(() => {
         router.replace('/login');

@@ -40,7 +40,7 @@ function App({ Component, pageProps }: AppProps) {
   const { hiId } = router.query as { hiId?: string };
   const { i18n } = useTranslation();
   const [scripts, setScripts] = useState<FeConfigsType['scripts']>([]);
-  const [title, setTitle] = useState(process.env.SYSTEM_NAME || 'AI');
+  const [title, setTitle] = useState(process.env.SYSTEM_NAME || 'TellsellingGPT');
 
   useEffect(() => {
     // get init data
@@ -49,15 +49,10 @@ function App({ Component, pageProps }: AppProps) {
         feConfigs: { scripts, isPlus, systemTitle }
       } = await clientInitData();
 
-      setTitle(systemTitle || 'FastGPT');
+      setTitle(systemTitle || 'TellsellingGPT');
 
       // log fastgpt
-      !isPlus &&
-        console.log(
-          '%cWelcome to FastGPT',
-          'font-family:Arial; color:#3370ff ; font-size:18px; font-weight:bold;',
-          `GitHub：https://github.com/labring/FastGPT`
-        );
+      !isPlus && console.log('');
       setScripts(scripts || []);
     })();
 
@@ -95,11 +90,8 @@ function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>{title}</title>
-        <meta
-          name="description"
-          content={`${title} 是一个大模型应用编排系统，提供开箱即用的数据处理、模型调用等能力，可以快速的构建知识库并通过 Flow 可视化进行工作流编排，实现复杂的知识库场景！`}
-        />
+        <title>TellsellingGPT</title>
+        <meta name="description" content={`${title}`} />
         <meta
           name="viewport"
           content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no, viewport-fit=cover"

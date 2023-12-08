@@ -3,7 +3,7 @@ import { Box, Flex, Link } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useUserStore } from '@/web/support/user/useUserStore';
 import { useChatStore } from '@/web/core/chat/storeChat';
-import { HUMAN_ICON } from '@fastgpt/global/core/chat/constants';
+import Image from 'next/image';
 import { feConfigs } from '@/web/common/system/staticData';
 import NextLink from 'next/link';
 import Badge from '../Badge';
@@ -113,13 +113,7 @@ const Navbar = ({ unread }: { unread: number }) => {
         cursor={'pointer'}
         onClick={() => router.push('/account')}
       >
-        <Avatar
-          w={'36px'}
-          h={'36px'}
-          borderRadius={'50%'}
-          src={userInfo?.avatar}
-          fallbackSrc={HUMAN_ICON}
-        />
+        <Image width={36} borderRadius={'50%'} height={36} src={'/favicon.png'} />
       </Box>
       {/* 导航列表 */}
       <Box flex={1}>
@@ -129,7 +123,7 @@ const Navbar = ({ unread }: { unread: number }) => {
             {...itemStyles}
             {...(item.activeLink.includes(router.pathname)
               ? {
-                  color: 'myBlue.700',
+                  color: '#7a61d0',
                   bg: 'white !important',
                   boxShadow: '1px 1px 10px rgba(0,0,0,0.2)'
                 }
@@ -174,34 +168,6 @@ const Navbar = ({ unread }: { unread: number }) => {
             </Badge>
           </Link>
         </Box>
-      )}
-      {feConfigs?.docUrl && (
-        <MyTooltip label={t('home.Docs')} placement={'right-end'}>
-          <Box
-            {...itemStyles}
-            mb={0}
-            color={'#9096a5'}
-            onClick={() => {
-              window.open(getDocPath('/docs/intro'));
-            }}
-          >
-            <MyIcon name={'common/courseLight'} width={'26px'} height={'26px'} />
-          </Box>
-        </MyTooltip>
-      )}
-      {feConfigs?.show_git && (
-        <MyTooltip label={`Git Star: ${gitStar}`} placement={'right-end'}>
-          <Link
-            as={NextLink}
-            href="https://github.com/labring/FastGPT"
-            target={'_blank'}
-            {...itemStyles}
-            mt={0}
-            color={'#9096a5'}
-          >
-            <MyIcon name={'git'} width={'22px'} height={'22px'} />
-          </Link>
-        </MyTooltip>
       )}
     </Flex>
   );

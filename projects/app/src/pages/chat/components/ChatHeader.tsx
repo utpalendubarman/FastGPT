@@ -31,7 +31,7 @@ const ChatHeader = ({
     () =>
       chatContentReplaceBlock(history[history.length - 2]?.value)?.slice(0, 8) ||
       appName ||
-      '新对话',
+      'New conversation',
     [appName, history]
   );
 
@@ -51,7 +51,7 @@ const ChatHeader = ({
           </Box>
           <Tag>
             <MyIcon name={'history'} w={'14px'} />
-            <Box ml={1}>{history.length === 0 ? '新的对话' : `${history.length}条记录`}</Box>
+            <Box ml={1}>{history.length === 0 ? 'New dialogue' : `${history.length}Records`}</Box>
           </Tag>
           {!!chatModels && chatModels.length > 0 && (
             <Tag ml={2} colorSchema={'green'}>

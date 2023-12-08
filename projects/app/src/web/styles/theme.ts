@@ -56,7 +56,7 @@ const Button = defineStyleConfig({
   variants: {
     primary: {
       backgroundImage:
-        'linear-gradient(to bottom right, #2152d9 0%,#3370ff 40%, #4e83fd 100%) !important',
+        'linear-gradient(to bottom right, #7a61d0 0%,#7a61d0 40%, #4e83fd 100%) !important',
       color: 'white',
       border: 'none',
       _hover: {

@@ -91,7 +91,7 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
   return (
     <>
       <Box fontWeight={'bold'} fontSize={'2xl'} textAlign={'center'}>
-        Login {feConfigs?.systemTitle}
+        Login Tellselling
       </Box>
       <form onSubmit={handleSubmit(onclickLogin)}>
         <FormControl mt={8} isInvalid={!!errors.username}>
@@ -129,7 +129,7 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
             {!!errors.password && errors.password.message}
           </FormErrorMessage>
         </FormControl>
-        {feConfigs?.show_register && (
+        {!feConfigs?.show_register && (
           <>
             <Flex align={'center'} justifyContent={'space-between'} mt={3} color={'myBlue.600'}>
               <Box

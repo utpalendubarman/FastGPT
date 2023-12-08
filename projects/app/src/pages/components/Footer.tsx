@@ -6,6 +6,7 @@ import Avatar from '@/components/Avatar';
 import { useRouter } from 'next/router';
 import CommunityModal from '@/components/CommunityModal';
 import { getDocPath } from '@/web/common/system/doc';
+import Image from 'next/image';
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -80,42 +81,19 @@ const Footer = () => {
       px={[5, 0]}
       maxW={'1200px'}
       m={'auto'}
-      py={['30px', '60px']}
+      py={['30px', '20px']}
       flexWrap={'wrap'}
     >
       <Box flex={1}>
         <Flex alignItems={'center'}>
-          <Avatar src="/icon/logo.svg" w={['24px', '30px']} />
-          <Box
-            className="textlg"
-            fontSize={['xl', '2xl']}
-            fontWeight={'bold'}
-            ml={3}
-            fontStyle={'italic'}
-          >
-            {feConfigs?.systemTitle}
-          </Box>
+          <Image width={150} height={30} src="/imgs/home/logo-dark.png" />
         </Flex>
-        <Box mt={5} fontSize={'sm'} color={'myGray.600'} maxW={'380px'} textAlign={'justify'}>
-          {t('home.FastGPT Desc', { title: feConfigs.systemTitle })}
+      </Box>
+      <Box flex={1} w={'400px'} mt={[2, 0]}>
+        <Box color={'myGray.500'} textAlign={'right'}>
+          &copy; Copyrights reserved. Tellselling
         </Box>
       </Box>
-      {list.map((item) => (
-        <Box key={item.label} w={'200px'} mt={[5, 0]}>
-          <Box color={'myGray.500'}>{item.label}</Box>
-          {item.child.map((child) => (
-            <Box
-              key={child.label}
-              mt={[2, 3]}
-              cursor={'pointer'}
-              _hover={{ textDecoration: 'underline' }}
-              onClick={child.onClick}
-            >
-              {child.label}
-            </Box>
-          ))}
-        </Box>
-      ))}
       {isOpen && <CommunityModal onClose={onClose} />}
     </Box>
   );

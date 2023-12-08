@@ -24,6 +24,7 @@ import { useRequest } from '@/web/common/hooks/useRequest';
 import { feConfigs } from '@/web/common/system/staticData';
 import Avatar from '@/components/Avatar';
 import MyTooltip from '@/components/MyTooltip';
+import Image from 'next/image';
 import MyModal from '@/components/MyModal';
 import { useTranslation } from 'next-i18next';
 
@@ -67,7 +68,7 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         setRefresh((state) => !state);
       } catch (err: any) {
         toast({
-          title: getErrText(err, '头像选择异常'),
+          title: getErrText(err, 'Avatar selection is abnormal'),
           status: 'warning'
         });
       }
@@ -79,8 +80,25 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     mutationFn: async (data: FormType) => {
       const template = appTemplates.find((item) => item.id === data.templateId);
       if (!template) {
-        return Promise.reject('模板不存在');
+        return Promise.reject('The template does not exist');
       }
+
+      if (data.templateId == 'simpleChat') {
+        data.avatar = '/imgs/module/AI.png';
+      }
+
+      if (data.templateId == 'simpleDatasetChat') {
+        data.avatar = '/imgs/module/db.png';
+      }
+
+      if (data.templateId == 'chatGuide') {
+        data.avatar = '/imgs/module/userGuide.png';
+      }
+
+      if (data.templateId == 'CQ') {
+        data.avatar = '/imgs/module/cq.png';
+      }
+
       return postCreateApp({
         avatar: data.avatar,
         name: data.name,
@@ -93,8 +111,8 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       onSuccess();
       onClose();
     },
-    successToast: '创建成功',
-    errorToast: '创建应用异常'
+    successToast: 'Successful creation',
+    errorToast: 'Create an abnormal application'
   });
 
   return (
@@ -107,19 +125,11 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     >
       <ModalBody>
         <Box color={'myGray.800'} fontWeight={'bold'}>
-          取个响亮的名字
+          Choose a resounding name
         </Box>
         <Flex mt={3} alignItems={'center'}>
-          <MyTooltip label={'点击设置头像'}>
-            <Avatar
-              flexShrink={0}
-              src={getValues('avatar')}
-              w={['28px', '32px']}
-              h={['28px', '32px']}
-              cursor={'pointer'}
-              borderRadius={'md'}
-              onClick={onOpenSelectFile}
-            />
+          <MyTooltip label={'Click to set avatar'}>
+            <Image src={'/favicon.png'} alt={''} mr={2} width={32} height={32} />
           </MyTooltip>
           <Input
             flex={1}
@@ -127,14 +137,14 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             autoFocus
             bg={'myWhite.600'}
             {...register('name', {
-              required: '应用名不能为空~'
+              required: 'The application name cannot be empty'
             })}
           />
         </Flex>
         {!feConfigs?.hide_app_flow && (
           <>
             <Box mt={[4, 7]} mb={[0, 3]} color={'myGray.800'} fontWeight={'bold'}>
-              从模板中选择
+              Choose from templates
             </Box>
             <Grid
               userSelect={'none'}
@@ -181,10 +191,10 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
 
       <ModalFooter>
         <Button variant={'base'} mr={3} onClick={onClose}>
-          取消
+          Cancel
         </Button>
         <Button isLoading={creating} onClick={handleSubmit((data) => onclickCreate(data))}>
-          确认创建
+          Confirm creation
         </Button>
       </ModalFooter>
 

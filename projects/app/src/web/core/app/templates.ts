@@ -10,13 +10,13 @@ export const appTemplates: (AppItemType & {
   {
     id: 'simpleChat',
     avatar: '/imgs/module/AI.png',
-    name: '简单的对话',
-    intro: '一个极其简单的 AI 对话应用',
+    name: 'Simple Conversation',
+    intro: 'An extremely simple AI conversation application',
     type: AppTypeEnum.simple,
     modules: [
       {
         moduleId: 'userGuide',
-        name: '用户引导',
+        name: 'User guidance',
         flowType: 'userGuide',
         position: {
           x: 454.98510354678695,
@@ -26,7 +26,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'welcomeText',
             type: 'input',
-            label: '开场白',
+            label: 'opening remarks',
             value: '',
             connected: true
           }
@@ -35,7 +35,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'userChatInput',
-        name: '用户问题(对话入口)',
+        name: 'User questions (dialogue entry)',
         flowType: 'questionInput',
         position: {
           x: 464.32198615344566,
@@ -45,14 +45,14 @@ export const appTemplates: (AppItemType & {
           {
             key: 'userChatInput',
             type: 'systemInput',
-            label: '用户问题',
+            label: 'User problem',
             connected: true
           }
         ],
         outputs: [
           {
             key: 'userChatInput',
-            label: '用户问题',
+            label: 'User problem',
             type: 'source',
             valueType: 'string',
             targets: [
@@ -66,7 +66,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'history',
-        name: '聊天记录',
+        name: 'Chat Record',
         flowType: 'historyNode',
         position: {
           x: 452.5466249541586,
@@ -76,7 +76,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'maxContext',
             type: 'numberInput',
-            label: '最长记录数',
+            label: 'Maximum record number',
             value: 6,
             min: 0,
             max: 50,
@@ -85,14 +85,14 @@ export const appTemplates: (AppItemType & {
           {
             key: 'history',
             type: 'hidden',
-            label: '聊天记录',
+            label: 'chat record',
             connected: true
           }
         ],
         outputs: [
           {
             key: 'history',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             type: 'source',
             targets: [
@@ -106,7 +106,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'chatModule',
-        name: 'AI 对话',
+        name: 'AI dialogue',
         flowType: 'chatNode',
         showStatus: true,
         position: {
@@ -117,7 +117,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'model',
             type: 'custom',
-            label: '对话模型',
+            label: 'Dialog',
             value: 'gpt-3.5-turbo-16k',
             list: [],
             connected: true
@@ -125,7 +125,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'temperature',
             type: 'slider',
-            label: '温度',
+            label: 'temperature',
             value: 0,
             min: 0,
             max: 10,
@@ -145,7 +145,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'maxToken',
             type: 'custom',
-            label: '回复上限',
+            label: 'The upper limit',
             value: 8000,
             min: 100,
             max: 16000,
@@ -165,40 +165,40 @@ export const appTemplates: (AppItemType & {
           {
             key: 'systemPrompt',
             type: 'textarea',
-            label: '系统提示词',
+            label: 'System prompt word',
             valueType: 'string',
             description:
-              '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
+              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
             placeholder:
-              '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
+              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
             value: '',
             connected: true
           },
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: false
           },
           {
             key: 'quoteQA',
             type: 'target',
-            label: '引用内容',
+            label: 'Cited content',
             valueType: 'datasetQuote',
             connected: false
           },
           {
             key: 'history',
             type: 'target',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             connected: true
           },
           {
             key: 'userChatInput',
             type: 'target',
-            label: '用户问题',
+            label: 'User problem',
             required: true,
             valueType: 'string',
             connected: true
@@ -207,15 +207,15 @@ export const appTemplates: (AppItemType & {
         outputs: [
           {
             key: 'answerText',
-            label: 'AI回复',
+            label: 'AI reply',
             description: '直接响应，无需配置',
             type: 'hidden',
             targets: []
           },
           {
             key: 'finish',
-            label: '回复结束',
-            description: 'AI 回复完成后触发',
+            label: 'Reply end',
+            description: 'AI Trigger after replying',
             valueType: 'boolean',
             type: 'source',
             targets: []
@@ -227,13 +227,14 @@ export const appTemplates: (AppItemType & {
   {
     id: 'simpleDatasetChat',
     avatar: '/imgs/module/db.png',
-    name: '知识库 + 对话引导',
-    intro: '每次提问时进行一次知识库搜索，将搜索结果注入 LLM 模型进行参考回答',
+    name: 'Ask for Travel',
+    intro:
+      'A knowledge base search is performed every time a question is asked, and the search results are injected into the LLM model for reference answers.',
     type: AppTypeEnum.simple,
     modules: [
       {
         moduleId: 'userGuide',
-        name: '用户引导',
+        name: 'User guidance',
         flowType: 'userGuide',
         position: {
           x: 454.98510354678695,
@@ -243,8 +244,9 @@ export const appTemplates: (AppItemType & {
           {
             key: 'welcomeText',
             type: 'input',
-            label: '开场白',
-            value: '你好，我是知识库助手，请不要忘记选择知识库噢~',
+            label: 'Opening remark',
+            value:
+              'Hello, I am the assistant of the knowledge base, please don’t forget to choose the knowledge base ~',
             connected: true
           }
         ],
@@ -252,7 +254,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'userChatInput',
-        name: '用户问题(对话入口)',
+        name: 'User problem (dialog entrance)',
         flowType: 'questionInput',
         position: {
           x: 464.32198615344566,
@@ -262,14 +264,14 @@ export const appTemplates: (AppItemType & {
           {
             key: 'userChatInput',
             type: 'systemInput',
-            label: '用户问题',
+            label: 'User problem',
             connected: true
           }
         ],
         outputs: [
           {
             key: 'userChatInput',
-            label: '用户问题',
+            label: 'User problem',
             type: 'source',
             valueType: 'string',
             targets: [
@@ -287,7 +289,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'history',
-        name: '聊天记录',
+        name: 'chat record',
         flowType: 'historyNode',
         position: {
           x: 452.5466249541586,
@@ -297,7 +299,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'maxContext',
             type: 'numberInput',
-            label: '最长记录数',
+            label: 'Maximum record number',
             value: 6,
             min: 0,
             max: 50,
@@ -306,14 +308,14 @@ export const appTemplates: (AppItemType & {
           {
             key: 'history',
             type: 'hidden',
-            label: '聊天记录',
+            label: 'chat record',
             connected: true
           }
         ],
         outputs: [
           {
             key: 'history',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             type: 'source',
             targets: [
@@ -387,7 +389,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: false
           },
@@ -427,9 +429,9 @@ export const appTemplates: (AppItemType & {
           },
           {
             key: 'quoteQA',
-            label: '引用内容',
+            label: 'Cited content',
             description:
-              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的触发器',
+              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的trigger',
             type: 'source',
             valueType: 'datasetQuote',
             targets: [
@@ -514,21 +516,21 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },
           {
             key: 'quoteQA',
             type: 'target',
-            label: '引用内容',
+            label: 'Cited content',
             valueType: 'datasetQuote',
             connected: true
           },
           {
             key: 'history',
             type: 'target',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             connected: true
           },
@@ -571,7 +573,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },
@@ -593,8 +595,9 @@ export const appTemplates: (AppItemType & {
   {
     id: 'chatGuide',
     avatar: '/imgs/module/userGuide.png',
-    name: '对话引导 + 变量',
-    intro: '可以在对话开始发送一段提示，或者让用户填写一些内容，作为本次对话的变量',
+    name: 'Conversation guide + variables',
+    intro:
+      'You can send a prompt at the beginning of the conversation, or ask the user to fill in some content as a variable for this conversation.',
     type: AppTypeEnum.simple,
     modules: [
       {
@@ -693,7 +696,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'history',
-        name: '聊天记录',
+        name: 'chat record',
         flowType: 'historyNode',
         position: {
           x: 452.5466249541586,
@@ -703,7 +706,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'maxContext',
             type: 'numberInput',
-            label: '最长记录数',
+            label: 'Maximum number of records',
             value: 2,
             min: 0,
             max: 50,
@@ -712,14 +715,14 @@ export const appTemplates: (AppItemType & {
           {
             key: 'history',
             type: 'hidden',
-            label: '聊天记录',
+            label: 'chat record',
             connected: true
           }
         ],
         outputs: [
           {
             key: 'history',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             type: 'source',
             targets: [
@@ -804,7 +807,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'quoteTemplate',
             type: 'hidden',
-            label: '引用内容模板',
+            label: 'Cited content模板',
             valueType: 'string',
             value: '',
             connected: true
@@ -812,7 +815,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'quotePrompt',
             type: 'hidden',
-            label: '引用内容提示词',
+            label: 'Cited content提示词',
             valueType: 'string',
             value: '',
             connected: true
@@ -820,22 +823,22 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: false
           },
           {
             key: 'quoteQA',
             type: 'custom',
-            label: '引用内容',
-            description: "对象数组格式，结构：\n [{q:'问题',a:'回答'}]",
+            label: 'Cited content',
+            description: "Object number format, structure:  n [{q: 'question', a: 'answer'}]",
             valueType: 'datasetQuote',
             connected: false
           },
           {
             key: 'history',
             type: 'target',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             connected: true
           },
@@ -880,8 +883,9 @@ export const appTemplates: (AppItemType & {
   {
     id: 'CQ',
     avatar: '/imgs/module/cq.png',
-    name: '问题分类 + 知识库',
-    intro: '先对用户的问题进行分类，再根据不同类型问题，执行不同的操作',
+    name: 'Question classification + knowledge base',
+    intro:
+      "First classify the user's problems, and then perform different operations based on different types of problems.",
     type: AppTypeEnum.advanced,
     modules: [
       {
@@ -921,7 +925,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'xj0c9p',
-        name: '聊天记录',
+        name: 'chat record',
         flowType: 'historyNode',
         position: {
           x: 1770.497690708367,
@@ -931,7 +935,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'maxContext',
             type: 'numberInput',
-            label: '最长记录数',
+            label: 'Maximum number of records',
             value: 6,
             min: 0,
             max: 50,
@@ -940,14 +944,14 @@ export const appTemplates: (AppItemType & {
           {
             key: 'history',
             type: 'hidden',
-            label: '聊天记录',
+            label: 'chat record',
             connected: true
           }
         ],
         outputs: [
           {
             key: 'history',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             type: 'source',
             targets: [
@@ -961,7 +965,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'remuj3',
-        name: '问题分类',
+        name: 'question category',
         flowType: 'classifyQuestion',
         showStatus: true,
         position: {
@@ -972,7 +976,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: false
           },
@@ -991,7 +995,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'history',
             type: 'target',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             connected: true
           },
@@ -1087,7 +1091,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },
@@ -1125,7 +1129,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },
@@ -1266,7 +1270,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'quoteTemplate',
             type: 'hidden',
-            label: '引用内容模板',
+            label: 'Quote content prompt words',
             valueType: 'string',
             value: '',
             connected: true
@@ -1274,7 +1278,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'quotePrompt',
             type: 'hidden',
-            label: '引用内容提示词',
+            label: 'Quote content prompt words',
             valueType: 'string',
             value: '',
             connected: true
@@ -1282,22 +1286,22 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },
           {
             key: 'quoteQA',
             type: 'custom',
-            label: '引用内容',
-            description: "对象数组格式，结构：\n [{q:'问题',a:'回答'}]",
+            label: 'Cited content',
+            description: "Object number format, structure:  n [{q: 'question', a: 'answer'}]",
             valueType: 'datasetQuote',
             connected: true
           },
           {
             key: 'history',
             type: 'target',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             connected: true
           },
@@ -1339,7 +1343,7 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 's4v9su',
-        name: '聊天记录',
+        name: 'chat record',
         flowType: 'historyNode',
         position: {
           x: 193.3803955457983,
@@ -1349,7 +1353,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'maxContext',
             type: 'numberInput',
-            label: '最长记录数',
+            label: 'Maximum record number',
             value: 2,
             min: 0,
             max: 50,
@@ -1358,14 +1362,14 @@ export const appTemplates: (AppItemType & {
           {
             key: 'history',
             type: 'hidden',
-            label: '聊天记录',
+            label: 'chat record',
             connected: true
           }
         ],
         outputs: [
           {
             key: 'history',
-            label: '聊天记录',
+            label: 'chat record',
             valueType: 'chatHistory',
             type: 'source',
             targets: [
@@ -1439,7 +1443,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },
@@ -1479,9 +1483,9 @@ export const appTemplates: (AppItemType & {
           },
           {
             key: 'quoteQA',
-            label: '引用内容',
+            label: 'Cited content',
             description:
-              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的触发器',
+              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的trigger',
             type: 'source',
             valueType: 'datasetQuote',
             targets: [
@@ -1538,7 +1542,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },
@@ -1576,7 +1580,7 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: '触发器',
+            label: 'trigger',
             valueType: 'any',
             connected: true
           },

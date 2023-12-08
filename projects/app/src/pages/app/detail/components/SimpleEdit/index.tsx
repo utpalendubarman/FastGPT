@@ -569,7 +569,7 @@ function Settings({ appId }: { appId: string }) {
             wordBreak={'break-all'}
             color={'myGray.600'}
           >
-            {appDetail.intro || '快来给应用一个介绍~'}
+            {appDetail.intro || 'Come and introduce an introduction to the application'}
           </Box>
           <Flex>
             <Button
@@ -578,7 +578,7 @@ function Settings({ appId }: { appId: string }) {
               leftIcon={<MyIcon name={'chat'} w={'16px'} />}
               onClick={() => router.push(`/chat?appId=${appId}`)}
             >
-              对话
+              dialogue
             </Button>
             <Button
               mx={3}
@@ -594,7 +594,7 @@ function Settings({ appId }: { appId: string }) {
                 });
               }}
             >
-              外接
+              External
             </Button>
             {appDetail.isOwner && (
               <Button
@@ -603,7 +603,7 @@ function Settings({ appId }: { appId: string }) {
                 leftIcon={<MyIcon name={'settingLight'} w={'16px'} />}
                 onClick={() => setSettingAppInfo(appDetail)}
               >
-                设置
+                set up
               </Button>
             )}
           </Flex>
@@ -644,7 +644,7 @@ function ChatTest({ appId }: { appId: string }) {
           modules,
           variables,
           appId,
-          appName: `调试-${appDetail.name}`
+          appName: `debug-${appDetail.name}`
         },
         onMessage: generatingMessage,
         abortSignal: controller

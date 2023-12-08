@@ -66,18 +66,18 @@ const InfoModal = ({
       onSuccess && onSuccess();
       onClose();
       toast({
-        title: '更新成功',
+        title: 'update completed',
         status: 'success'
       });
     },
-    errorToast: '更新失败'
+    errorToast: 'Update failure'
   });
 
   // 提交保存表单失败
   const saveSubmitError = useCallback(() => {
     // deep search message
     const deepSearch = (obj: any): string => {
-      if (!obj) return '提交表单错误';
+      if (!obj) return 'Submit the form error';
       if (!!obj.message) {
         return obj.message;
       }
@@ -110,7 +110,7 @@ const InfoModal = ({
         setRefresh((state) => !state);
       } catch (err: any) {
         toast({
-          title: getErrText(err, '头像选择异常'),
+          title: getErrText(err, 'Avatar selection is abnormal'),
           status: 'warning'
         });
       }
@@ -126,7 +126,7 @@ const InfoModal = ({
       title={t('core.app.setting')}
     >
       <ModalBody>
-        <Box>头像 & 名称</Box>
+        <Box>Avatar & Name</Box>
         <Flex mt={2} alignItems={'center'}>
           <Avatar
             src={getValues('avatar')}
@@ -135,7 +135,7 @@ const InfoModal = ({
             cursor={'pointer'}
             borderRadius={'lg'}
             mr={4}
-            title={'点击切换头像'}
+            title={'Click to switch avatar'}
             onClick={() => onOpenSelectFile()}
           />
           <FormControl>
@@ -143,7 +143,7 @@ const InfoModal = ({
               bg={'myWhite.600'}
               placeholder={'给应用设置一个名称'}
               {...register('name', {
-                required: '展示名称不能为空'
+                required: 'The display name cannot be empty'
               })}
             ></Input>
           </FormControl>
@@ -157,7 +157,7 @@ const InfoModal = ({
         <Textarea
           rows={4}
           maxLength={500}
-          placeholder={'给你的 AI 应用一个介绍'}
+          placeholder={'Introduction to your AI application'}
           bg={'myWhite.600'}
           {...register('intro')}
         />
@@ -175,10 +175,10 @@ const InfoModal = ({
 
       <ModalFooter>
         <Button variant={'base'} mr={3} onClick={onClose}>
-          取消
+          Cancel
         </Button>
         <Button isLoading={btnLoading} onClick={saveUpdateModel}>
-          保存
+          keep
         </Button>
       </ModalFooter>
 

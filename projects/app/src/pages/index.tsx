@@ -31,10 +31,6 @@ const Home = ({ homeUrl = '/' }: { homeUrl: string }) => {
         </Box>
         <Box maxW={'1200px'} pt={'70px'} m={'auto'}>
           <Hero />
-          <Ability />
-          <Box my={[4, 6]}>
-            <Choice />
-          </Box>
         </Box>
         {feConfigs?.show_git && (
           <Box bg={'white'}>

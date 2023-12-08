@@ -15,34 +15,12 @@ const Hero = () => {
   return (
     <Flex flexDirection={'column'} pt={['24px', '50px']} alignItems={'center'} userSelect={'none'}>
       <Box fontSize={['38px', '60px']} fontWeight={'bold'}>
-        {t('home.slogan')}
+        <b>{'Welcome to TellsellingGPT'}</b>
       </Box>
       <Box fontSize={['xl', '3xl']} py={5} color={'myGray.600'} textAlign={'center'} maxW={'400px'}>
         {t('home.desc')}
       </Box>
       <Flex zIndex={1} flexDirection={['column', 'row']} mt={[5, 8]}>
-        {feConfigs?.show_git && (
-          <Button
-            mr={[0, 5]}
-            mb={[5, 0]}
-            fontSize={['xl', '3xl']}
-            h={'auto'}
-            py={[2, 3]}
-            variant={'base'}
-            border={'2px solid'}
-            borderColor={'myGray.800'}
-            transition={'0.3s'}
-            borderRadius={'xl'}
-            _hover={{
-              bg: 'myGray.800',
-              color: 'white'
-            }}
-            leftIcon={<MyIcon name={'git'} w={'20px'} />}
-            onClick={() => window.open('https://github.com/labring/FastGPT', '_blank')}
-          >
-            Stars {(gitStar / 1000).toFixed(1)}k
-          </Button>
-        )}
         <Button
           fontSize={['xl', '3xl']}
           h={['38px', 'auto']}
@@ -54,6 +32,7 @@ const Hero = () => {
           {t('home.Start Now')}
         </Button>
       </Flex>
+
       <Box mt={['', '-50px']} position={'relative'}>
         <Image
           minH={['auto', '400px']}

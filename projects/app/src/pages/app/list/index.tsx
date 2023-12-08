@@ -36,8 +36,8 @@ const MyApps = () => {
   const { userInfo } = useUserStore();
   const { myApps, loadMyApps } = useAppStore();
   const { openConfirm, ConfirmModal } = useConfirm({
-    title: '删除提示',
-    content: '确认删除该应用所有信息？'
+    title: 'Delete prompt',
+    content: 'Confirm that delete all the information of the application?'
   });
   const {
     isOpen: isOpenCreateModal,
@@ -51,13 +51,13 @@ const MyApps = () => {
       try {
         await delModelById(id);
         toast({
-          title: '删除成功',
+          title: 'successfully deleted',
           status: 'success'
         });
         loadMyApps(true);
       } catch (err: any) {
         toast({
-          title: err?.message || '删除失败',
+          title: err?.message || 'failed to delete',
           status: 'error'
         });
       }
@@ -65,7 +65,6 @@ const MyApps = () => {
     [toast, loadMyApps]
   );
 
-  /* 加载模型 */
   const { isFetching } = useQuery(['loadApps'], () => loadMyApps(true), {
     refetchOnMount: true
   });
@@ -76,7 +75,7 @@ const MyApps = () => {
         <Flex flex={1} alignItems={'center'}>
           <Image src={'/imgs/module/ai.svg'} alt={''} mr={2} h={'24px'} />
           <Box className="textlg" letterSpacing={1} fontSize={['20px', '24px']} fontWeight={'bold'}>
-            {t('app.My Apps')}
+            My Apps
           </Box>
         </Flex>
         <Button leftIcon={<AddIcon />} variant={'base'} onClick={onOpenCreateModal}>
@@ -156,7 +155,7 @@ const MyApps = () => {
                 fontSize={'sm'}
                 color={'myGray.600'}
               >
-                {app.intro || '这个应用还没写介绍~'}
+                {app.intro || "I haven't written this application yet "}
               </Box>
               <Flex h={'34px'} alignItems={'flex-end'}>
                 <Box flex={1}>
@@ -167,7 +166,7 @@ const MyApps = () => {
                     className="chat"
                     size={'sm'}
                     icon={
-                      <MyTooltip label={'去聊天'}>
+                      <MyTooltip label={'Chat'}>
                         <MyIcon name={'chat'} w={'14px'} />
                       </MyTooltip>
                     }
@@ -193,7 +192,7 @@ const MyApps = () => {
         <Flex mt={'35vh'} flexDirection={'column'} alignItems={'center'}>
           <MyIcon name="empty" w={'48px'} h={'48px'} color={'transparent'} />
           <Box mt={2} color={'myGray.500'}>
-            还没有应用，快去创建一个吧！
+            There is no application yet, go and create one!
           </Box>
         </Flex>
       )}
