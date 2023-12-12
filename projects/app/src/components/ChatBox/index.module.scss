@@ -1,0 +1,16 @@
+.stopIcon {
+  animation: zoomStopIcon 0.4s infinite alternate;
+}
+
+.statusAnimation {
+  animation: statusBox 0.8s linear infinite alternate;
+}
+@keyframes statusBox {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.11;
+  }
+}

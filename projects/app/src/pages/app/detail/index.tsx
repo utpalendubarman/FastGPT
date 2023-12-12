@@ -1,0 +1,192 @@
+import React, { useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/router';
+import { Box, Flex, IconButton, useTheme } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
+import { useToast } from '@/web/common/hooks/useToast';
+import { useQuery } from '@tanstack/react-query';
+import { feConfigs } from '@/web/common/system/staticData';
+
+import Tabs from '@/components/Tabs';
+import SideTabs from '@/components/SideTabs';
+import Avatar from '@/components/Avatar';
+import MyIcon from '@/components/Icon';
+import PageContainer from '@/components/PageContainer';
+import Loading from '@/components/Loading';
+import SimpleEdit from './components/SimpleEdit';
+import { serviceSideProps } from '@/web/common/utils/i18n';
+import { useAppStore } from '@/web/core/app/store/useAppStore';
+import Image from 'next/image';
+
+const AdEdit = dynamic(() => import('./components/AdEdit'), {
+  loading: () => <Loading />
+});
+const OutLink = dynamic(() => import('./components/OutLink'), {});
+const Logs = dynamic(() => import('./components/Logs'), {});
+
+enum TabEnum {
+  'simpleEdit' = 'simpleEdit',
+  'adEdit' = 'adEdit',
+  'outLink' = 'outLink',
+  'logs' = 'logs',
+  'startChat' = 'startChat'
+}
+
+const AppDetail = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
+  const router = useRouter();
+  const theme = useTheme();
+  const { toast } = useToast();
+  const { appId } = router.query as { appId: string };
+  const { appDetail, loadAppDetail, clearAppModules } = useAppStore();
+
+  const setCurrentTab = useCallback(
+    (tab: `${TabEnum}`) => {
+      router.replace({
+        query: {
+          appId,
+          currentTab: tab
+        }
+      });
+    },
+    [appId, router]
+  );
+
+  const tabList = useMemo(
+    () => [
+      { label: 'Simple configuration', id: TabEnum.simpleEdit, icon: 'overviewLight' },
+      ...(feConfigs?.hide_app_flow
+        ? []
+        : [{ label: 'High -level arrangement', id: TabEnum.adEdit, icon: 'settingLight' }]),
+      { label: 'External use', id: TabEnum.outLink, icon: 'shareLight' },
+      { label: 'Dialog', id: TabEnum.logs, icon: 'core/app/logsLight' },
+      { label: 'Dialog', id: TabEnum.startChat, icon: 'chat' }
+    ],
+    []
+  );
+
+  useEffect(() => {
+    const listen =
+      process.env.NODE_ENV === 'production'
+        ? (e: any) => {
+            e.preventDefault();
+            e.returnValue =
+              'The content has been modified, do you confirm that you leave the page?';
+          }
+        : () => {};
+    window.addEventListener('beforeunload', listen);
+
+    return () => {
+      window.removeEventListener('beforeunload', listen);
+      clearAppModules();
+    };
+  }, []);
+
+  useQuery([appId], () => loadAppDetail(appId, true), {
+    onError(err: any) {
+      toast({
+        title: err?.message || 'Obtain abnormal application',
+        status: 'error'
+      });
+      router.replace('/app/list');
+    },
+    onSettled() {
+      router.prefetch(`/chat?appId=${appId}`);
+    }
+  });
+
+  return (
+    <PageContainer>
+      <Flex flexDirection={['column', 'row']} h={'100%'}>
+        {/* pc tab */}
+        <Box
+          display={['none', 'flex']}
+          flexDirection={'column'}
+          p={4}
+          w={'180px'}
+          borderRight={theme.borders.base}
+        >
+          <Flex mb={4} alignItems={'center'}>
+            <Image src={'/favicon.png'} alt={''} width={24} height={24} />
+            <Box ml={2} fontWeight={'bold'}>
+              {appDetail.name}
+            </Box>
+          </Flex>
+          <SideTabs
+            flex={1}
+            mx={'auto'}
+            mt={2}
+            w={'100%'}
+            list={tabList}
+            activeId={currentTab}
+            onChange={(e: any) => {
+              if (e === 'startChat') {
+                router.push(`/chat?appId=${appId}`);
+              } else {
+                setCurrentTab(e);
+              }
+            }}
+          />
+          <Flex
+            alignItems={'center'}
+            cursor={'pointer'}
+            py={2}
+            px={3}
+            borderRadius={'md'}
+            _hover={{ bg: 'myGray.100' }}
+            onClick={() => router.replace('/app/list')}
+          >
+            <IconButton
+              mr={3}
+              icon={<MyIcon name={'backFill'} w={'18px'} color={'myBlue.600'} />}
+              bg={'white'}
+              boxShadow={'1px 1px 9px rgba(0,0,0,0.15)'}
+              h={'28px'}
+              size={'sm'}
+              borderRadius={'50%'}
+              aria-label={''}
+            />
+            My Applications
+          </Flex>
+        </Box>
+        {/* phone tab */}
+        <Box display={['block', 'none']} textAlign={'center'} py={3}>
+          <Box className="textlg" fontSize={'xl'} fontWeight={'bold'}>
+            {appDetail.name}
+          </Box>
+          <Tabs
+            mx={'auto'}
+            mt={2}
+            w={'100%'}
+            list={tabList}
+            size={'sm'}
+            activeId={currentTab}
+            onChange={(e: any) => {
+              if (e === 'startChat') {
+                router.push(`/chat?appId=${appId}`);
+              } else {
+                setCurrentTab(e);
+              }
+            }}
+          />
+        </Box>
+        <Box flex={'1 0 0'} h={[0, '100%']} overflow={['overlay', '']}>
+          {currentTab === TabEnum.simpleEdit && <SimpleEdit appId={appId} />}
+          {currentTab === TabEnum.adEdit && appDetail && (
+            <AdEdit app={appDetail} onClose={() => setCurrentTab(TabEnum.simpleEdit)} />
+          )}
+          {currentTab === TabEnum.logs && <Logs appId={appId} />}
+          {currentTab === TabEnum.outLink && <OutLink appId={appId} />}
+        </Box>
+      </Flex>
+    </PageContainer>
+  );
+};
+
+export async function getServerSideProps(context: any) {
+  const currentTab = context?.query?.currentTab || TabEnum.simpleEdit;
+
+  return {
+    props: { currentTab, ...(await serviceSideProps(context)) }
+  };
+}
+
+export default AppDetail;

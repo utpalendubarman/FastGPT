@@ -1,0 +1,1 @@
+for x in `find . -type f | grep -v .next`; do grep "$1" $x; if [ "$?" == "0" ]; then echo $x; fi done
