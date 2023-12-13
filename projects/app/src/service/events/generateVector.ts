@@ -6,7 +6,7 @@ import { addLog } from '@fastgpt/service/common/mongo/controller';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { authTeamBalance } from '@/service/support/permission/auth/bill';
 import { pushGenerateVectorBill } from '@/service/support/wallet/bill/push';
-import { UserErrEnum } from '@fastgpt/global/common/error/code/user';
+import user, { UserErrEnum } from '@fastgpt/global/common/error/code/user';
 import { lockTrainingDataByTeamId } from '@fastgpt/service/core/dataset/training/controller';
 
 const reduceQueue = (retry = false) => {
@@ -123,7 +123,7 @@ export async function generateVector(): Promise<any> {
     generateVector();
     return;
   }
-
+  console.log('++++++++++++++++++ MEEE ++++++++++++++=');
   // insert data to pg
   const { tokenLen } = await insertData2Dataset({
     userId: data.userId,
@@ -135,6 +135,7 @@ export async function generateVector(): Promise<any> {
     indexes: dataItem.indexes,
     model: data.model
   });
+  console.log('TOKENLEN');
   console.log(tokenLen);
   // push bill
   // pushGenerateVectorBill({
@@ -147,7 +148,7 @@ export async function generateVector(): Promise<any> {
   // delete data from training
   await MongoDatasetTraining.findByIdAndDelete(data._id);
   reduceQueue();
-  generateVector();
+  // generateVector();
   // } catch (err: any) {
   //   reduceQueue(true);
   //   // log

@@ -10,6 +10,7 @@ import { Types } from 'mongoose';
 import { DatasetDataIndexTypeEnum } from '@fastgpt/global/core/dataset/constant';
 import { getDefaultIndex } from '@fastgpt/global/core/dataset/utils';
 import { jiebaSplit } from '../utils';
+import { use } from 'react';
 
 /* insert data.
  * 1. create data id
@@ -66,6 +67,7 @@ export async function insertData2Dataset({
   );
 
   // create mongo
+  console.log('UID: ', userId);
   const { _id } = await MongoDatasetData.create({
     _id: id,
     userId,

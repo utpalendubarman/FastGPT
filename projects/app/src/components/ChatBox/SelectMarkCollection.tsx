@@ -100,7 +100,7 @@ const SelectMarkCollection = ({
               <Flex mt={'10vh'} flexDirection={'column'} alignItems={'center'}>
                 <MyIcon name="empty" w={'48px'} h={'48px'} color={'transparent'} />
                 <Box mt={2} color={'myGray.500'}>
-                  这个目录已经没东西可选了~
+                  There is nothing to choose this directory
                 </Box>
               </Flex>
             )}

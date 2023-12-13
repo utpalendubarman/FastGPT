@@ -1,14 +1,11 @@
 export const Prompt_AgentQA = {
-  description: `我会给你一段文本，学习它们，并整理学习成果，要求为：
-1. 提出问题并给出每个问题的答案。
-2. 每个答案都要详细完整，给出相关原文描述，答案可以包含普通文字、链接、代码、表格、公示、媒体链接等 markdown 元素。
-3. 最多提出 30 个问题。
+  description: `I will give you a piece of text, learn them, and organize the learning results. The requirements are:
 `,
-  fixedText: `最后，你需要按下面的格式返回多个问题和答案:
-Q1: 问题。
-A1: 答案。
-Q2:
-A2:
+  fixedText: `Finally, you need to return multiple questions and answers in the following format:
+  Q1: Question.
+  A1: Answer.
+  Q2:
+  A2:
 ……
 
 我的文本："""{{text}}"""`
@@ -35,25 +32,25 @@ export const Prompt_ExtractJson = `你可以从 "对话记录" 中提取指定�
 """
 `;
 
-export const Prompt_CQJson = `我会给你几个问题类型，请参考额外的背景知识（可能为空）和对话内容，判断我本次的问题类型，并返回对应类型的 ID，格式为 JSON 字符串:
+export const Prompt_CQJson = `I will give you several question types. Please refer to the additional background knowledge (may be empty) and dialogue content to determine the type of my question this time, and return the ID of the corresponding type in the format of a JSON string:
 """
-'{"type":"问题类型的 ID"}'
+'{"type":"Id of question type"}'
 """
 
-问题类型：
+question type:
 """
 {{typeList}}
 """
 
-额外背景知识:
+Additional background knowledge:
 """
 {{systemPrompt}}
 """
 
-对话内容：
+Conversation content:
 """
 {{text}}
 """
 `;
 
-export const Prompt_QuestionGuide = `我不太清楚问你什么问题，请帮我生成 3 个问题，引导我继续提问。问题的长度应小于20个字符，按 JSON 格式返回: ["问题1", "问题2", "问题3"]`;
+export const Prompt_QuestionGuide = `I'm not sure what question to ask you, please help me generate 3 questions to guide me to continue asking. The length of the question should be less than 20 characters and returned in JSON format: ["Question1", "Question2", "Question3"]`;

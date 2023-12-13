@@ -17,7 +17,7 @@ const ContextModal = ({
       isOpen={true}
       onClose={onClose}
       iconSrc="/imgs/modal/chatHistory.svg"
-      title={`完整对话记录(${context.length}条)`}
+      title={`Complete conversation record ${context.length}strip)`}
       h={['90vh', '80vh']}
       minW={['90vw', '600px']}
       isCentered

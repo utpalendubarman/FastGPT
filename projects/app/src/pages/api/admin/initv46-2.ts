@@ -144,10 +144,10 @@ async function init(limit: number): Promise<any> {
 
     let id = '';
     try {
+      console.log(' I AM HEREEEEEEEEEEEEEEEE');
       // create mongo data and update data_id
       const { _id } = await MongoDatasetData.create({
         teamId: data.team_id.trim(),
-        tmbId: data.tmb_id.trim(),
         datasetId: data.dataset_id,
         collectionId: data.collection_id,
         q: data.q,

@@ -281,7 +281,7 @@ const ChatBox = (
       if (!onStartChat) return;
       if (isChatting) {
         toast({
-          title: '正在聊天中...请等待结束',
+          title: 'I am chatting ... Please wait for the end',
           status: 'warning'
         });
         return;
@@ -292,7 +292,7 @@ const ChatBox = (
 
       if (!val) {
         toast({
-          title: '内容为空',
+          title: 'The content is empty',
           status: 'warning'
         });
         return;
@@ -373,7 +373,7 @@ const ChatBox = (
         }, 100);
       } catch (err: any) {
         toast({
-          title: getErrText(err, '聊天出错了~'),
+          title: getErrText(err, 'Chat the error'),
           status: 'error',
           duration: 5000,
           isClosable: true
@@ -466,16 +466,17 @@ const ChatBox = (
     display: 'inline-block',
     maxW: ['calc(100% - 25px)', 'calc(100% - 40px)']
   };
+  const showEmpty = false;
 
-  const showEmpty = useMemo(
-    () =>
-      feConfigs?.show_emptyChat &&
-      showEmptyIntro &&
-      chatHistory.length === 0 &&
-      !variableModules?.length &&
-      !welcomeText,
-    [chatHistory.length, showEmptyIntro, variableModules, welcomeText]
-  );
+  // const showEmpty = useMemo(
+  //   () =>
+  //     feConfigs?.show_emptyChat &&
+  //     showEmptyIntro &&
+  //     chatHistory.length === 0 &&
+  //     !variableModules?.length &&
+  //     !welcomeText,
+  //   [chatHistory.length, showEmptyIntro, variableModules, welcomeText]
+  // );
   const statusBoxData = useMemo(() => {
     const colorMap = {
       loading: 'myGray.700',
@@ -1128,7 +1129,7 @@ function ChatController({
       {showVoiceIcon &&
         hasAudio &&
         (audioLoading ? (
-          <MyTooltip label={'加载中...'}>
+          <MyTooltip label={'loading...'}>
             <MyIcon {...controlIconStyle} name={'common/loading'} />
           </MyTooltip>
         ) : audioPlaying ? (
@@ -1197,7 +1198,11 @@ function ChatController({
       )}
       {!!onFeedback && (
         <MyTooltip
-          label={chat.userFeedback ? `取消反馈。\n您当前反馈内容为:\n${chat.userFeedback}` : '反馈'}
+          label={
+            chat.userFeedback
+              ? `Cancel feedback.\nYour current feedback content is:\n${chat.userFeedback}`
+              : 'feedback'
+          }
         >
           <MyIcon
             {...controlIconStyle}

@@ -273,28 +273,28 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     }
 
     // add record
-    const { total } = pushChatBill({
-      appName: app.name,
-      appId: app._id,
-      teamId: user.team.teamId,
-      tmbId: user.team.tmbId,
-      source: getBillSourceByAuthType({ shareId, authType }),
-      response: responseData
-    });
+    // const { total } = pushChatBill({
+    //   appName: app.name,
+    //   appId: app._id,
+    //   teamId: user.team.teamId,
+    //   tmbId: user.team.tmbId,
+    //   source: getBillSourceByAuthType({ shareId, authType }),
+    //   response: responseData
+    // });
 
-    if (shareId) {
-      pushResult2Remote({ authToken, shareId, responseData });
-      updateOutLinkUsage({
-        shareId,
-        total
-      });
-    }
-    if (apikey) {
-      updateApiKeyUsage({
-        apikey,
-        usage: total
-      });
-    }
+    // if (shareId) {
+    //   pushResult2Remote({ authToken, shareId, responseData });
+    //   updateOutLinkUsage({
+    //     shareId,
+    //     total
+    //   });
+    // }
+    // if (apikey) {
+    //   updateApiKeyUsage({
+    //     apikey,
+    //     usage: total
+    //   });
+    // }
   } catch (err: any) {
     if (stream) {
       sseErrRes(res, err);

@@ -32,12 +32,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       type
     });
 
-    if (type === DatasetTypeEnum.dataset) {
-      await createDefaultCollection({
-        datasetId: _id,
-        userId
-      });
-    }
+    // if (type === DatasetTypeEnum.dataset) {
+    //   await createDefaultCollection({
+    //     datasetId: _id,
+    //     userId
+    //   });
+    // }
 
     jsonRes(res, { data: _id });
   } catch (err) {

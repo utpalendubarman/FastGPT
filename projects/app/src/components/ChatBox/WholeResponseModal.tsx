@@ -82,7 +82,7 @@ const WholeResponseModal = ({
       title={
         <Flex alignItems={'center'}>
           {t('chat.Complete Response')}
-          <MyTooltip label={'从左往右，为各个模块的响应顺序'}>
+          <MyTooltip label={'From left to right, the response order of each module'}>
             <QuestionOutlineIcon ml={2} />
           </MyTooltip>
         </Flex>
