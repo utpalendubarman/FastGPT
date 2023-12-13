@@ -21,8 +21,7 @@ type Props = {
 export async function saveChat({
   chatId,
   appId,
-  teamId,
-  tmbId,
+  userId,
   variables,
   updateUseTime,
   source,
@@ -33,8 +32,7 @@ export async function saveChat({
     const chatHistory = await MongoChat.findOne(
       {
         chatId,
-        teamId,
-        tmbId,
+        userId,
         appId
       },
       '_id'
@@ -44,8 +42,7 @@ export async function saveChat({
       MongoChatItem.insertMany(
         content.map((item) => ({
           chatId,
-          teamId,
-          tmbId,
+          userId,
           appId,
           ...item
         }))
@@ -71,8 +68,7 @@ export async function saveChat({
       promise.push(
         MongoChat.create({
           chatId,
-          teamId,
-          tmbId,
+          userId,
           appId,
           variables,
           title,

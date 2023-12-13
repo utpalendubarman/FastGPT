@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       throw new Error('CollectionIdId is required');
     }
 
-    const { collection, tmbId } = await authDatasetCollection({
+    const { collection, userId } = await authDatasetCollection({
       req,
       authToken: true,
       collectionId,
@@ -37,8 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const agentModelData = getQAModel(collection.datasetId.agentModel);
     // create training bill
     const { billId } = await createTrainingBill({
-      teamId: collection.teamId,
-      tmbId,
+      userId,
       appName: 'core.dataset.collection.Sync Collection',
       billSource: BillSourceEnum.training,
       vectorModel: vectorModelData.name,
@@ -48,8 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // create a collection and delete old
     const { _id } = await MongoDatasetCollection.create({
       parentId: collection.parentId,
-      teamId: collection.teamId,
-      tmbId: collection.tmbId,
+      userId,
       datasetId: collection.datasetId._id,
       type: collection.type,
       name: collection.name,
@@ -64,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // start load
     await loadingOneChunkCollection({
       collectionId: _id,
-      tmbId,
+      userId,
       billId
     });
 

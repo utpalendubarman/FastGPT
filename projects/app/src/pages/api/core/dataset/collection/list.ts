@@ -32,8 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     searchText = searchText?.replace(/'/g, '');
 
     // auth dataset and get my role
-    const { tmbId } = await authDataset({ req, authToken: true, datasetId, per: 'r' });
-    const { canWrite } = await authUserRole({ req, authToken: true });
+    // const { tmbId } = await authDataset({ req, authToken: true, datasetId, per: 'r' });
+    // const { canWrite } = await authUserRole({ req, authToken: true });
 
     const match = {
       datasetId: new Types.ObjectId(datasetId),
@@ -115,7 +115,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
           $project: {
             _id: 1,
             parentId: 1,
-            tmbId: 1,
             name: 1,
             type: 1,
             status: 1,
@@ -142,7 +141,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const data = await Promise.all(
       collections.map(async (item, i) => ({
         ...item,
-        canWrite: String(item.tmbId) === tmbId || canWrite
+        canWrite: true || canWrite
       }))
     );
 

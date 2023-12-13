@@ -26,6 +26,7 @@ import { getUserAndAuthBalance } from '@/service/support/permission/auth/user';
 import { AuthUserTypeEnum } from '@fastgpt/global/support/permission/constant';
 import { MongoApp } from '@fastgpt/service/core/app/schema';
 import { authUserNotVisitor } from '@fastgpt/service/support/permission/auth/user';
+import { use } from 'react';
 
 type FastGptWebChatProps = {
   chatId?: string; // undefined: nonuse history, '': new chat, 'xxxxx': use history
@@ -201,8 +202,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       await saveChat({
         chatId,
         appId: app._id,
-        teamId: user.team.teamId,
-        tmbId: user.team.tmbId,
+        userId: user._id,
         variables,
         updateUseTime: isAppOwner, // owner update use time
         shareId,

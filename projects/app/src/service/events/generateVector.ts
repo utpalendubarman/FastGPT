@@ -46,8 +46,6 @@ export async function generateVector(): Promise<any> {
         .select({
           _id: 1,
           userId: 1,
-          teamId: 1,
-          tmbId: 1,
           datasetId: 1,
           collectionId: 1,
           q: 1,
@@ -80,7 +78,8 @@ export async function generateVector(): Promise<any> {
       };
     }
   })();
-
+  console.log('********************************************************8');
+  console.log(data);
   if (done || !data) {
     if (reduceQueue()) {
       console.log(`【index】Task done`);
@@ -94,7 +93,7 @@ export async function generateVector(): Promise<any> {
 
   // auth balance
   try {
-    await authTeamBalance(data.teamId);
+    await authTeamBalance(data.userId);
   } catch (error: any) {
     if (error?.statusText === UserErrEnum.balanceNotEnough) {
       // send inform and lock data
@@ -104,10 +103,10 @@ export async function generateVector(): Promise<any> {
           title: '文本训练任务中止',
           content:
             '该团队账号余额不足，文本训练任务中止，重新充值后将会继续。暂停的任务将在 7 天后被删除。',
-          tmbId: data.tmbId
+          tmbId: data.userId
         });
         console.log('余额不足，暂停【向量】生成任务');
-        lockTrainingDataByTeamId(data.teamId);
+        lockTrainingDataByTeamId(data.userId);
       } catch (error) {}
     }
 
@@ -116,73 +115,72 @@ export async function generateVector(): Promise<any> {
   }
 
   // create vector and insert
-  try {
-    // invalid data
-    if (!data.q.trim()) {
-      await MongoDatasetTraining.findByIdAndDelete(data._id);
-      reduceQueue();
-      generateVector();
-      return;
-    }
-
-    // insert data to pg
-    const { tokenLen } = await insertData2Dataset({
-      teamId: data.teamId,
-      tmbId: data.tmbId,
-      datasetId: data.datasetId,
-      collectionId: data.collectionId,
-      q: dataItem.q,
-      a: dataItem.a,
-      chunkIndex: data.chunkIndex,
-      indexes: dataItem.indexes,
-      model: data.model
-    });
-    // push bill
-    pushGenerateVectorBill({
-      teamId: data.teamId,
-      tmbId: data.tmbId,
-      tokenLen: tokenLen,
-      model: data.model,
-      billId: data.billId
-    });
-
-    // delete data from training
+  // try {
+  // invalid data
+  if (!data.q.trim()) {
     await MongoDatasetTraining.findByIdAndDelete(data._id);
     reduceQueue();
     generateVector();
-  } catch (err: any) {
-    reduceQueue(true);
-    // log
-    if (err?.response) {
-      addLog.info('openai error: 生成向量错误', {
-        status: err.response?.status,
-        stateusText: err.response?.statusText,
-        data: err.response?.data
-      });
-    } else {
-      console.log(err);
-      addLog.error(getErrText(err, '生成向量错误'));
-    }
-
-    // message error or openai account error
-    if (
-      err?.message === 'invalid message format' ||
-      err.response?.data?.error?.type === 'invalid_request_error' ||
-      err?.code === 500
-    ) {
-      addLog.info('invalid message format', {
-        dataItem
-      });
-      try {
-        await MongoDatasetTraining.findByIdAndUpdate(data._id, {
-          lockTime: new Date('2998/5/5')
-        });
-      } catch (error) {}
-      return generateVector();
-    }
-
-    setTimeout(() => {
-      generateVector();
-    }, 1000);
+    return;
   }
+
+  // insert data to pg
+  const { tokenLen } = await insertData2Dataset({
+    userId: data.userId,
+    datasetId: data.datasetId,
+    collectionId: data.collectionId,
+    q: dataItem.q,
+    a: dataItem.a,
+    chunkIndex: data.chunkIndex,
+    indexes: dataItem.indexes,
+    model: data.model
+  });
+  console.log(tokenLen);
+  // push bill
+  // pushGenerateVectorBill({
+  //   userId: data.userId,
+  //   tokenLen: tokenLen,
+  //   model: data.model,
+  //   billId: data.billId
+  // });
+
+  // delete data from training
+  await MongoDatasetTraining.findByIdAndDelete(data._id);
+  reduceQueue();
+  generateVector();
+  // } catch (err: any) {
+  //   reduceQueue(true);
+  //   // log
+  //   if (err?.response) {
+  //     addLog.info('openai error: 生成向量错误', {
+  //       status: err.response?.status,
+  //       stateusText: err.response?.statusText,
+  //       data: err.response?.data
+  //     });
+  //   } else {
+  //     console.log(err);
+  //     addLog.error(getErrText(err, '生成向量错误'));
+  //   }
+
+  //   // message error or openai account error
+  //   if (
+  //     err?.message === 'invalid message format' ||
+  //     err.response?.data?.error?.type === 'invalid_request_error' ||
+  //     err?.code === 500
+  //   ) {
+  //     addLog.info('invalid message format', {
+  //       dataItem
+  //     });
+  //     try {
+  //       await MongoDatasetTraining.findByIdAndUpdate(data._id, {
+  //         lockTime: new Date('2998/5/5')
+  //       });
+  //     } catch (error) { }
+  //     return generateVector();
+  //   }
+
+  setTimeout(() => {
+    generateVector();
+  }, 1000);
+  // }
 }

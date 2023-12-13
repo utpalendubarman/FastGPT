@@ -16,16 +16,14 @@ export async function insertData2Pg({
   mongoDataId,
   input,
   model,
-  teamId,
-  tmbId,
+  userId,
   datasetId,
   collectionId
 }: {
   mongoDataId: string;
   input: string;
   model: string;
-  teamId: string;
-  tmbId: string;
+  userId: string;
   datasetId: string;
   collectionId: string;
 }) {
@@ -41,8 +39,7 @@ export async function insertData2Pg({
         values: [
           [
             { key: 'vector', value: `[${vectors[0]}]` },
-            { key: 'team_id', value: String(teamId) },
-            { key: 'tmb_id', value: String(tmbId) },
+            { key: 'userId', value: String(userId) },
             { key: 'dataset_id', value: datasetId },
             { key: 'collection_id', value: collectionId },
             { key: 'data_id', value: String(mongoDataId) }

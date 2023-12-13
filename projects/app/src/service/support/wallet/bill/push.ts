@@ -29,23 +29,20 @@ export function concatBill(data: ConcatBillProps) {
 export const pushChatBill = ({
   appName,
   appId,
-  teamId,
-  tmbId,
+  userId,
   source,
   response
 }: {
   appName: string;
   appId: string;
-  teamId: string;
-  tmbId: string;
+  userId: string;
   source: `${BillSourceEnum}`;
   response: ChatHistoryItemResType[];
 }) => {
   const total = response.reduce((sum, item) => sum + item.price, 0);
 
   createBill({
-    teamId,
-    tmbId,
+    userId,
     appName,
     appId,
     total,
@@ -98,15 +95,13 @@ export const pushQABill = async ({
 
 export const pushGenerateVectorBill = ({
   billId,
-  teamId,
-  tmbId,
+  userId,
   tokenLen,
   model,
   source = BillSourceEnum.fastgpt
 }: {
   billId?: string;
-  teamId: string;
-  tmbId: string;
+  userId: string;
   tokenLen: number;
   model: string;
   source?: `${BillSourceEnum}`;
@@ -121,8 +116,7 @@ export const pushGenerateVectorBill = ({
   // 插入 Bill 记录
   if (billId) {
     concatBill({
-      teamId,
-      tmbId,
+      userId,
       total,
       billId,
       tokens: tokenLen,
@@ -130,8 +124,7 @@ export const pushGenerateVectorBill = ({
     });
   } else {
     createBill({
-      teamId,
-      tmbId,
+      userId,
       appName: '索引生成',
       total,
       source,
@@ -148,20 +141,11 @@ export const pushGenerateVectorBill = ({
   return { total };
 };
 
-export const pushQuestionGuideBill = ({
-  tokens,
-  teamId,
-  tmbId
-}: {
-  tokens: number;
-  teamId: string;
-  tmbId: string;
-}) => {
+export const pushQuestionGuideBill = ({ tokens, userId }: { tokens: number; userId: string }) => {
   const qgModel = global.qgModels?.[0] || defaultQGModels[0];
   const total = qgModel.price * tokens;
   createBill({
-    teamId,
-    tmbId,
+    userId,
     appName: '下一步指引',
     total,
     source: BillSourceEnum.fastgpt,
@@ -180,22 +164,19 @@ export function pushAudioSpeechBill({
   appName = 'wallet.bill.Audio Speech',
   model,
   textLength,
-  teamId,
-  tmbId,
+  userId,
   source = BillSourceEnum.fastgpt
 }: {
   appName?: string;
   model: string;
   textLength: number;
-  teamId: string;
-  tmbId: string;
+  userId: string;
   source: `${BillSourceEnum}`;
 }) {
   const modelData = getAudioSpeechModel(model);
   const total = modelData.price * textLength;
   createBill({
-    teamId,
-    tmbId,
+    userId,
     appName,
     total,
     source,
@@ -210,15 +191,7 @@ export function pushAudioSpeechBill({
   });
 }
 
-export function pushWhisperBill({
-  teamId,
-  tmbId,
-  duration
-}: {
-  teamId: string;
-  tmbId: string;
-  duration: number;
-}) {
+export function pushWhisperBill({ userId, duration }: { userId: string; duration: number }) {
   const modelData = global.whisperModel;
 
   if (!modelData) return;
@@ -228,8 +201,7 @@ export function pushWhisperBill({
   const name = 'wallet.bill.Whisper';
 
   createBill({
-    teamId,
-    tmbId,
+    userId,
     appName: name,
     total,
     source: BillSourceEnum.fastgpt,
@@ -245,12 +217,10 @@ export function pushWhisperBill({
 }
 
 export function pushReRankBill({
-  teamId,
-  tmbId,
+  userId,
   source
 }: {
-  teamId: string;
-  tmbId: string;
+  userId: string;
   source: `${BillSourceEnum}`;
 }) {
   const model = global.reRankModels[0];
@@ -260,8 +230,7 @@ export function pushReRankBill({
   const name = 'wallet.bill.ReRank';
 
   createBill({
-    teamId,
-    tmbId,
+    userId,
     appName: name,
     total,
     source,

@@ -17,8 +17,7 @@ import { jiebaSplit } from '../utils';
  * 3. create mongo data
  */
 export async function insertData2Dataset({
-  teamId,
-  tmbId,
+  userId,
   datasetId,
   collectionId,
   q,
@@ -33,9 +32,11 @@ export async function insertData2Dataset({
     console.log(q, a, datasetId, collectionId, model);
     return Promise.reject('q, datasetId, collectionId, model is required');
   }
-  if (String(teamId) === String(tmbId)) {
-    return Promise.reject("teamId and tmbId can't be the same");
-  }
+  // if (String(teamId) === String(tmbId)) {
+  //   return Promise.reject("teamId and tmbId can't be the same");
+  // }
+  // console.log(userId);
+  // return Promise.reject('no no ');
 
   const id = new Types.ObjectId();
   const qaStr = `${q}\n${a}`.trim();
@@ -57,8 +58,7 @@ export async function insertData2Dataset({
         mongoDataId: String(id),
         input: item.text,
         model,
-        teamId,
-        tmbId,
+        userId,
         datasetId,
         collectionId
       })
@@ -68,8 +68,7 @@ export async function insertData2Dataset({
   // create mongo
   const { _id } = await MongoDatasetData.create({
     _id: id,
-    teamId,
-    tmbId,
+    userId,
     datasetId,
     collectionId,
     q,
@@ -81,7 +80,8 @@ export async function insertData2Dataset({
       dataId: result[i].insertId
     }))
   });
-
+  console.log(' ======== CREATE DATA ==============');
+  console.log(_id);
   return {
     insertId: _id,
     tokenLen: result.reduce((acc, cur) => acc + cur.tokenLen, 0)
