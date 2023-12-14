@@ -51,7 +51,7 @@ export const RunAppModule: FlowModuleTemplateType = {
     },
     {
       key: ModuleOutputKeyEnum.answerText,
-      label: 'AI回复',
+      label: 'AI reply',
       description: '将在应用完全结束后触发',
       valueType: ModuleDataTypeEnum.string,
       type: FlowNodeOutputTypeEnum.source,

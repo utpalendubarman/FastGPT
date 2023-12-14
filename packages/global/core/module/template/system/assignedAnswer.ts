@@ -9,8 +9,9 @@ export const AssignedAnswerModule: FlowModuleTemplateType = {
   templateType: ModuleTemplateTypeEnum.textAnswer,
   flowType: FlowNodeTypeEnum.answerNode,
   avatar: '/imgs/module/reply.png',
-  name: '指定回复',
-  intro: '该模块可以直接回复一段指定的内容。常用于引导、提示',
+  name: 'Specify reply',
+  intro:
+    'This module can directly reply to a specified piece of content. Commonly used for guidance and prompts',
   inputs: [
     Input_Template_TFSwitch,
     {
@@ -18,9 +19,9 @@ export const AssignedAnswerModule: FlowModuleTemplateType = {
       type: FlowNodeInputTypeEnum.textarea,
       valueType: ModuleDataTypeEnum.any,
       value: '',
-      label: '回复的内容',
+      label: 'Reply content',
       description:
-        '可以使用 \\n 来实现连续换行。\n\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容。\n\n如传入非字符串类型数据将会自动转成字符串',
+        'You can use \\n to achieve continuous line breaks. \n\nReply can be achieved through external module input. When external module input, the currently filled content will be overwritten. \n\nIf non-string type data is passed in, it will be automatically converted into a string.',
       showTargetInApp: true,
       showTargetInPlugin: true
     }

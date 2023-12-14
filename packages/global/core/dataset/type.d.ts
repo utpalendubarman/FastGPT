@@ -14,8 +14,6 @@ export type DatasetSchemaType = {
   _id: string;
   parentId: string;
   userId: string;
-  teamId: string;
-  tmbId: string;
   updateTime: Date;
   avatar: string;
   name: string;
@@ -33,8 +31,6 @@ export type DatasetSchemaType = {
 
 export type DatasetCollectionSchemaType = {
   _id: string;
-  teamId: string;
-  tmbId: string;
   datasetId: string;
   parentId?: string;
   name: string;
@@ -57,8 +53,6 @@ export type DatasetDataIndexItemType = {
 export type DatasetDataSchemaType = {
   _id: string;
   userId: string;
-  teamId: string;
-  tmbId: string;
   datasetId: string;
   collectionId: string;
   datasetId: string;

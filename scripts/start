@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
+cd projects/app
+echo Startig...
+if [ -f .env ]; then
+    rm .env
+    cp ~/env .env
+fi
+sudo pnpm start

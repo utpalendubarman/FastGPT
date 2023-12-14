@@ -20,16 +20,6 @@ const ChatSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'user'
   },
-  teamId: {
-    type: Schema.Types.ObjectId,
-    ref: TeamCollectionName,
-    required: true
-  },
-  tmbId: {
-    type: Schema.Types.ObjectId,
-    ref: TeamMemberCollectionName,
-    required: true
-  },
   appId: {
     type: Schema.Types.ObjectId,
     ref: appCollectionName,
@@ -41,7 +31,7 @@ const ChatSchema = new Schema({
   },
   title: {
     type: String,
-    default: '历史记录'
+    default: 'history record'
   },
   customTitle: {
     type: String,

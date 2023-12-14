@@ -15,15 +15,9 @@ import {
 export const DatasetDataCollectionName = 'dataset.datas';
 
 const DatasetDataSchema = new Schema({
-  teamId: {
-    type: Schema.Types.ObjectId,
-    ref: TeamCollectionName,
-    required: true
-  },
-  tmbId: {
-    type: Schema.Types.ObjectId,
-    ref: TeamMemberCollectionName,
-    required: true
+  userId: {
+    type: Schema.Types.ObjectId
+    // required: true
   },
   datasetId: {
     type: Schema.Types.ObjectId,

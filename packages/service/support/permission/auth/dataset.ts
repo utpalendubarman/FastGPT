@@ -105,7 +105,8 @@ export async function authDatasetCollection({
     collection: CollectionWithDatasetType;
   }
 > {
-  const { userId } = await parseHeaderCert(props);
+  const { uid } = await parseHeaderCert(props);
+  const userId = uid;
 
   const { collection, isOwner, canWrite } = await (async () => {
     const collection = await getCollectionWithDataset(collectionId);

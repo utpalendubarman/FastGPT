@@ -68,12 +68,12 @@ export function getCollectionUpdateTime({ name, time }: { time?: Date; name: str
 /* link collection start load data */
 export const loadingOneChunkCollection = async ({
   collectionId,
-  tmbId,
+  userId,
   billId,
   rawText
 }: {
   collectionId: string;
-  tmbId: string;
+  userId: string;
   billId?: string;
   rawText?: string;
 }) => {
@@ -111,8 +111,7 @@ export const loadingOneChunkCollection = async ({
   // insert to training queue
   await MongoDatasetTraining.insertMany(
     chunks.map((item, i) => ({
-      teamId: collection.teamId,
-      tmbId,
+      userId,
       datasetId: collection.datasetId._id,
       collectionId: collection._id,
       billId,

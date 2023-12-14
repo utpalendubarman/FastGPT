@@ -23,15 +23,15 @@ export const AiChatModule: FlowModuleTemplateType = {
   templateType: ModuleTemplateTypeEnum.textAnswer,
   flowType: FlowNodeTypeEnum.chatNode,
   avatar: '/imgs/module/AI.png',
-  name: 'AI 对话',
-  intro: 'AI 大模型对话',
+  name: 'AI dialogue',
+  intro: 'AI Large model dialogue',
   showStatus: true,
   inputs: [
     Input_Template_TFSwitch,
     {
       key: ModuleInputKeyEnum.aiModel,
       type: FlowNodeInputTypeEnum.selectChatModel,
-      label: '对话模型',
+      label: 'dialogue model',
       required: true,
       valueType: ModuleDataTypeEnum.string,
       showTargetInApp: false,
@@ -41,15 +41,15 @@ export const AiChatModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiChatTemperature,
       type: FlowNodeInputTypeEnum.hidden, // Set in the pop-up window
-      label: '温度',
+      label: 'temperature',
       value: 0,
       valueType: ModuleDataTypeEnum.number,
       min: 0,
       max: 10,
       step: 1,
       markList: [
-        { label: '严谨', value: 0 },
-        { label: '发散', value: 10 }
+        { label: 'rigorous', value: 0 },
+        { label: 'diverge', value: 10 }
       ],
       showTargetInApp: false,
       showTargetInPlugin: false
@@ -57,7 +57,7 @@ export const AiChatModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiChatMaxToken,
       type: FlowNodeInputTypeEnum.hidden, // Set in the pop-up window
-      label: '回复上限',
+      label: 'Reply limit',
       value: 2000,
       valueType: ModuleDataTypeEnum.number,
       min: 100,
@@ -76,7 +76,7 @@ export const AiChatModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiChatIsResponseText,
       type: FlowNodeInputTypeEnum.hidden,
-      label: '返回AI内容',
+      label: 'Return to AI content',
       value: true,
       valueType: ModuleDataTypeEnum.boolean,
       showTargetInApp: false,
@@ -85,7 +85,7 @@ export const AiChatModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiChatQuoteTemplate,
       type: FlowNodeInputTypeEnum.hidden,
-      label: '引用内容模板',
+      label: 'Quote content template',
       valueType: ModuleDataTypeEnum.string,
       value: '',
       showTargetInApp: false,
@@ -94,7 +94,7 @@ export const AiChatModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiChatQuotePrompt,
       type: FlowNodeInputTypeEnum.hidden,
-      label: '引用内容提示词',
+      label: 'Quotation content prompt words',
       valueType: ModuleDataTypeEnum.string,
       value: '',
       showTargetInApp: false,
@@ -113,7 +113,7 @@ export const AiChatModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiSystemPrompt,
       type: FlowNodeInputTypeEnum.textarea,
-      label: '系统提示词',
+      label: 'System prompt word',
       max: 300,
       valueType: ModuleDataTypeEnum.string,
       description: chatNodeSystemPromptTip,
@@ -125,7 +125,7 @@ export const AiChatModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiChatDatasetQuote,
       type: FlowNodeInputTypeEnum.target,
-      label: '引用内容',
+      label: 'Quotation content',
       description: "对象数组格式，结构：\n [{q:'问题',a:'回答'}]",
       valueType: ModuleDataTypeEnum.datasetQuote,
       connected: false,

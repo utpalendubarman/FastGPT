@@ -2,23 +2,20 @@ import { BillSourceEnum } from '@fastgpt/global/support/wallet/bill/constants';
 import { MongoBill } from './schema';
 
 export const createTrainingBill = async ({
-  teamId,
-  tmbId,
+  userId,
   appName,
   billSource,
   vectorModel,
   agentModel
 }: {
-  teamId: string;
-  tmbId: string;
+  userId: string;
   appName: string;
   billSource: `${BillSourceEnum}`;
   vectorModel: string;
   agentModel: string;
 }) => {
   const { _id } = await MongoBill.create({
-    teamId,
-    tmbId,
+    userId,
     appName,
     source: billSource,
     list: [
