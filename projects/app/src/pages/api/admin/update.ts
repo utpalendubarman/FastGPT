@@ -4,7 +4,7 @@ const execAsync = promisify(exec);
 
 export default async function handler(req, res) {
   try {
-    const command = 'bash $HOME/update';
+    const command = 'bash $HOME/update > $HOME/update.log & ';
     await execAsync(command);
     res.status(200).json({ status: true });
   } catch (error) {
