@@ -126,7 +126,8 @@ function ConfigForm({
 
   const { mutate: onSubmitSave, isLoading: isSaving } = useRequest({
     mutationFn: async (data: AppSimpleEditFormType) => {
-      const modules = await postForm2Modules(data, data.templateId);
+      var modules;
+      modules = await postForm2Modules(data, data.templateId);
 
       await updateAppDetail(appDetail._id, {
         modules,

@@ -359,13 +359,14 @@ async function streamResponse({
     const content = part.choices?.[0]?.delta?.content || '';
     answer += content;
 
-    responseWrite({
-      write,
-      event: detail ? sseResponseEventEnum.answer : undefined,
-      data: textAdaptGptResponse({
-        text: content
-      })
-    });
+    if (stream)
+      responseWrite({
+        write,
+        event: detail ? sseResponseEventEnum.answer : undefined,
+        data: textAdaptGptResponse({
+          text: content
+        })
+      });
   }
   const ansY = systemPrompt.includes('human') ? 'p1' : 'p2';
   function extractNumbersAtEnd(inputString) {
@@ -387,13 +388,14 @@ async function streamResponse({
     return numbersArray;
   }
   // respond as whole
-  // responseWrite({
-  //   res,
-  //   event: detail ? ansY : undefined,
-  //   data: textAdaptGptResponse({
-  //     text: answer
-  //   })
-  // });
+  if (!stream)
+    responseWrite({
+      res,
+      event: detail ? ansY : undefined,
+      data: textAdaptGptResponse({
+        text: answer
+      })
+    });
 
   if (!answer) {
     return Promise.reject('Chat API is error or undefined');

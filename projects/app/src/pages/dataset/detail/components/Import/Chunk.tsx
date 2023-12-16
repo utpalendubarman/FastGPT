@@ -18,7 +18,7 @@ import { useDatasetStore } from '@/web/core/dataset/store/dataset';
 import { useImportStore, SelectorContainer, PreviewFileOrChunk } from './Provider';
 import { useTranslation } from 'next-i18next';
 
-const fileExtension = '.txt, .docx, .pdf, .md';
+const fileExtension = '.txt, .docx, .pdf, .md, .csv';
 
 const ChunkImport = () => {
   const { t } = useTranslation();
@@ -110,7 +110,7 @@ const ChunkImport = () => {
             </Button>
           )}
           <Button isDisabled={uploading} onClick={openConfirm(onclickUpload)}>
-            {uploading ? <Box>{Math.round((successChunks / totalChunks) * 100)}%</Box> : '确认导入'}
+            {uploading ? <Box>{Math.round((successChunks / totalChunks) * 100)}%</Box> : 'Import'}
           </Button>
         </Flex>
       </SelectorContainer>

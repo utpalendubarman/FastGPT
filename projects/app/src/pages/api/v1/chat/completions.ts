@@ -324,9 +324,11 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       } catch (x) {}
     };
 
+    // deduct from user
+    DeductToken(userId, total);
+
     if (shareId) {
       // pushResult2Remote({ authToken, shareId, responseData });
-      DeductToken(userId, total);
       updateOutLinkUsage({
         shareId,
         total

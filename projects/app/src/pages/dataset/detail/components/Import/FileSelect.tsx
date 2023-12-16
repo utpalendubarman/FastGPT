@@ -133,41 +133,42 @@ const FileSelect = ({
           });
           const fileId = filesId[0];
 
-          /* csv file */
-          if (extension === 'csv') {
-            const { header, data } = await readCsvContent(file);
-            if (header[0] !== 'index' || header[1] !== 'content') {
-              throw new Error(t('core.dataset.import.Csv format error'));
-            }
+          // /* csv file */
+          // if (extension === 'csv') {
+          //   const { header, data } = await readCsvContent(file);
+          //   if (header[0] !== 'index' || header[1] !== 'content') {
+          //     throw new Error(t('core.dataset.import.Csv format error'));
+          //   }
 
-            const filterData = data
-              .filter((item) => item[0])
-              .map((item) => ({
-                q: item[0] || '',
-                a: item[1] || ''
-              }));
+          //   const filterData = data
+          //     .filter((item) => item[0])
+          //     .map((item) => ({
+          //       q: item[0] || '',
+          //       a: item[1] || ''
+          //     }));
 
-            const fileItem: FileItemType = {
-              id: nanoid(),
-              filename: file.name,
-              icon,
-              tokens: filterData.reduce((sum, item) => sum + countPromptTokens(item.q), 0),
-              text: `${header.join(',')}\n${data
-                .map((item) => `"${item[0]}","${item[1]}"`)
-                .join('\n')}`,
-              chunks: filterData,
-              type: DatasetCollectionTypeEnum.file,
-              fileId
-            };
+          //   const fileItem: FileItemType = {
+          //     id: nanoid(),
+          //     filename: file.name,
+          //     icon,
+          //     tokens: filterData.reduce((sum, item) => sum + countPromptTokens(item.q), 0),
+          //     text: `${header.join(',')}\n${data
+          //       .map((item) => `"${item[0]}","${item[1]}"`)
+          //       .join('\n')}`,
+          //     chunks: filterData,
+          //     type: DatasetCollectionTypeEnum.file,
+          //     fileId
+          //   };
 
-            onPushFiles([fileItem]);
-            continue;
-          }
+          //   onPushFiles([fileItem]);
+          //   continue;
+          // }
 
           // parse and upload files
           let text = await (async () => {
             switch (extension) {
               case 'txt':
+              case 'csv':
               case 'md':
                 return readTxtContent(file);
               case 'pdf':
