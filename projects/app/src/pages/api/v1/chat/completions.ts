@@ -19,6 +19,7 @@ import { pushResult2Remote, updateOutLinkUsage } from '@fastgpt/service/support/
 import requestIp from 'request-ip';
 import { getBillSourceByAuthType } from '@fastgpt/global/support/wallet/bill/tools';
 
+import { MongoUser } from '@fastgpt/service/support/user/schema';
 import { selectShareResponse } from '@/utils/service/core/chat';
 import { updateApiKeyUsage } from '@fastgpt/service/support/openapi/tools';
 import { connectToDatabase } from '@/service/mongo';
@@ -170,24 +171,24 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
         canWrite: canWrite || false
       };
     })();
+    const { userId } = await authUserNotVisitor({ req, authToken: true });
 
     // auth app, get history
-    const { history } = await getChatHistory({ chatId, tmbId: user.team.tmbId });
+    const { history } = await getChatHistory({ chatId, userId });
 
-    const isAppOwner = !shareId && String(user.team.tmbId) === String(app.tmbId);
-
+    const isAppOwner = !shareId;
     /* format prompts */
     const concatHistory = history.concat(chatMessages);
+    const dostream = app?.mid !== undefined && app?.mid != 'askforProduct';
 
     /* start flow controller */
-    const { responseData, answerText } = await dispatchModules({
+    var { responseData, answerText } = await dispatchModules({
       res,
       appId: String(app._id),
       chatId,
       modules: app.modules,
       user,
-      teamId: user.team.teamId,
-      tmbId: user.team.tmbId,
+      userId,
       variables,
       params: {
         history: concatHistory,
@@ -196,6 +197,33 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       stream,
       detail
     });
+    function extractNumbersAtEnd(inputString) {
+      if (typeof inputString !== 'string') {
+        return [];
+      }
+
+      const lines = inputString.split(/\r?\n/);
+      const numbersArray = [];
+
+      lines.forEach((line) => {
+        const match = line.match(/(\s*\d+\s*,\s*)+\s*\d+\s*$/);
+        if (match) {
+          const numbers = match[0].split(',').map((number) => Number(number.trim()));
+          numbersArray.push(...numbers);
+        }
+      });
+
+      return numbersArray;
+    }
+
+    const prodIds = extractNumbersAtEnd(answerText);
+
+    // if (prodIds.length > 0) {
+    //   answerText = JSON.stringify({ type: "render", elems: prodIds, "message": "Sure" });
+    // }
+    // console.log(answerText);
+
+    // responseData[responseData.length - 1].query = answerText;
 
     // save chat
     if (chatId) {
@@ -276,19 +304,34 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     // const { total } = pushChatBill({
     //   appName: app.name,
     //   appId: app._id,
-    //   teamId: user.team.teamId,
-    //   tmbId: user.team.tmbId,
+    //   userId,
     //   source: getBillSourceByAuthType({ shareId, authType }),
     //   response: responseData
     // });
+    const total = responseData.reduce((sum, item) => sum + item.price, 0);
 
-    // if (shareId) {
-    //   pushResult2Remote({ authToken, shareId, responseData });
-    //   updateOutLinkUsage({
-    //     shareId,
-    //     total
-    //   });
-    // }
+    const DeductToken = async (userId: string, total: any) => {
+      try {
+        await connectToDatabase();
+
+        const user = await MongoUser.findOne({
+          _id: userId
+        });
+
+        await MongoUser.findByIdAndUpdate(userId, {
+          token: user.token - total
+        });
+      } catch (x) {}
+    };
+
+    if (shareId) {
+      // pushResult2Remote({ authToken, shareId, responseData });
+      DeductToken(userId, total);
+      updateOutLinkUsage({
+        shareId,
+        total
+      });
+    }
     // if (apikey) {
     //   updateApiKeyUsage({
     //     apikey,

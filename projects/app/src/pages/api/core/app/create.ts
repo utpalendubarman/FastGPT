@@ -14,7 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       name = 'APP',
       avatar,
       type = AppTypeEnum.advanced,
-      modules
+      modules,
+      mid
     } = req.body as CreateAppParams;
 
     if (!name || !Array.isArray(modules)) {
@@ -38,6 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       avatar,
       name,
       modules,
+      mid,
       type,
       simpleTemplateId: SimpleModeTemplate_FastGPT_Universal.id
     });

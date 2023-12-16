@@ -20,6 +20,9 @@ const AppSchema = new Schema({
     type: String,
     required: true
   },
+  mid: {
+    type: String
+  },
   type: {
     type: String,
     default: 'advanced',

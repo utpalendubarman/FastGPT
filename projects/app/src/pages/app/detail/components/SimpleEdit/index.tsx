@@ -594,7 +594,7 @@ function Settings({ appId }: { appId: string }) {
                 });
               }}
             >
-              External
+              Share
             </Button>
             {appDetail.isOwner && (
               <Button

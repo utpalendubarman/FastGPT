@@ -146,7 +146,8 @@ export const dispatchChatCompletion = async (props: ChatProps): Promise<ChatResp
       const { answer } = await streamResponse({
         res,
         detail,
-        stream: response
+        stream: response,
+        systemPrompt
       });
       // count tokens
       const completeMessages = filterMessages.concat({
@@ -277,7 +278,6 @@ function getChatMessages({
       value: question
     }
   ];
-
   const filterMessages = ChatContextFilter({
     messages,
     maxTokens: Math.ceil(model.maxContext - 300) // filter token. not response maxToken
@@ -337,16 +337,19 @@ function targetResponse({
 async function streamResponse({
   res,
   detail,
-  stream
+  stream,
+  systemPrompt
 }: {
   res: NextApiResponse;
   detail: boolean;
   stream: StreamChatType;
+  systemPrompt: any;
 }) {
   const write = responseWriteController({
     res,
     readStream: stream
   });
+
   let answer = '';
   for await (const part of stream) {
     if (res.closed) {
@@ -364,6 +367,33 @@ async function streamResponse({
       })
     });
   }
+  const ansY = systemPrompt.includes('human') ? 'p1' : 'p2';
+  function extractNumbersAtEnd(inputString) {
+    if (typeof inputString !== 'string') {
+      return [];
+    }
+
+    const lines = inputString.split(/\r?\n/);
+    const numbersArray = [];
+
+    lines.forEach((line) => {
+      const match = line.match(/(\s*\d+\s*,\s*)+\s*\d+\s*$/);
+      if (match) {
+        const numbers = match[0].split(',').map((number) => Number(number.trim()));
+        numbersArray.push(...numbers);
+      }
+    });
+
+    return numbersArray;
+  }
+  // respond as whole
+  // responseWrite({
+  //   res,
+  //   event: detail ? ansY : undefined,
+  //   data: textAdaptGptResponse({
+  //     text: answer
+  //   })
+  // });
 
   if (!answer) {
     return Promise.reject('Chat API is error or undefined');

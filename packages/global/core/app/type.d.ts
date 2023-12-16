@@ -12,6 +12,7 @@ export interface AppSchema {
   teamId: string;
   tmbId: string;
   name: string;
+  mid: string;
   type: `${AppTypeEnum}`;
   simpleTemplateId: string;
   avatar: string;

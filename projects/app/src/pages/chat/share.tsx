@@ -39,6 +39,7 @@ const OutLink = ({
   const { isPc } = useSystemStore();
   const forbidRefresh = useRef(false);
   const [isEmbed, setIdEmbed] = useState(true);
+  const isIframe = window.location !== window.parent.location;
 
   const ChatBoxRef = useRef<ComponentRef>(null);
 
@@ -172,6 +173,66 @@ const OutLink = ({
     }
     setIdEmbed(window !== top);
   }, []);
+  function CSVtoArray(text) {
+    let ret = [''],
+      i = 0,
+      p = '',
+      s = true;
+    for (let l in text) {
+      l = text[l];
+      if ('"' === l) {
+        s = !s;
+        if ('"' === p) {
+          ret[i] += '"';
+          l = '-';
+        } else if ('' === p) l = '-';
+      } else if (s && ',' === l) l = ret[++i] = '';
+      else ret[i] += l;
+      p = l;
+    }
+    return ret;
+  }
+  const updateProducts = (e) => {
+    var historyDom = document.getElementById('products');
+    var htmlnew = '';
+    e.all.map((item) => {
+      const itm = CSVtoArray(item.q);
+      if (e.found.includes(Number(itm[0]))) {
+        const name = itm[1].length < 36 ? itm[1] : itm[1].substring(0, 33) + '...';
+        htmlnew += `<a target="_blank" href="${itm[5]}"><div style="${
+          shareChatData.app?.style?.font !== undefined && shareChatData.app.style.font !== ''
+            ? 'font-family:' + shareChatData.app.style.font + '; '
+            : ''
+        } border: 1px solid var(--chakra-colors-gray-300); background: white; border-radius: ${
+          shareChatData.app?.style?.border_radius !== undefined &&
+          shareChatData.app.style.border_radius !== ''
+            ? shareChatData.app.style.border_radius
+            : '3'
+        }px; text-decoration: none; color: black;">
+        <div>
+        <div style="display:flex; justify-content: center;"><img src="${
+          itm[4]
+        }" alt="${name}" style="border-top-right-radius: 7px; border-top-left-radius: 7px; padding: 10px; height: 200px" onerror="this.src='/imgs/errImg.png'"></div>
+        </div><div style="padding: 10px;">
+        <h3 style="font-weight: bold;">${name}</h3>
+        <p>Price: ${itm[8] !== '' ? itm[8] : 'May Vary'}</p>
+        </div>
+        </div></a>`;
+      }
+    });
+    historyDom.innerHTML = htmlnew;
+  };
+
+  const containerStyle = {
+    display: 'flex',
+    height: '100%'
+  };
+
+  const sideBySideStyle = {
+    flex: 1,
+    height: '100%'
+  };
+  showHistory = '0';
 
   return (
     <PageContainer {...(isEmbed ? { p: '0 !important', borderRadius: '0' } : {})}>
@@ -204,7 +265,7 @@ const OutLink = ({
                 activeChatId={chatId}
                 history={history.map((item) => ({
                   id: item.chatId,
-                  title: item.title
+                  title: 'item.title'
                 }))}
                 onClose={onCloseSlider}
                 onChangeChat={(chatId) => {
@@ -241,39 +302,110 @@ const OutLink = ({
           flexDirection={'column'}
         >
           {/* header */}
-          <ChatHeader
-            appAvatar={shareChatData.app.avatar}
-            appName={shareChatData.app.name}
-            history={shareChatData.history.chats}
-            onOpenSlider={onOpenSlider}
-          />
+          {shareChatData.app?.style?.show_header !== undefined &&
+            shareChatData.app.style.show_header === true && (
+              <ChatHeader
+                appAvatar={shareChatData.app.avatar}
+                appName={shareChatData.app.name}
+                history={[]}
+                onOpenSlider={onOpenSlider}
+                mymode="share"
+              />
+            )}
+
           {/* chat box */}
-          <Box flex={1}>
-            <ChatBox
-              active={!!shareChatData.app.name}
-              ref={ChatBoxRef}
-              appAvatar={shareChatData.app.avatar}
-              userAvatar={shareChatData.userAvatar}
-              userGuideModule={shareChatData.app?.userGuideModule}
-              showFileSelector={checkChatSupportSelectFileByChatModels(
-                shareChatData.app.chatModels
-              )}
-              feedbackType={'user'}
-              onUpdateVariable={(e) => {
-                setShareChatData((state) => ({
-                  ...state,
-                  history: {
-                    ...state.history,
-                    variables: e
-                  }
-                }));
-              }}
-              onStartChat={startChat}
-              onDelMessage={({ contentId, index }) =>
-                delShareChatHistoryItemById({ chatId, contentId, index })
-              }
-            />
-          </Box>
+          {shareChatData.app?.mid !== undefined && shareChatData.app?.mid === 'askforProduct' ? (
+            <Box flex={1}>
+              <div style={containerStyle}>
+                <div
+                  style={{
+                    ...sideBySideStyle,
+                    ...{
+                      flex: '3',
+                      borderRight: '1px solid var(--chakra-colors-myGray-200)',
+                      background: 'var(--chakra-colors-myGray-100',
+                      overflow: 'scroll'
+                    }
+                  }}
+                >
+                  <div style={{ padding: 10 }}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '10px'
+                      }}
+                      id="products"
+                    ></div>
+                  </div>
+                </div>
+                <div style={{ ...sideBySideStyle, ...{ flex: '2' } }}>
+                  <ChatBox
+                    active={!!shareChatData.app.name}
+                    ref={ChatBoxRef}
+                    appDetails={shareChatData.app}
+                    appAvatar={shareChatData.app.avatar}
+                    userAvatar={shareChatData.userAvatar}
+                    userGuideModule={shareChatData.app?.userGuideModule}
+                    showFileSelector={checkChatSupportSelectFileByChatModels(
+                      shareChatData.app.chatModels
+                    )}
+                    onProducts={(e) => updateProducts(e)}
+                    feedbackType={'user'}
+                    onUpdateVariable={(e) => {
+                      setShareChatData((state) => ({
+                        ...state,
+                        history: {
+                          ...state.history,
+                          variables: e
+                        }
+                      }));
+                    }}
+                    onStartChat={startChat}
+                    onDelMessage={({ contentId, index }) =>
+                      delShareChatHistoryItemById({ chatId, contentId, index })
+                    }
+                    mystyle={{
+                      chatColor:
+                        shareChatData.app?.style?.accent !== undefined &&
+                        shareChatData.app.style.accent !== ''
+                          ? shareChatData.app.style.accent
+                          : 'myBlue.300'
+                    }}
+                  />
+                </div>
+              </div>
+            </Box>
+          ) : (
+            <Box flex={1}>
+              <ChatBox
+                active={!!shareChatData.app.name}
+                ref={ChatBoxRef}
+                appDetails={shareChatData.app}
+                appAvatar={shareChatData.app.avatar}
+                userAvatar={shareChatData.userAvatar}
+                userGuideModule={shareChatData.app?.userGuideModule}
+                showFileSelector={checkChatSupportSelectFileByChatModels(
+                  shareChatData.app.chatModels
+                )}
+                onProducts={(e) => {}}
+                feedbackType={'user'}
+                onUpdateVariable={(e) => {
+                  setShareChatData((state) => ({
+                    ...state,
+                    history: {
+                      ...state.history,
+                      variables: e
+                    }
+                  }));
+                }}
+                onStartChat={startChat}
+                onDelMessage={({ contentId, index }) =>
+                  delShareChatHistoryItemById({ chatId, contentId, index })
+                }
+              />
+            </Box>
+          )}
         </Flex>
       </Flex>
     </PageContainer>

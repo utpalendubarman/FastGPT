@@ -5,6 +5,7 @@ import { connectToDatabase } from '@/service/mongo';
 import { MongoChatItem } from '@fastgpt/service/core/chat/chatItemSchema';
 import { Types } from '@fastgpt/service/common/mongo';
 import type { ChatItemType } from '@fastgpt/global/core/chat/type.d';
+import { authUserNotVisitor } from '@fastgpt/service/support/permission/auth/user';
 
 export type Props = {
   appId?: string;
@@ -16,13 +17,13 @@ export type Response = { history: ChatItemType[] };
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await connectToDatabase();
-    const { tmbId } = await authCert({ req, authToken: true });
+    const { userId } = await authUserNotVisitor({ req, authToken: true });
     const { chatId, limit } = req.body as Props;
 
     jsonRes<Response>(res, {
       data: await getChatHistory({
         chatId,
-        tmbId,
+        userId,
         limit
       })
     });
@@ -36,9 +37,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 export async function getChatHistory({
   chatId,
-  tmbId,
+  userId,
   limit = 30
-}: Props & { tmbId: string }): Promise<Response> {
+}: Props & { userId: string }): Promise<Response> {
   if (!chatId) {
     return { history: [] };
   }
@@ -47,7 +48,7 @@ export async function getChatHistory({
     {
       $match: {
         chatId,
-        tmbId: new Types.ObjectId(tmbId)
+        userId: new Types.ObjectId(userId)
       }
     },
     {

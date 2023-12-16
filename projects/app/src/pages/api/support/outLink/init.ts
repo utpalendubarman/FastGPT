@@ -8,6 +8,7 @@ import { getGuideModule } from '@fastgpt/global/core/module/utils';
 import { authShareChatInit } from '@/service/support/outLink/auth';
 import { getChatModelNameListByModules } from '@/service/core/app/module';
 import { authOutLinkValid } from '@fastgpt/service/support/permission/auth/outLink';
+import style from 'react-syntax-highlighter/dist/esm/styles/hljs/a11y-dark';
 
 /* init share chat window */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -38,7 +39,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           chatModels: getChatModelNameListByModules(app.modules),
           name: app.name,
           avatar: app.avatar,
-          intro: app.intro
+          intro: app.intro,
+          mid: app.mid,
+          style: shareChat.style
         }
       }
     });

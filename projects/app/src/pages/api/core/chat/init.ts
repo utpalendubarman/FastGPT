@@ -73,7 +73,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           chatModels: getChatModelNameListByModules(app.modules),
           name: app.name,
           avatar: app.avatar,
-          intro: app.intro
+          intro: app.intro,
+          mid: app.mid
         },
         title: autChatResult?.chat?.title || '新对话',
         variables: autChatResult?.chat?.variables || {},

@@ -110,6 +110,9 @@ type Props = {
     isNewChat?: boolean;
   }>;
   onDelMessage?: (e: { contentId?: string; index: number }) => void;
+  onProducts?: (e: { text: any }) => void;
+  mystyle?: any;
+  appDetails: any;
 };
 
 const ChatBox = (
@@ -118,6 +121,7 @@ const ChatBox = (
     showMarkIcon = false,
     showVoiceIcon = true,
     showEmptyIntro = false,
+    appDetails = {},
     appAvatar,
     userAvatar,
     userGuideModule,
@@ -125,7 +129,9 @@ const ChatBox = (
     active = true,
     onUpdateVariable,
     onStartChat,
-    onDelMessage
+    onDelMessage,
+    onProducts,
+    mystyle = { chatColor: 'myBlue.300' }
   }: Props,
   ref: ForwardedRef<ComponentRef>
 ) => {
@@ -524,6 +530,61 @@ const ChatBox = (
       window.removeEventListener('message', windowMessage);
     };
   }, [handleSubmit, sendPrompt]);
+  function extractNumbersAtEnd(inputString) {
+    if (typeof inputString !== 'string') {
+      return [];
+    }
+
+    const lines = inputString.split(/\r?\n/);
+    const numbersArray = [];
+
+    lines.forEach((line) => {
+      const match = line.match(/(\s*\d+\s*,\s*)+\s*\d+\s*$/);
+      if (match) {
+        const numbers = match[0].split(',').map((number) => Number(number.trim()));
+        numbersArray.push(...numbers);
+      }
+    });
+
+    return numbersArray;
+  }
+  function CSVtoArray(text) {
+    let ret = [''],
+      i = 0,
+      p = '',
+      s = true;
+    for (let l in text) {
+      l = text[l];
+      if ('"' === l) {
+        s = !s;
+        if ('"' === p) {
+          ret[i] += '"';
+          l = '-';
+        } else if ('' === p) l = '-';
+      } else if (s && ',' === l) l = ret[++i] = '';
+      else ret[i] += l;
+      p = l;
+    }
+    return ret;
+  }
+  function myfunc(text, render, resp) {
+    const prodIds = extractNumbersAtEnd(text);
+    var found = [];
+    if (prodIds.length > 0) {
+      if (render) {
+        const res = resp[resp.length - 1].quoteList;
+        res.map((item) => {
+          const itm = CSVtoArray(item.q);
+          if (prodIds.includes(Number(itm[0]))) {
+            found.push(Number(itm[0]));
+          }
+        });
+        onProducts({ found, all: res });
+      }
+      return 'Sure';
+    } else return text;
+  }
+  const isStream = appDetails?.mid === undefined || appDetails?.mid !== 'askforProduct';
 
   return (
     <Flex flexDirection={'column'} h={'100%'}>
@@ -644,7 +705,7 @@ const ChatBox = (
                         className="markdown"
                         whiteSpace={'pre-wrap'}
                         {...MessageCardStyle}
-                        bg={'myBlue.300'}
+                        bg={mystyle.chatColor}
                         borderRadius={'8px 0 8px 8px'}
                         textAlign={'left'}
                       >
@@ -726,7 +787,7 @@ const ChatBox = (
                         }
                       />
                       {/* chatting status */}
-                      {statusBoxData && index === chatHistory.length - 1 && (
+                      {false && statusBoxData && index === chatHistory.length - 1 && (
                         <Flex
                           ml={3}
                           alignItems={'center'}
@@ -752,11 +813,42 @@ const ChatBox = (
                     {/* content */}
                     <Box textAlign={'left'} mt={['6px', 2]}>
                       <Card bg={'white'} {...MessageCardStyle}>
-                        <Markdown
-                          source={item.value}
-                          isChatting={index === chatHistory.length - 1 && isChatting}
-                        />
-                        <ResponseTags responseData={item.responseData} />
+                        {/* stream */}
+                        {isStream && index != chatHistory.length - 1 && (
+                          <Markdown
+                            source={item.value}
+                            isChatting={index === chatHistory.length - 1 && isChatting}
+                          />
+                        )}
+                        {isStream && index === chatHistory.length - 1 && (
+                          <Markdown
+                            source={item.value}
+                            isChatting={index === chatHistory.length - 1 && isChatting}
+                          />
+                        )}
+
+                        {/* non - stream */}
+                        {!isStream && index != chatHistory.length - 1 && (
+                          <Markdown
+                            source={myfunc(item.value, false, item.responseData)}
+                            isChatting={index === chatHistory.length - 1 && isChatting}
+                          />
+                        )}
+                        {!isStream && !statusBoxData && index === chatHistory.length - 1 && (
+                          <Markdown
+                            source={myfunc(item.value, true, item.responseData)}
+                            isChatting={index === chatHistory.length - 1 && isChatting}
+                          />
+                        )}
+                        {!isStream && statusBoxData && index === chatHistory.length - 1 && (
+                          <Markdown
+                            source={'Thinking...'}
+                            isChatting={index === chatHistory.length - 1 && isChatting}
+                          />
+                        )}
+
+                        {/* 
+                        <ResponseTags responseData={item.responseData} /> */}
                         {/* question guide */}
                         {index === chatHistory.length - 1 &&
                           !isChatting &&
@@ -916,7 +1008,7 @@ const ChatBox = (
 };
 
 export default React.memo(forwardRef(ChatBox));
-
+``;
 export const useChatBox = () => {
   const onExportChat = useCallback(
     ({ type, history }: { type: ExportChatType; history: ChatItemType[] }) => {
@@ -955,7 +1047,7 @@ export const useChatBox = () => {
           fileDownload({
             text: history.map((item) => item.value).join('\n\n'),
             type: 'text/markdown',
-            filename: 'chat.md'
+            filename: 'chats.md'
           });
         },
         html: () => {
@@ -964,7 +1056,7 @@ export const useChatBox = () => {
             fileDownload({
               text: html,
               type: 'text/html',
-              filename: '聊天记录.html'
+              filename: 'chats.html'
             });
         },
         pdf: () => {
@@ -974,7 +1066,7 @@ export const useChatBox = () => {
             // @ts-ignore
             html2pdf(html, {
               margin: 0,
-              filename: `聊天记录.pdf`
+              filename: `chats.pdf`
             });
         }
       };

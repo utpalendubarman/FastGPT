@@ -2,10 +2,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
-cd projects/app
+cd ../projects/app
 echo Startig...
-if [ -f .env ]; then
-    rm .env
-    cp ~/env .env
-fi
-sudo pnpm start
+rm .env
+cp ~/env .env
+
+sudo pnpm start -H 0.0.0.0 -p 80

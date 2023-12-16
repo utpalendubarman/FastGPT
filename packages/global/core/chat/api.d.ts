@@ -21,6 +21,8 @@ export type InitChatResponse = {
     avatar: string;
     intro: string;
     canUse?: boolean;
+    style: any;
+    mid: string;
   };
   title: string;
   variables: Record<string, any>;

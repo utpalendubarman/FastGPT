@@ -31,16 +31,6 @@ const ChatItemSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: userCollectionName
   },
-  teamId: {
-    type: Schema.Types.ObjectId,
-    ref: TeamCollectionName,
-    required: true
-  },
-  tmbId: {
-    type: Schema.Types.ObjectId,
-    ref: TeamMemberCollectionName,
-    required: true
-  },
   time: {
     type: Date,
     default: () => new Date()

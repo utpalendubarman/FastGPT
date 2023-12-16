@@ -104,7 +104,6 @@ export function responseWriteController({
   res.on('drain', () => {
     readStream?.resume?.();
   });
-
   return (text: string | Buffer) => {
     const writeResult = res.write(text);
     if (!writeResult) {

@@ -103,6 +103,7 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         avatar: data.avatar,
         name: data.name,
         type: template.type,
+        mid: data.id,
         modules: template.modules || []
       });
     },
@@ -170,6 +171,7 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                       })}
                   onClick={() => {
                     setValue('templateId', item.id);
+                    setValue('id', item.id);
                     setRefresh((state) => !state);
                   }}
                 >

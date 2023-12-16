@@ -20,10 +20,17 @@ export const defaultApp: AppDetailType = {
 
 export const defaultOutLinkForm: OutLinkEditType = {
   name: '',
-  responseDetail: false,
+  responseDetail: true,
   limit: {
     QPM: 100,
     credit: -1
+  },
+  style: {
+    font: 'sans-serif',
+    font_color: 'black',
+    accent: '#E2E8F0',
+    border_radius: 7,
+    show_header: true
   }
 };
 

@@ -46,10 +46,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       'q a'
     ).cursor();
 
-    const write = responseWriteController({
-      res,
-      readStream: cursor
-    });
+    // const write = responseWriteController({
+    //   res,
+    //   readStream: cursor
+    // });
 
     write(`\uFEFFindex,content`);
 

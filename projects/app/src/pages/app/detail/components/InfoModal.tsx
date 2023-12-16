@@ -149,7 +149,7 @@ const InfoModal = ({
           </FormControl>
         </Flex>
         <Box mt={4} mb={1}>
-          应用介绍
+          Description
         </Box>
         {/* <Box color={'myGray.500'} mb={2} fontSize={'sm'}>
             该介绍主要用于记忆和在应用市场展示
@@ -161,16 +161,6 @@ const InfoModal = ({
           bg={'myWhite.600'}
           {...register('intro')}
         />
-        <Box mt={4}>
-          <Box mb={1}>{t('user.Permission')}</Box>
-          <PermissionRadio
-            value={getValues('permission')}
-            onChange={(e) => {
-              setValue('permission', e);
-              setRefresh(!refresh);
-            }}
-          />
-        </Box>
       </ModalBody>
 
       <ModalFooter>
@@ -178,7 +168,7 @@ const InfoModal = ({
           Cancel
         </Button>
         <Button isLoading={btnLoading} onClick={saveUpdateModel}>
-          keep
+          Update
         </Button>
       </ModalFooter>
 

@@ -15,7 +15,8 @@ const ChatHeader = ({
   appAvatar,
   chatModels,
   appId,
-  onOpenSlider
+  onOpenSlider,
+  mymode = 'self'
 }: {
   history: ChatItemType[];
   appName: string;
@@ -23,6 +24,7 @@ const ChatHeader = ({
   chatModels?: string[];
   appId?: string;
   onOpenSlider: () => void;
+  mymode: string;
 }) => {
   const router = useRouter();
   const theme = useTheme();
@@ -46,14 +48,18 @@ const ChatHeader = ({
     >
       {isPc ? (
         <>
+          {mymode == 'share' && <Avatar src={appAvatar} w={'30px'} mr={4} />}
           <Box mr={3} color={'myGray.1000'}>
             {title}
           </Box>
-          <Tag>
-            <MyIcon name={'history'} w={'14px'} />
-            <Box ml={1}>{history.length === 0 ? 'New dialogue' : `${history.length}Records`}</Box>
-          </Tag>
-          {!!chatModels && chatModels.length > 0 && (
+
+          {mymode != 'share' && (
+            <Tag>
+              <MyIcon name={'history'} w={'14px'} />
+              <Box ml={1}>{history.length === 0 ? 'New dialogue' : `${history.length}Records`}</Box>
+            </Tag>
+          )}
+          {mymode != 'share' && !!chatModels && chatModels.length > 0 && (
             <Tag ml={2} colorSchema={'green'}>
               <MyIcon name={'core/chat/chatModelTag'} w={'14px'} />
               <Box ml={1}>{chatModels.join(',')}</Box>

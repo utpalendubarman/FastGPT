@@ -17,6 +17,8 @@ type State = {
   setLastChatAppId: (id: string) => void;
   lastChatId: string;
   setLastChatId: (id: string) => void;
+  products: [];
+  setProducts(prods: any): void;
 };
 
 const defaultChatData: InitChatResponse = {
@@ -42,6 +44,13 @@ export const useChatStore = create<State>()(
           set((state) => {
             state.lastChatAppId = id;
           });
+        },
+        products: [],
+        setProducts: (prods: any) => {
+          set((state) => {
+            state.products = prods;
+          });
+          return null;
         },
         lastChatId: '',
         setLastChatId(id: string) {

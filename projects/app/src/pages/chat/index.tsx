@@ -23,6 +23,7 @@ import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 12);
 import type { ChatHistoryItemType } from '@fastgpt/global/core/chat/type.d';
 import { useTranslation } from 'next-i18next';
+import { useState } from 'react';
 
 import ChatBox, { type ComponentRef, type StartChatFnProps } from '@/components/ChatBox';
 import PageContainer from '@/components/PageContainer';
@@ -291,61 +292,60 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
       </div>
     );
   };
-  const products = [
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 20.99,
-      color: 'Red',
-      image: 'https://picsum.photos/id/0/500/500'
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 15.49,
-      color: 'Blue',
-      image: 'https://picsum.photos/id/21/500/500'
-    },
-    {
-      id: 3,
-      name: 'Product 2',
-      price: 15.49,
-      color: 'Blue',
-      image: 'https://picsum.photos/id/26/500/500'
-    },
-    {
-      id: 4,
-      name: 'Product 2',
-      price: 15.49,
-      color: 'Blue',
-      image: 'https://picsum.photos/id/14/500/500'
-    },
-    {
-      id: 5,
-      name: 'Product 2',
-      price: 15.49,
-      color: 'Blue',
-      image: 'https://picsum.photos/id/15/500/500'
-    },
-    {
-      id: 6,
-      name: 'Product 3',
-      price: 30.99,
-      color: 'Green',
-      image: 'https://picsum.photos/id/5/500/500'
-    }
-    // Add more products as needed
-  ];
 
   const ProductGrid = () => {
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap' }} id="products">
         {products.map((product) => (
           <Product key={product.id} {...product} />
         ))}
       </div>
     );
   };
+  function CSVtoArray(text) {
+    let ret = [''],
+      i = 0,
+      p = '',
+      s = true;
+    for (let l in text) {
+      l = text[l];
+      if ('"' === l) {
+        s = !s;
+        if ('"' === p) {
+          ret[i] += '"';
+          l = '-';
+        } else if ('' === p) l = '-';
+      } else if (s && ',' === l) l = ret[++i] = '';
+      else ret[i] += l;
+      p = l;
+    }
+    return ret;
+  }
+  const updateProducts = (e) => {
+    var historyDom = document.getElementById('products');
+    var htmlnew = '';
+
+    e.all.map((item) => {
+      const itm = CSVtoArray(item.q);
+      if (e.found.includes(Number(itm[0]))) {
+        const name = itm[1].length < 36 ? itm[1] : itm[1].substring(0, 33) + '...';
+        htmlnew += `<a target="_blank" href="${
+          itm[5]
+        }"><div style="border: 1px solid var(--chakra-colors-gray-300); background: white; border-radius: 7px; text-decoration: none; color: black;">
+        <div>
+        <div style="display:flex; justify-content: center;"><img src="${
+          itm[4]
+        }" alt="Product 2" style="border-top-right-radius: 7px; border-top-left-radius: 7px; padding: 10px; width: 200px; height: 200px" onerror="this.src='/imgs/errImg.png'"></div>
+        </div><div style="padding: 10px;">
+        <h3 style="font-weight: bold;">${name}</h3>
+        <p>Price: ${itm[8] !== '' ? itm[8] : 'May Vary'}</p>
+        </div>
+        </div></a>`;
+      }
+    });
+    historyDom.innerHTML = htmlnew;
+  };
+
   return (
     <Flex h={'100%'}>
       <Head>
@@ -455,7 +455,7 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
             />
 
             {/* chat box */}
-            {chatData.app.name.toLowerCase().includes('product') ? (
+            {chatData.app?.mid == 'askforProduct' ? (
               <Box flex={1}>
                 <div style={containerStyle}>
                   <div
@@ -469,14 +469,22 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
                       }
                     }}
                   >
-                    <div style={{ padding: 5 }}>
-                      <ProductGrid />
+                    <div style={{ padding: 10 }}>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gap: '10px'
+                        }}
+                        id="products"
+                      ></div>
                     </div>
                   </div>
                   <div style={{ ...sideBySideStyle, ...{ flex: '2' } }}>
                     <ChatBox
                       ref={ChatBoxRef}
                       showEmptyIntro
+                      appDetails={chatData.app}
                       appAvatar={chatData.app.avatar}
                       userAvatar={userInfo?.avatar}
                       userGuideModule={chatData.app?.userGuideModule}
@@ -486,6 +494,7 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
                       feedbackType={'user'}
                       onUpdateVariable={(e) => {}}
                       onStartChat={startChat}
+                      onProducts={(e) => updateProducts(e)}
                       onDelMessage={delOneHistoryItem}
                     />
                   </div>
@@ -496,6 +505,7 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
                 <ChatBox
                   ref={ChatBoxRef}
                   showEmptyIntro
+                  appDetails={chatData.app}
                   appAvatar={chatData.app.avatar}
                   userAvatar={userInfo?.avatar}
                   userGuideModule={chatData.app?.userGuideModule}

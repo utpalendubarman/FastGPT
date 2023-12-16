@@ -16,7 +16,7 @@ export async function authOutLinkChat({
   const { shareChat, app } = await authOutLinkValid({ shareId });
 
   const [user] = await Promise.all([
-    getUserAndAuthBalance({ tmbId: shareChat.tmbId, minBalance: 0 }),
+    getUserAndAuthBalance({ userId: shareChat.userId, minBalance: 0 }),
     global.feConfigs?.isPlus
       ? authOutLinkLimit({ outLink: shareChat, ip, authToken, question })
       : undefined

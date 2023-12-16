@@ -56,9 +56,8 @@ export const pushChatBill = ({
   });
   addLog.info(`finish completions`, {
     source,
-    teamId,
-    tmbId,
-    price: formatPrice(total)
+    userId,
+    price: total
   });
   return { total };
 };

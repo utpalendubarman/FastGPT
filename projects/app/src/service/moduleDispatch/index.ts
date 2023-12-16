@@ -189,7 +189,7 @@ export async function dispatchModules({
       inputs: params
     };
 
-    const dispatchRes: Record<string, any> = await (async () => {
+    var dispatchRes: Record<string, any> = await (async () => {
       const callbackMap: Record<string, Function> = {
         [FlowNodeTypeEnum.historyNode]: dispatchHistory,
         [FlowNodeTypeEnum.questionInput]: dispatchChatInput,
@@ -210,7 +210,7 @@ export async function dispatchModules({
       return {};
     })();
 
-    const formatResponseData = (() => {
+    var formatResponseData = (() => {
       if (!dispatchRes[ModuleOutputKeyEnum.responseData]) return undefined;
       if (Array.isArray(dispatchRes[ModuleOutputKeyEnum.responseData]))
         return dispatchRes[ModuleOutputKeyEnum.responseData];
@@ -220,6 +220,8 @@ export async function dispatchModules({
         ...dispatchRes[ModuleOutputKeyEnum.responseData]
       };
     })();
+
+    if (formatResponseData?.price !== undefined) formatResponseData.price = 1;
 
     return moduleOutput(module, {
       [ModuleOutputKeyEnum.finish]: true,
