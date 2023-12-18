@@ -145,7 +145,7 @@ const ChatBox = (
   const chatController = useRef(new AbortController());
   const questionGuideController = useRef(new AbortController());
   const isNewChatReplace = useRef(false);
-
+  const [ranonce, setRanonce] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [variables, setVariables] = useState<Record<string, any>>({}); // settings variable
   const [chatHistory, setChatHistory] = useState<ChatSiteItemType[]>([]);
@@ -499,9 +499,15 @@ const ChatBox = (
     };
   }, [chatHistory, isChatting, t]);
   /* style end */
+  const isStream = appDetails?.mid === undefined || appDetails?.mid !== 'askforProduct';
 
   // page change and abort request
   useEffect(() => {
+    if (!ranonce && appDetails?.mid === 'askforProduct') {
+      sendPrompt({}, 'I am looking to buy something, suggest me some');
+      setRanonce(true);
+    }
+
     isNewChatReplace.current = false;
     setQuestionGuide([]);
     return () => {
@@ -584,7 +590,6 @@ const ChatBox = (
       return 'Sure';
     } else return text;
   }
-  const isStream = appDetails?.mid === undefined || appDetails?.mid !== 'askforProduct';
 
   return (
     <Flex flexDirection={'column'} h={'100%'}>
