@@ -1207,7 +1207,7 @@ export const appTemplates: (AppItemType & {
             placeholder:
               'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
             value:
-              'only list product categories related to user input not the user input it self, products related to user input\nstickly respond as catergoties sepreated by comma\nalso enterain some human greetings',
+              'if the user input is a human interaction reply to it else he is asking for some product list product categories related to user input not the user input it self, products related to user input stickly respond as catergoties sepreated by comma',
             showTargetInApp: true,
             showTargetInPlugin: true,
             connected: true
