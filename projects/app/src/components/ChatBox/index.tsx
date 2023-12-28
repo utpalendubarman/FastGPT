@@ -603,7 +603,12 @@ const ChatBox = (
           {!!welcomeText && (
             <Box py={3}>
               {/* avatar */}
-              <ChatAvatar src={appAvatar} type={'AI'} />
+              <ChatAvatar
+                src={
+                  'https://previews.123rf.com/images/vgstudio/vgstudio1601/vgstudio160100105/50078450-portrait-of-smiling-customer-support-female-phone-worker-against-grey-background-consulting-and.jpg'
+                }
+                type={'AI'}
+              />
               {/* message */}
               <Box textAlign={'left'}>
                 <Card order={2} mt={2} {...MessageCardStyle} bg={'white'}>
@@ -616,7 +621,12 @@ const ChatBox = (
           {!!variableModules?.length && (
             <Box py={3}>
               {/* avatar */}
-              <ChatAvatar src={appAvatar} type={'AI'} />
+              <ChatAvatar
+                src={
+                  'https://previews.123rf.com/images/vgstudio/vgstudio1601/vgstudio160100105/50078450-portrait-of-smiling-customer-support-female-phone-worker-against-grey-background-consulting-and.jpg'
+                }
+                type={'AI'}
+              />
               {/* message */}
               <Box textAlign={'left'}>
                 <Card order={2} mt={2} bg={'white'} w={'400px'} {...MessageCardStyle}>
@@ -723,7 +733,12 @@ const ChatBox = (
                   <>
                     {/* control icon */}
                     <Flex w={'100%'} alignItems={'center'}>
-                      <ChatAvatar src={appAvatar} type={'AI'} />
+                      <ChatAvatar
+                        src={
+                          'https://previews.123rf.com/images/vgstudio/vgstudio1601/vgstudio160100105/50078450-portrait-of-smiling-customer-support-female-phone-worker-against-grey-background-consulting-and.jpg'
+                        }
+                        type={'AI'}
+                      />
                       <ChatController
                         ml={2}
                         chat={item}
@@ -1193,7 +1208,7 @@ function ChatController({
 
   return (
     <Flex {...controlContainerStyle} ml={ml} mr={mr} display={display}>
-      <MyTooltip label={'复制'}>
+      <MyTooltip label={'copy'}>
         <MyIcon
           {...controlIconStyle}
           name={'copy'}
@@ -1213,7 +1228,7 @@ function ChatController({
               />
             </MyTooltip>
           )}
-          <MyTooltip label={'删除'}>
+          <MyTooltip label={'delete'}>
             <MyIcon
               {...controlIconStyle}
               name={'delete'}

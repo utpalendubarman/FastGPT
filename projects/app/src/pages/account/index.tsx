@@ -70,7 +70,7 @@ const Account = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
           }
         ]
       : []),
-    ...(userInfo?.team.canWrite && false
+    ...(true
       ? [
           {
             icon: 'apikey',

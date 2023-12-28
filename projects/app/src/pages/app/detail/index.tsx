@@ -57,7 +57,7 @@ const AppDetail = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
         ? []
         : [{ label: 'High -level arrangement', id: TabEnum.adEdit, icon: 'settingLight' }]),
       { label: 'Share', id: TabEnum.outLink, icon: 'shareLight' },
-      { label: 'Dialog', id: TabEnum.logs, icon: 'core/app/logsLight' },
+      { label: 'Logs', id: TabEnum.logs, icon: 'core/app/logsLight' },
       { label: 'Dialog', id: TabEnum.startChat, icon: 'chat' }
     ],
     []

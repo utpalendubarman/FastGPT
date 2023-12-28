@@ -81,7 +81,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
         <Box flex={1}>
           <Flex alignItems={'flex-end'}>
             <Box fontSize={['md', 'xl']} fontWeight={'bold'}>
-              API 秘钥管理
+              API Secret management
             </Box>
             {feConfigs?.docUrl && (
               <Link
@@ -90,7 +90,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
                 ml={1}
                 color={'myBlue.600'}
               >
-                查看文档
+                Look at the documentation
               </Link>
             )}
           </Flex>
@@ -109,7 +109,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
           onClick={() => copyData(baseUrl, '已复制 API 地址')}
         >
           <Box border={theme.borders.md} px={2} borderRadius={'md'} fontSize={'sm'}>
-            API根地址
+            API root address
           </Box>
           <Box ml={2} color={'myGray.900'} fontSize={['sm', 'md']}>
             {baseUrl}
@@ -127,7 +127,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
               })
             }
           >
-            新建
+            Newly built
           </Button>
         </Box>
       </Box>
@@ -137,16 +137,16 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
             <Tr>
               <Th>{t('Name')}</Th>
               <Th>Api Key</Th>
-              <Th>已用额度(￥)</Th>
+              <Th>Equitative(￥)</Th>
               {feConfigs?.isPlus && (
                 <>
-                  <Th>最大额度(￥)</Th>
-                  <Th>过期时间</Th>
+                  <Th>Maximum amount(￥)</Th>
+                  <Th>Expiration</Th>
                 </>
               )}
 
-              <Th>创建时间</Th>
-              <Th>最后一次使用时间</Th>
+              <Th>Creation time</Th>
+              <Th>Last use time</Th>
               <Th />
             </Tr>
           </Thead>
@@ -229,10 +229,10 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
         title={
           <Box>
             <Box fontWeight={'bold'} fontSize={'xl'}>
-              新的 API 秘钥
+              New API Secret Key
             </Box>
             <Box fontSize={'sm'} color={'myGray.600'}>
-              请保管好你的秘钥，秘钥不会再次展示~
+              Please keep your key, the secret key will not be displayed again ~
             </Box>
           </Box>
         }
@@ -255,7 +255,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
         </ModalBody>
         <ModalFooter>
           <Button variant="base" onClick={() => setApiKey('')}>
-            好的
+            OK
           </Button>
         </ModalFooter>
       </MyModal>
@@ -290,7 +290,7 @@ function EditKeyModal({
 
   const { mutate: onclickCreate, isLoading: creating } = useRequest({
     mutationFn: async (e: EditProps) => createAOpenApiKey(e),
-    errorToast: '创建链接异常',
+    errorToast: 'Create links abnormal',
     onSuccess: onCreate
   });
   const { mutate: onclickUpdate, isLoading: updating } = useRequest({
@@ -298,7 +298,7 @@ function EditKeyModal({
       //@ts-ignore
       return putOpenApiKey(e);
     },
-    errorToast: '更新链接异常',
+    errorToast: 'Update links abnormal',
     onSuccess: onEdit
   });
 

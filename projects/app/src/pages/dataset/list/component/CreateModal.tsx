@@ -102,13 +102,13 @@ const CreateModal = ({ onClose, parentId }: { onClose: () => void; parentId?: st
                 icon: 'core/dataset/commonDataset',
                 desc: t('core.dataset.Common Dataset Desc')
               },
-              ...(feConfigs.isPlus
+              ...(true
                 ? [
                     {
-                      title: t('core.dataset.Website Dataset'),
+                      title: 'Website Crawl',
                       value: DatasetTypeEnum.websiteDataset,
                       icon: 'core/dataset/websiteDataset',
-                      desc: t('core.dataset.Website Dataset Desc')
+                      desc: 'Create dataset from complete website'
                     }
                   ]
                 : [])

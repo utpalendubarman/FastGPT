@@ -73,6 +73,7 @@ function ConfigForm({
   const { loadAllDatasets, allDatasets } = useDatasetStore();
   const { isPc } = useSystemStore();
   const [refresh, setRefresh] = useState(false);
+  const [logo, setLogo] = useState('');
 
   const { register, setValue, getValues, reset, handleSubmit, control } =
     useForm<AppSimpleEditFormType>({
@@ -131,6 +132,7 @@ function ConfigForm({
 
       await updateAppDetail(appDetail._id, {
         modules,
+        avatar: logo,
         type: AppTypeEnum.simple,
         simpleTemplateId: data.templateId,
         permission: undefined
@@ -156,6 +158,31 @@ function ConfigForm({
     appModule2Form();
   }, [appModule2Form]);
   useQuery(['loadAllDatasets'], loadAllDatasets);
+
+  const HandleImage = (e: any) => {
+    var image = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      fetch('https://app-dev.onwintop.com/uploads/upload.php', {
+        method: 'POST',
+        body: JSON.stringify({
+          image: base64
+        })
+      })
+        .then((response) => response.json())
+        .then((json) => {
+          setLogo(json.url);
+          toast({
+            title: 'Logo Successfully Uploaded, Save to Continue',
+            status: 'success'
+          });
+        });
+    };
+    if (image) {
+      reader.readAsDataURL(image);
+    }
+  };
 
   const BoxStyles: BoxProps = {
     bg: 'myWhite.200',
@@ -221,8 +248,17 @@ function ConfigForm({
       </Flex>
 
       <Box px={4}>
-        {/* simple mode select */}
+        {/* Upload Logo*/}
         <Flex {...BoxStyles}>
+          <Flex alignItems={'center'} flex={'1 0 0'}>
+            <Image alt={''} src={'/imgs/module/AI.png'} w={'18px'} />
+            <Box mx={2}>{'Upload logo image'}</Box>
+          </Flex>
+          <input type="file" name="" onChange={HandleImage} id="file_picker" />
+        </Flex>
+
+        {/* simple mode select */}
+        <Flex {...BoxStyles} mt={2}>
           <Flex alignItems={'center'} flex={'1 0 0'}>
             <Image alt={''} src={'/imgs/module/templates.png'} w={'18px'} />
             <Box mx={2}>{t('core.app.simple.mode template select')}</Box>

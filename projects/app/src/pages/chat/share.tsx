@@ -138,10 +138,11 @@ const OutLink = ({
           ...chatData,
           history
         });
+        console.log(shareChatData);
       } catch (e: any) {
         toast({
           status: 'error',
-          title: getErrText(e, '获取应用失败')
+          title: getErrText(e, 'Failure to obtain application')
         });
         if (e?.code === 501) {
           delManyShareChatHistoryByShareId(shareId);
@@ -173,6 +174,7 @@ const OutLink = ({
     }
     setIdEmbed(window !== top);
   }, []);
+
   function CSVtoArray(text) {
     let ret = [''],
       i = 0,
