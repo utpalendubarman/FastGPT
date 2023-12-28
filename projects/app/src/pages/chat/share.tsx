@@ -194,10 +194,10 @@ const OutLink = ({
     }
     return ret;
   }
-  const updateProducts = (e) => {
+  const updateProducts = (e: any) => {
     var historyDom = document.getElementById('products');
     var htmlnew = '';
-    e.all.map((item) => {
+    e.all.map((item: any) => {
       const itm = CSVtoArray(item.q);
       if (e.found.includes(Number(itm[0]))) {
         const name = itm[1].length < 36 ? itm[1] : itm[1].substring(0, 33) + '...';
