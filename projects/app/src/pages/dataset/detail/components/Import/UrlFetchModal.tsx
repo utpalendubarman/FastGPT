@@ -9,15 +9,17 @@ import { UrlFetchResponse } from '@fastgpt/global/common/file/api.d';
 
 const UrlFetchModal = ({
   onClose,
+  url,
   onSuccess
 }: {
   onClose: () => void;
+  url: string;
   onSuccess: (e: UrlFetchResponse) => void;
 }) => {
   const { t } = useTranslation();
   const { register, handleSubmit } = useForm({
     defaultValues: {
-      urls: '',
+      urls: url,
       selector: ''
     }
   });
@@ -35,6 +37,32 @@ const UrlFetchModal = ({
     },
     errorToast: t('core.dataset.import.Fetch Error')
   });
+
+  const Automate = async (urlList: string[]) => {
+    try {
+      const res = await postFetchUrls({
+        urlList,
+        selector: ''
+      });
+      onSuccess(res);
+      onClose();
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  if (url.length != 0) {
+    console.log('should automate');
+    /*try{
+      Automate(url,'');
+    }catch(e){
+      console.log(e);
+    }*/
+
+    const urlList = url.split('\n').filter((e) => e);
+    Automate(urlList);
+    //console.log(urlList);
+  }
 
   return (
     <MyModal

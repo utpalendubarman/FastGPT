@@ -12,7 +12,7 @@ import {
   readDocContent
 } from '@/web/common/file/utils';
 import { uploadFiles } from '@/web/common/file/controller';
-import { Box, Flex, useDisclosure, type BoxProps } from '@chakra-ui/react';
+import { Box, Flex, useDisclosure, type BoxProps, Button, Input } from '@chakra-ui/react';
 import React, { DragEvent, useCallback, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { customAlphabet } from 'nanoid';
@@ -66,6 +66,7 @@ const FileSelect = ({
   chunkLen = 500,
   overlapRatio,
   fileTemplate,
+  RequestType,
   showUrlFetch = true,
   showCreateFile = true,
   tip,
@@ -357,86 +358,155 @@ const FileSelect = ({
     }
   };
 
-  return (
-    <Box
-      display={'inline-block'}
-      textAlign={'center'}
-      bg={'myWhite.400'}
-      p={5}
-      borderRadius={'lg'}
-      border={'1px dashed'}
-      borderColor={'myGray.300'}
-      w={'100%'}
-      position={'relative'}
-      {...props}
-      onDragEnter={handleDragEnter}
-      onDragOver={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <Flex justifyContent={'center'} alignItems={'center'}>
-        <MyIcon mr={1} name={'uploadFile'} w={'16px'} />
-        {isDragging ? (
-          t('file.Release the mouse to upload the file')
-        ) : (
-          <Box>
-            {t('file.Drag and drop')},
-            <MyTooltip label={t('file.max 10')}>
-              <Box {...SelectTextStyles} onClick={onOpen}>
-                {t('file.select a document')}
-              </Box>
-            </MyTooltip>
-            {showUrlFetch && (
-              <>
-                ,
-                <Box {...SelectTextStyles} onClick={onOpenUrlFetch}>
-                  {t('file.Fetch Url')}
-                </Box>
-              </>
-            )}
-            {showCreateFile && (
-              <>
-                ,
-                <Box {...SelectTextStyles} onClick={onOpenCreateFile}>
-                  {t('file.Create file')}
-                </Box>
-              </>
-            )}
-          </Box>
-        )}
-      </Flex>
-      <Box mt={1}>{t('file.support', { fileExtension: fileExtension })}</Box>
-      {tipText && (
-        <Box mt={1} fontSize={'sm'} color={'myGray.600'}>
-          {t(tipText)}
-        </Box>
-      )}
-      {!!fileTemplate && (
-        <Box
-          mt={1}
-          cursor={'pointer'}
-          textDecoration={'underline'}
-          color={'myBlue.600'}
-          fontSize={'12px'}
-          onClick={() =>
-            fileDownload({
-              text: fileTemplate.value,
-              type: fileTemplate.type,
-              filename: fileTemplate.filename
-            })
+  const [url, setUrl] = useState('');
+  const [urls, setUrls] = useState('');
+
+  const FindSublinks = (rqst: string) => {
+    try {
+      fetch('https://app-dev.onwintop.com/findlinks.php', {
+        method: 'POST',
+        body: JSON.stringify({ url: rqst })
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((res) => {
+          //console.log(res);
+          var temp = '';
+          var i = 0;
+          for (i = 0; i < res.length; i++) {
+            temp += res[i] + '\n';
           }
+          setUrl(temp);
+          onOpenUrlFetch();
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const SubmitCrawl = () => {
+    FindSublinks(url);
+  };
+
+  return (
+    <>
+      {RequestType == 'webCrawl' ? (
+        <Box
+          display={'inline-block'}
+          textAlign={'center'}
+          bg={'myWhite.400'}
+          p={5}
+          borderRadius={'lg'}
+          border={'1px dashed'}
+          borderColor={'myGray.300'}
+          w={'70%'}
+          position={'relative'}
+          {...props}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
-          {t('file.Click to download file template', { name: fileTemplate.filename })}
+          <Flex>
+            <Box>
+              <Input
+                type="text"
+                onChange={(e) => setUrl(e.target.value)}
+                name=""
+                style={{ border: '1px solid #ebebeb' }}
+                id=""
+              />
+              <Button onClick={SubmitCrawl}>Submit</Button>
+            </Box>
+          </Flex>
         </Box>
-      )}
-      {!!tip && <Box color={'myGray.500'}>{tip}</Box>}
-      {selectingText !== undefined && (
-        <FileSelectLoading loading text={selectingText} fixed={false} />
+      ) : (
+        <Box
+          display={'inline-block'}
+          textAlign={'center'}
+          bg={'myWhite.400'}
+          p={5}
+          borderRadius={'lg'}
+          border={'1px dashed'}
+          borderColor={'myGray.300'}
+          w={'100%'}
+          position={'relative'}
+          {...props}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <Flex justifyContent={'center'} alignItems={'center'}>
+            <MyIcon mr={1} name={'uploadFile'} w={'16px'} />
+            {isDragging ? (
+              t('file.Release the mouse to upload the file')
+            ) : (
+              <Box>
+                {t('file.Drag and drop')},
+                <MyTooltip label={t('file.max 10')}>
+                  <Box {...SelectTextStyles} onClick={onOpen}>
+                    {t('file.select a document')}
+                  </Box>
+                </MyTooltip>
+                {showUrlFetch && (
+                  <>
+                    ,
+                    <Box {...SelectTextStyles} onClick={onOpenUrlFetch}>
+                      {t('file.Fetch Url')}
+                    </Box>
+                  </>
+                )}
+                {showCreateFile && (
+                  <>
+                    ,
+                    <Box {...SelectTextStyles} onClick={onOpenCreateFile}>
+                      {t('file.Create file')}
+                    </Box>
+                  </>
+                )}
+                {/* Submit URL */}
+              </Box>
+            )}
+            <Box mt={1}>{t('file.support', { fileExtension: fileExtension })}</Box>
+          </Flex>
+
+          {tipText && (
+            <Box mt={1} fontSize={'sm'} color={'myGray.600'}>
+              {t(tipText)}
+            </Box>
+          )}
+          {!!fileTemplate && (
+            <Box
+              mt={1}
+              cursor={'pointer'}
+              textDecoration={'underline'}
+              color={'myBlue.600'}
+              fontSize={'12px'}
+              onClick={() =>
+                fileDownload({
+                  text: fileTemplate.value,
+                  type: fileTemplate.type,
+                  filename: fileTemplate.filename
+                })
+              }
+            >
+              {t('file.Click to download file template', { name: fileTemplate.filename })}
+            </Box>
+          )}
+          {!!tip && <Box color={'myGray.500'}>{tip}</Box>}
+          {selectingText !== undefined && (
+            <FileSelectLoading loading text={selectingText} fixed={false} />
+          )}
+        </Box>
       )}
       <FileSelector onSelect={onSelectFile} />
-      {isOpenUrlFetch && <UrlFetchModal onClose={onCloseUrlFetch} onSuccess={onUrlFetch} />}
+      {isOpenUrlFetch && (
+        <UrlFetchModal onClose={onCloseUrlFetch} url={url} onSuccess={onUrlFetch} />
+      )}
       {isOpenCreateFile && <CreateFileModal onClose={onCloseCreateFile} onSuccess={onCreateFile} />}
-    </Box>
+    </>
   );
 };
 

@@ -63,6 +63,11 @@ import { useDatasetStore } from '@/web/core/dataset/store/dataset';
 import { DatasetSchemaType } from '@fastgpt/global/core/dataset/type';
 
 const FileImportModal = dynamic(() => import('./Import/ImportModal'), {});
+
+const WebImportModal = dynamic(() => import('./Import/ImportWebModal'), {});
+
+//const WebImportModal = dynamic(() => import('./Import/WebsiteConfig'), {});
+
 const WebSiteConfigModal = dynamic(() => import('./Import/WebsiteConfig'), {});
 
 const CollectionCard = () => {
@@ -91,11 +96,19 @@ const CollectionCard = () => {
     onOpen: onOpenFileImportModal,
     onClose: onCloseFileImportModal
   } = useDisclosure();
+
+  const {
+    isOpen: isOpenWebImportModal,
+    onOpen: onOpenWebImportModal,
+    onClose: onCloseWebImportModal
+  } = useDisclosure();
+
   const {
     isOpen: isOpenWebsiteModal,
     onOpen: onOpenWebsiteModal,
     onClose: onCloseWebsiteModal
   } = useDisclosure();
+
   const { onOpenModal: onOpenCreateVirtualFileModal, EditModal: EditCreateVirtualFileModal } =
     useEditTitle({
       title: t('dataset.Create Virtual File'),
@@ -425,6 +438,15 @@ const CollectionCard = () => {
                       </Flex>
                     ),
                     onClick: onOpenFileImportModal
+                  },
+                  {
+                    child: (
+                      <Flex>
+                        <Image src={'/imgs/files/link.svg'} alt={''} w={'20px'} mr={2} />
+                        Website
+                      </Flex>
+                    ),
+                    onClick: onOpenWebImportModal
                   }
                 ]}
               />
@@ -730,6 +752,19 @@ const CollectionCard = () => {
           onClose={onCloseFileImportModal}
         />
       )}
+
+      {isOpenWebImportModal && (
+        <WebImportModal
+          datasetId={datasetId}
+          parentId={parentId}
+          uploadSuccess={() => {
+            getData(1);
+            onCloseWebImportModal();
+          }}
+          onClose={onCloseWebImportModal}
+        />
+      )}
+
       {!!editFolderData && (
         <EditFolderModal
           onClose={() => setEditFolderData(undefined)}

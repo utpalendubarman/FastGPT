@@ -89,10 +89,11 @@ const CreateModal = ({ onClose, parentId }: { onClose: () => void; parentId?: st
     >
       <ModalBody>
         <>
-          <Box mb={1} color={'myGray.800'} fontWeight={'bold'}>
+          <Box mb={1} color={'myGray.800'} fontWeight={'bold'} style={{ display: 'none' }}>
             {t('core.dataset.Dataset Type')}
           </Box>
           <MyRadio
+            style={{ display: 'none' }}
             gridGap={2}
             gridTemplateColumns={'repeat(1,1fr)'}
             list={[

@@ -90,7 +90,7 @@ const StateContext = createContext<useImportStoreType>({
 });
 export const useImportStore = () => useContext(StateContext);
 
-const Provider = ({
+const WebProvider = ({
   datasetId,
   parentId,
   unitPrice,
@@ -250,7 +250,7 @@ const Provider = ({
   return <StateContext.Provider value={value}>{children}</StateContext.Provider>;
 };
 
-export default React.memo(Provider);
+export default React.memo(WebProvider);
 
 export const PreviewFileOrChunk = () => {
   const theme = useTheme();
@@ -417,7 +417,7 @@ export const PreviewFileOrChunk = () => {
 export const SelectorContainer = ({
   fileExtension,
   showUrlFetch,
-  type,
+  url,
   showCreateFile,
   fileTemplate,
   tip,
@@ -425,7 +425,7 @@ export const SelectorContainer = ({
   children
 }: {
   fileExtension: string;
-  type: string;
+  url: string;
   isRequested: string;
   showUrlFetch?: boolean;
   showCreateFile?: boolean;
@@ -447,6 +447,8 @@ export const SelectorContainer = ({
           })}
       p={[4, 8]}
     >
+      <p>{url}</p>
+      {isRequested}
       <FileSelect
         fileExtension={fileExtension}
         onPushFiles={(files) => {
@@ -458,7 +460,6 @@ export const SelectorContainer = ({
         showCreateFile={showCreateFile}
         fileTemplate={fileTemplate}
         tip={tip}
-        RequestType={type}
         py={isUnselectedFile ? '100px' : 5}
       />
       {!isUnselectedFile && (

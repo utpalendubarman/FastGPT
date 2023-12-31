@@ -81,6 +81,9 @@ const MyApps = () => {
         <Button leftIcon={<AddIcon />} variant={'base'} onClick={onOpenCreateModal}>
           {t('common.New Create')}
         </Button>
+        <Button leftIcon={<AddIcon />} ml={1} variant={'base'} onClick={onOpenCreateModal}>
+          Embed
+        </Button>
       </Flex>
       <Grid
         p={5}
