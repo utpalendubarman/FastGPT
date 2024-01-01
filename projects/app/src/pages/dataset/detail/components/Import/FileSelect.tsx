@@ -224,6 +224,7 @@ const FileSelect = ({
           chunkLen,
           overlapRatio
         });
+        setLoadText('Submit');
         return {
           id: nanoid(),
           filename: url,
@@ -384,41 +385,31 @@ const FileSelect = ({
       console.log(error);
     }
   };
+  const [loadText, setLoadText] = useState('Submit');
 
   const SubmitCrawl = () => {
+    setLoadText('Loading');
     FindSublinks(url);
   };
 
   return (
     <>
       {RequestType == 'webCrawl' ? (
-        <Box
-          display={'inline-block'}
-          textAlign={'center'}
-          bg={'myWhite.400'}
-          p={5}
-          borderRadius={'lg'}
-          border={'1px dashed'}
-          borderColor={'myGray.300'}
-          w={'70%'}
-          position={'relative'}
-          {...props}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
+        <Box textAlign={'center'} bg={'#ffffff'} p={1} w={'100%'} position={'relative'}>
           <Flex>
-            <Box>
+            <Box flex={1}>
               <Input
                 type="text"
                 onChange={(e) => setUrl(e.target.value)}
                 name=""
+                placeholder="Enter website url"
                 style={{ border: '1px solid #ebebeb' }}
                 id=""
               />
-              <Button onClick={SubmitCrawl}>Submit</Button>
             </Box>
+            <Button ml={2} onClick={SubmitCrawl}>
+              {loadText}
+            </Button>
           </Flex>
         </Box>
       ) : (

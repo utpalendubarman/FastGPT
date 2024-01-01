@@ -50,7 +50,7 @@ const EmbedModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
           if (out.result.length != 0) {
             var result = out.result;
             var share = result[0];
-            setEmbed('http://34.42.216.243/share/share?shareId=' + share['share']);
+            setEmbed('http://34.42.216.243/chat/share?shareId=' + share['share']);
           } else {
             setEmbed('It seems you dont have sufficient apps to embed!');
           }

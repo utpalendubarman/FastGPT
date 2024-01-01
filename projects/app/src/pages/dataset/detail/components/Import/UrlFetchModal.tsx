@@ -45,13 +45,13 @@ const UrlFetchModal = ({
         selector: ''
       });
       onSuccess(res);
-      onClose();
     } catch (e) {
       console.log(e);
     }
   };
 
   if (url.length != 0) {
+    onClose();
     console.log('should automate');
     /*try{
       Automate(url,'');

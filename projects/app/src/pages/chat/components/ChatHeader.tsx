@@ -48,7 +48,6 @@ const ChatHeader = ({
     >
       {isPc ? (
         <>
-          {mymode == 'share' && <Avatar src={appAvatar} w={'50px'} mr={4} />}
           <Box mr={3} color={'myGray.1000'}>
             {title}
           </Box>
