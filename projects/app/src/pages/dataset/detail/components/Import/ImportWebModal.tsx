@@ -69,8 +69,8 @@ const ImportWebData = ({
       title={<Box {...TitleStyle}>Import Website Data</Box>}
       isOpen
       isCentered
-      maxW={['90vw', 'min(1440px,85vw)']}
-      w={['90vw', 'min(1440px,85vw)']}
+      maxW={['42vw', 'min(400px,42vw)']}
+      w={['42vw', 'min(400px,42vw)']}
       h={'90vh'}
     >
       <ModalCloseButton onClick={onClose} />

@@ -379,6 +379,7 @@ const FileSelect = ({
             temp += res[i] + '\n';
           }
           setUrl(temp);
+          setLoadText('Crawling');
           onOpenUrlFetch();
         });
     } catch (error) {

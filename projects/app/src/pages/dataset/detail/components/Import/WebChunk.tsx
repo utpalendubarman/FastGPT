@@ -47,6 +47,31 @@ const WebChunkImport = () => {
   return (
     <Box display={['block', 'flex']} h={['auto', '100%']}>
       <SelectorContainer type={'webCrawl'} fileExtension={fileExtension}>
+        {/* price */}
+        <Flex py={4} alignItems={'center'}>
+          <Box>
+            {t('core.dataset.import.Estimated Price')}
+            <MyTooltip
+              label={t('core.dataset.import.Estimated Price Tips', {
+                price: formatPrice(unitPrice, 1000)
+              })}
+              forceShow
+            >
+              <QuestionOutlineIcon ml={1} />
+            </MyTooltip>
+          </Box>
+          <Box ml={4}>{t('common.price.Amount', { amount: price, unit: '元' })}</Box>
+        </Flex>
+        <Flex mt={3}>
+          {showRePreview && (
+            <Button variant={'base'} mr={4} onClick={onReSplitChunks}>
+              {t('core.dataset.import.Re Preview')}
+            </Button>
+          )}
+          <Button isDisabled={uploading} onClick={openConfirm(onclickUpload)}>
+            {uploading ? <Box>{Math.round((successChunks / totalChunks) * 100)}%</Box> : 'Import'}
+          </Button>
+        </Flex>
         {/* chunk size */}
         <Flex py={4} alignItems={'center'}>
           <Box>
@@ -88,38 +113,13 @@ const WebChunkImport = () => {
             </MyTooltip>
           </Box>
         </Flex>
-        {/* price */}
-        <Flex py={4} alignItems={'center'}>
-          <Box>
-            {t('core.dataset.import.Estimated Price')}
-            <MyTooltip
-              label={t('core.dataset.import.Estimated Price Tips', {
-                price: formatPrice(unitPrice, 1000)
-              })}
-              forceShow
-            >
-              <QuestionOutlineIcon ml={1} />
-            </MyTooltip>
-          </Box>
-          <Box ml={4}>{t('common.price.Amount', { amount: price, unit: '元' })}</Box>
-        </Flex>
-        <Flex mt={3}>
-          {showRePreview && (
-            <Button variant={'base'} mr={4} onClick={onReSplitChunks}>
-              {t('core.dataset.import.Re Preview')}
-            </Button>
-          )}
-          <Button isDisabled={uploading} onClick={openConfirm(onclickUpload)}>
-            {uploading ? <Box>{Math.round((successChunks / totalChunks) * 100)}%</Box> : 'Import'}
-          </Button>
-        </Flex>
       </SelectorContainer>
 
-      {!isUnselectedFile && (
+      {/*!isUnselectedFile && (
         <Box flex={['auto', '1 0 0']} h={'100%'} overflowY={'auto'}>
           <PreviewFileOrChunk />
         </Box>
-      )}
+      )*/}
       <ConfirmModal />
     </Box>
   );
