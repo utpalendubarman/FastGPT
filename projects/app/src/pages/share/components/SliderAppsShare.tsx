@@ -29,7 +29,7 @@ const SliderAppsShare = ({ apps }: { apps: any[] }) => {
             borderRadius={'lg'}
             alignItems={'center'}
             onClick={() => {
-              window.location = 'http://localhost:3000/share/share?shareId=' + item.share;
+              window.location = 'http://34.42.216.243/chat/share?shareId=' + item.share;
             }}
           >
             <Avatar src={item.avatar} w={'24px'} />
