@@ -30,7 +30,7 @@ const defaultChatData: InitChatResponse = {
     intro: '',
     canUse: false
   },
-  title: '新对话',
+  title: 'New conversation',
   variables: {},
   history: []
 };

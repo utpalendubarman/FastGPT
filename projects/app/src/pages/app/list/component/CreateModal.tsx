@@ -28,6 +28,8 @@ import Image from 'next/image';
 import MyModal from '@/components/MyModal';
 import { useTranslation } from 'next-i18next';
 
+import { useUserStore } from '@/web/support/user/useUserStore';
+
 type FormType = {
   avatar: string;
   name: string;
@@ -48,6 +50,8 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       templateId: appTemplates[0].id
     }
   });
+
+  const { userInfo, setUserInfo } = useUserStore();
 
   const { File, onOpen: onOpenSelectFile } = useSelectFile({
     fileType: '.jpg,.png',
@@ -76,6 +80,9 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     [setValue, toast]
   );
 
+  const [appName, setAppName] = useState('');
+  const [appAvatar, setAppAvatar] = useState('');
+
   const { mutate: onclickCreate, isLoading: creating } = useRequest({
     mutationFn: async (data: FormType) => {
       const template = appTemplates.find((item) => item.id === data.templateId);
@@ -99,6 +106,9 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         data.avatar = '/imgs/module/cq.png';
       }
 
+      setAppAvatar(data.avatar);
+      setAppName(data.name);
+
       return postCreateApp({
         avatar: data.avatar,
         name: data.name,
@@ -108,9 +118,59 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       });
     },
     onSuccess(id: string) {
-      router.push(`/app/detail?appId=${id}`);
-      onSuccess();
-      onClose();
+      console.log(id);
+      try {
+        const rqst = {
+          name: 'Default Link',
+          responseDetail: true,
+          limit: { QPM: 100, credit: -1 },
+          style: {
+            font: 'sans-serif',
+            font_color: 'black',
+            accent: '#E2E8F0',
+            border_radius: 7,
+            show_header: true
+          },
+          appId: id,
+          type: 'share'
+        };
+
+        fetch('../api/support/outLink/create', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(rqst)
+        })
+          .then((res) => {
+            return res.json();
+          })
+          .then((res) => {
+            const r = {
+              app: id,
+              userid: userInfo?._id,
+              share: res.data,
+              name: appName,
+              avatar: appAvatar
+            };
+            fetch('https://app-dev.onwintop.com/api/mapshare.php', {
+              method: 'POST',
+              body: JSON.stringify(r)
+            })
+              .then((out) => {
+                return out.json();
+              })
+              .then((out) => {
+                console.log(out);
+                router.push(`/app/detail?appId=${id}`);
+                onSuccess();
+                onClose();
+              });
+          });
+      } catch (error) {
+        console.log(error);
+      }
     },
     successToast: 'Successful creation',
     errorToast: 'Create an abnormal application'

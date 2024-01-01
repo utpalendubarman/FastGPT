@@ -266,14 +266,14 @@ function EditLinkModal({
         appId,
         type
       }),
-    errorToast: '创建链接异常',
+    errorToast: 'Create links abnormal',
     onSuccess: onCreate
   });
   const { mutate: onclickUpdate, isLoading: updating } = useRequest({
     mutationFn: (e: OutLinkEditType) => {
       return putShareChat(e);
     },
-    errorToast: '更新链接异常',
+    errorToast: 'Update links abnormal',
     onSuccess: onEdit
   });
 

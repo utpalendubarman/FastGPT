@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, LinkIcon } from '@chakra-ui/icons';
 import { delModelById } from '@/web/core/app/api';
 import { useToast } from '@/web/common/hooks/useToast';
 import { useConfirm } from '@/web/common/hooks/useConfirm';
@@ -24,6 +24,7 @@ import PageContainer from '@/components/PageContainer';
 import Avatar from '@/components/Avatar';
 import MyTooltip from '@/components/MyTooltip';
 import CreateModal from './component/CreateModal';
+import EmbedModal from './component/EmbedModal';
 import { useAppStore } from '@/web/core/app/store/useAppStore';
 import PermissionIconText from '@/components/support/permission/IconText';
 import { useUserStore } from '@/web/support/user/useUserStore';
@@ -43,6 +44,12 @@ const MyApps = () => {
     isOpen: isOpenCreateModal,
     onOpen: onOpenCreateModal,
     onClose: onCloseCreateModal
+  } = useDisclosure();
+
+  const {
+    isOpen: isOpenEmbedModal,
+    onOpen: onOpenEmbedModal,
+    onClose: onCloseEmbedModal
   } = useDisclosure();
 
   /* 点击删除 */
@@ -81,7 +88,7 @@ const MyApps = () => {
         <Button leftIcon={<AddIcon />} variant={'base'} onClick={onOpenCreateModal}>
           {t('common.New Create')}
         </Button>
-        <Button leftIcon={<AddIcon />} ml={1} variant={'base'} onClick={onOpenCreateModal}>
+        <Button leftIcon={<LinkIcon />} ml={1} variant={'base'} onClick={onOpenEmbedModal}>
           Embed
         </Button>
       </Flex>
@@ -202,6 +209,9 @@ const MyApps = () => {
       <ConfirmModal />
       {isOpenCreateModal && (
         <CreateModal onClose={onCloseCreateModal} onSuccess={() => loadMyApps(true)} />
+      )}
+      {isOpenEmbedModal && (
+        <EmbedModal onClose={onCloseEmbedModal} onSuccess={() => loadMyApps(true)} />
       )}
     </PageContainer>
   );

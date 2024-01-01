@@ -88,10 +88,10 @@ function checkRes(data: ResponseDataType) {
  * 响应错误
  */
 function responseError(err: any) {
-  console.log('error->', '请求错误', err);
+  console.log('error->', 'Request errors', err);
 
   if (!err) {
-    return Promise.reject({ message: '未知错误' });
+    return Promise.reject({ message: 'unknown mistake' });
   }
   if (typeof err === 'string') {
     return Promise.reject({ message: err });
@@ -102,7 +102,7 @@ function responseError(err: any) {
     window.location.replace(
       `/login?lastRoute=${encodeURIComponent(location.pathname + location.search)}`
     );
-    return Promise.reject({ message: 'token过期，重新登录' });
+    return Promise.reject({ message: 'Token expires, log in again' });
   }
   if (err?.response?.data) {
     return Promise.reject(err?.response?.data);

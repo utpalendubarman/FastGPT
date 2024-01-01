@@ -12,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     // 凭证校验
     // const { teamId, tmbId, teamOwner, role } = await authUserRole({ req, authToken: true });
     const { userId } = await authUserNotVisitor({ req, authToken: true });
-
     // 根据 userId 获取模型信息
     const myApps = await MongoApp.find({ userId }, '_id avatar name intro permission').sort({
       updateTime: -1
