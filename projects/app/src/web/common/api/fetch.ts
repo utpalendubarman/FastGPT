@@ -24,6 +24,7 @@ export const streamFetch = ({
 }: StreamFetchProps) =>
   new Promise<StreamResponseType>(async (resolve, reject) => {
     try {
+      console.log(data);
       const response = await window.fetch(url, {
         method: 'POST',
         headers: {

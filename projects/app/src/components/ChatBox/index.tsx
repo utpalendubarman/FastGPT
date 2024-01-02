@@ -685,7 +685,7 @@ const ChatBox = (
                         setVariableInputFinish(true);
                       })}
                     >
-                      {'开始对话'}
+                      {'Start a dialogue'}
                     </Button>
                   )}
                 </Card>

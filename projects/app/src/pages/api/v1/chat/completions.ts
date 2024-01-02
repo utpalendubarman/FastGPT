@@ -19,7 +19,6 @@ import { pushResult2Remote, updateOutLinkUsage } from '@fastgpt/service/support/
 import requestIp from 'request-ip';
 import { getBillSourceByAuthType } from '@fastgpt/global/support/wallet/bill/tools';
 
-import { MongoUser } from '@fastgpt/service/support/user/schema';
 import { selectShareResponse } from '@/utils/service/core/chat';
 import { updateApiKeyUsage } from '@fastgpt/service/support/openapi/tools';
 import { connectToDatabase } from '@/service/mongo';
@@ -27,7 +26,6 @@ import { getUserAndAuthBalance } from '@/service/support/permission/auth/user';
 import { AuthUserTypeEnum } from '@fastgpt/global/support/permission/constant';
 import { MongoApp } from '@fastgpt/service/core/app/schema';
 import { authUserNotVisitor } from '@fastgpt/service/support/permission/auth/user';
-import { use } from 'react';
 
 type FastGptWebChatProps = {
   chatId?: string; // undefined: nonuse history, '': new chat, 'xxxxx': use history
@@ -171,24 +169,24 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
         canWrite: canWrite || false
       };
     })();
-    const { userId } = await authUserNotVisitor({ req, authToken: true });
 
     // auth app, get history
-    const { history } = await getChatHistory({ chatId, userId });
+    const { history } = await getChatHistory({ chatId, tmbId: user.team.tmbId });
 
-    const isAppOwner = !shareId;
+    const isAppOwner = !shareId && String(user.team.tmbId) === String(app.tmbId);
+
     /* format prompts */
     const concatHistory = history.concat(chatMessages);
-    const dostream = app?.mid !== undefined && app?.mid != 'askforProduct';
 
     /* start flow controller */
-    var { responseData, answerText } = await dispatchModules({
+    const { responseData, answerText } = await dispatchModules({
       res,
       appId: String(app._id),
       chatId,
       modules: app.modules,
       user,
-      userId,
+      teamId: user.team.teamId,
+      tmbId: user.team.tmbId,
       variables,
       params: {
         history: concatHistory,
@@ -197,40 +195,14 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       stream,
       detail
     });
-    function extractNumbersAtEnd(inputString) {
-      if (typeof inputString !== 'string') {
-        return [];
-      }
-
-      const lines = inputString.split(/\r?\n/);
-      const numbersArray = [];
-
-      lines.forEach((line) => {
-        const match = line.match(/(\s*\d+\s*,\s*)+\s*\d+\s*$/);
-        if (match) {
-          const numbers = match[0].split(',').map((number) => Number(number.trim()));
-          numbersArray.push(...numbers);
-        }
-      });
-
-      return numbersArray;
-    }
-
-    const prodIds = extractNumbersAtEnd(answerText);
-
-    // if (prodIds.length > 0) {
-    //   answerText = JSON.stringify({ type: "render", elems: prodIds, "message": "Sure" });
-    // }
-    // console.log(answerText);
-
-    // responseData[responseData.length - 1].query = answerText;
 
     // save chat
     if (chatId) {
       await saveChat({
         chatId,
         appId: app._id,
-        userId: user._id,
+        teamId: user.team.teamId,
+        tmbId: user.team.tmbId,
         variables,
         updateUseTime: isAppOwner, // owner update use time
         shareId,
@@ -301,45 +273,28 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     }
 
     // add record
-    // const { total } = pushChatBill({
-    //   appName: app.name,
-    //   appId: app._id,
-    //   userId,
-    //   source: getBillSourceByAuthType({ shareId, authType }),
-    //   response: responseData
-    // });
-    const total = responseData.reduce((sum, item) => sum + item.price, 0);
-
-    const DeductToken = async (userId: string, total: any) => {
-      try {
-        await connectToDatabase();
-
-        const user = await MongoUser.findOne({
-          _id: userId
-        });
-
-        await MongoUser.findByIdAndUpdate(userId, {
-          token: user.token - total
-        });
-      } catch (x) {}
-    };
-
-    // deduct from user
-    DeductToken(userId, total);
+    const { total } = pushChatBill({
+      appName: app.name,
+      appId: app._id,
+      teamId: user.team.teamId,
+      tmbId: user.team.tmbId,
+      source: getBillSourceByAuthType({ shareId, authType }),
+      response: responseData
+    });
 
     if (shareId) {
-      // pushResult2Remote({ authToken, shareId, responseData });
+      pushResult2Remote({ authToken, shareId, responseData });
       updateOutLinkUsage({
         shareId,
         total
       });
     }
-    // if (apikey) {
-    //   updateApiKeyUsage({
-    //     apikey,
-    //     usage: total
-    //   });
-    // }
+    if (apikey) {
+      updateApiKeyUsage({
+        apikey,
+        usage: total
+      });
+    }
   } catch (err: any) {
     if (stream) {
       sseErrRes(res, err);
