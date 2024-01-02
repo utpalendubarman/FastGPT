@@ -36,6 +36,7 @@ const EmbedModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
   const { userInfo, setUserInfo } = useUserStore();
 
   const [embed, setEmbed] = useState('Click to view');
+  const [embedScript, setEmbedScript] = useState('Click to view');
 
   const Generate = async () => {
     try {
@@ -51,6 +52,11 @@ const EmbedModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
             var result = out.result;
             var share = result[0];
             setEmbed('http://34.42.216.243/chat/share?shareId=' + share['share']);
+            setEmbedScript(
+              '<script src="http://localhost/embed/embed.js" data-type="embed" data-id="' +
+                share['share'] +
+                '"></script>'
+            );
           } else {
             setEmbed('It seems you dont have sufficient apps to embed!');
           }
@@ -70,7 +76,7 @@ const EmbedModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
     >
       <ModalBody>
         <Box color={'myGray.800'} fontWeight={'bold'}>
-          Your URL : {process.env.BASE_URL}
+          App URL : {process.env.BASE_URL}
         </Box>
         <Flex mt={3} alignItems={'center'}>
           <Input
@@ -83,6 +89,27 @@ const EmbedModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: ()
             onClick={Generate}
           />
         </Flex>
+
+        {embed != 'Click to view' ? (
+          <>
+            <Box color={'myGray.800'} fontWeight={'bold'}>
+              Chat Head Script : {process.env.BASE_URL}
+            </Box>
+            <Flex mt={3} alignItems={'center'}>
+              <Input
+                flex={1}
+                autoFocus
+                onChange={() => {}}
+                readOnly={true}
+                bg={'myWhite.600'}
+                value={embedScript}
+                onClick={Generate}
+              />
+            </Flex>
+          </>
+        ) : (
+          <></>
+        )}
       </ModalBody>
 
       <ModalFooter>
