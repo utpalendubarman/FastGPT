@@ -18,6 +18,16 @@ const TrainingDataSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'user'
   },
+  teamId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
+    required: true
+  },
   datasetId: {
     type: Schema.Types.ObjectId,
     ref: DatasetCollectionName,
@@ -69,6 +79,10 @@ const TrainingDataSchema = new Schema({
     type: Number,
     default: 0
   },
+  weight: {
+    type: Number,
+    default: 0
+  },
   indexes: {
     type: [
       {
@@ -88,6 +102,7 @@ const TrainingDataSchema = new Schema({
 });
 
 try {
+  TrainingDataSchema.index({ weight: -1 });
   TrainingDataSchema.index({ lockTime: 1 });
   TrainingDataSchema.index({ datasetId: 1 });
   TrainingDataSchema.index({ collectionId: 1 });

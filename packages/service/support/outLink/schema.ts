@@ -12,9 +12,15 @@ const OutLinkSchema = new Schema({
     type: String,
     required: true
   },
-  userId: {
+  teamId: {
     type: Schema.Types.ObjectId,
-    ref: 'user'
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
+    required: true
   },
   appId: {
     type: Schema.Types.ObjectId,
@@ -36,9 +42,6 @@ const OutLinkSchema = new Schema({
   },
   lastTime: {
     type: Date
-  },
-  style: {
-    type: Schema.Types.Map
   },
   responseDetail: {
     type: Boolean,

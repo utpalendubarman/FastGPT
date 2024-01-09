@@ -1,7 +1,7 @@
 import { sseResponseEventEnum } from '@fastgpt/service/common/response/constant';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { parseStreamChunk, SSEParseData } from '@/utils/sse';
-import type { ChatHistoryItemResType } from '@fastgpt/global/core/chat/api.d';
+import type { ChatHistoryItemResType } from '@fastgpt/global/core/chat/type.d';
 import { StartChatFnProps } from '@/components/ChatBox';
 import { getToken } from '@/web/support/user/auth';
 import { ModuleOutputKeyEnum } from '@fastgpt/global/core/module/constants';
@@ -24,7 +24,6 @@ export const streamFetch = ({
 }: StreamFetchProps) =>
   new Promise<StreamResponseType>(async (resolve, reject) => {
     try {
-      console.log(data);
       const response = await window.fetch(url, {
         method: 'POST',
         headers: {
@@ -51,8 +50,6 @@ export const streamFetch = ({
       let responseData: ChatHistoryItemResType[] = [];
 
       const parseData = new SSEParseData();
-      var p2ans = '';
-      var p1ans = '';
 
       const read = async () => {
         try {
@@ -70,7 +67,6 @@ export const streamFetch = ({
               });
             }
           }
-
           const chunkResponse = parseStreamChunk(value);
 
           chunkResponse.forEach((item) => {
@@ -78,11 +74,7 @@ export const streamFetch = ({
             const { eventName, data } = parseData.parse(item);
 
             if (!eventName || !data) return;
-            if (eventName == 'p2') {
-              p2ans = data?.choices?.[0]?.delta?.content || '';
-            } else if (eventName == 'p1') {
-              p1ans = data?.choices?.[0]?.delta?.content || '';
-            }
+
             if (eventName === sseResponseEventEnum.answer && data !== '[DONE]') {
               const answer: string = data?.choices?.[0]?.delta?.content || '';
               onMessage({ text: answer });
@@ -97,15 +89,6 @@ export const streamFetch = ({
               eventName === sseResponseEventEnum.appStreamResponse &&
               Array.isArray(data)
             ) {
-              if (p2ans != '') {
-                onMessage({ text: p2ans });
-                const answer = p2ans;
-                responseText = answer;
-              } else {
-                onMessage({ text: p1ans });
-                const answer = p1ans;
-                responseText = answer;
-              }
               responseData = data;
             } else if (eventName === sseResponseEventEnum.error) {
               errMsg = getErrText(data, '流响应错误');

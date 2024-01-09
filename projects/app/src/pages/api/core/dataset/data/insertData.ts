@@ -31,7 +31,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     }
 
     // 凭证校验
-    const { teamId, userId } = await authDatasetCollection({
+    const { teamId, tmbId } = await authDatasetCollection({
       req,
       authToken: true,
       authApiKey: true,
@@ -69,8 +69,9 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       a: formatA
     });
 
-    const { insertId, tokenLen } = await insertData2Dataset({
-      userId,
+    const { insertId, tokens } = await insertData2Dataset({
+      teamId,
+      tmbId,
       datasetId,
       collectionId,
       q: formatQ,
@@ -80,11 +81,12 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
       indexes: formatIndexes
     });
 
-    // pushGenerateVectorBill({
-    //   userId,
-    //   tokenLen: tokenLen,
-    //   model: vectorModelData.model
-    // });
+    pushGenerateVectorBill({
+      teamId,
+      tmbId,
+      tokens,
+      model: vectorModelData.model
+    });
 
     jsonRes<string>(res, {
       data: insertId

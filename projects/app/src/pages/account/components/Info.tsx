@@ -7,7 +7,8 @@ import {
   useTheme,
   Divider,
   Select,
-  Input
+  Input,
+  Link
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { UserUpdateParams } from '@/types/user';
@@ -23,20 +24,16 @@ import { useTranslation } from 'next-i18next';
 import { timezoneList } from '@fastgpt/global/common/time/timezone';
 import Loading from '@/components/Loading';
 import Avatar from '@/components/Avatar';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import MyTooltip from '@/components/MyTooltip';
 import { langMap, setLngStore } from '@/web/common/utils/i18n';
 import { useRouter } from 'next/router';
 import MySelect from '@/components/Select';
-import { formatPrice } from '@fastgpt/global/support/wallet/bill/tools';
+import { formatStorePrice2Read } from '@fastgpt/global/support/wallet/bill/tools';
 import { putUpdateMemberName } from '@/web/support/user/team/api';
 import { getDocPath } from '@/web/common/system/doc';
 
 const TeamMenu = dynamic(() => import('@/components/support/user/team/TeamMenu'));
-const BuyTokenModal = dynamic(() => import('./BuyTokenModal'), {
-  loading: () => <Loading fixed={false} />,
-  ssr: false
-});
 const PayModal = dynamic(() => import('./PayModal'), {
   loading: () => <Loading fixed={false} />,
   ssr: false
@@ -61,11 +58,6 @@ const UserInfo = () => {
   });
 
   const { toast } = useToast();
-  const {
-    isOpen: isOpenBuyTokenModal,
-    onClose: onCloseBuyTokenModal,
-    onOpen: onOpenBuyTokenModal
-  } = useDisclosure();
   const {
     isOpen: isOpenPayModal,
     onClose: onClosePayModal,
@@ -136,7 +128,6 @@ const UserInfo = () => {
       py={[2, 10]}
       justifyContent={'center'}
       alignItems={'flex-start'}
-      fontSize={['lg', 'xl']}
     >
       <Flex
         flexDirection={'column'}
@@ -144,7 +135,7 @@ const UserInfo = () => {
         cursor={'pointer'}
         onClick={onOpenSelectFile}
       >
-        <MyTooltip label={'Change avatar'}>
+        <MyTooltip label={'更换头像'}>
           <Box
             w={['44px', '54px']}
             h={['44px', '54px']}
@@ -192,41 +183,15 @@ const UserInfo = () => {
             />
           </Flex>
         )}
-        {userInfo?.fullname !== undefined && (
-          <Flex mt={6} alignItems={'center'} w={['85%', '300px']}>
-            <Flex alignItems={'center'} w={['85%', '300px']}>
-              <Box flex={1} style={{ fontSize: 20, fontWeight: 'bold' }}>
-                {userInfo?.fullname}
-              </Box>
-            </Flex>
-          </Flex>
-        )}
-
+        <Flex alignItems={'center'} w={['85%', '300px']}>
+          <Box flex={'0 0 80px'}>{t('user.Account')}:&nbsp;</Box>
+          <Box flex={1}>{userInfo?.username}</Box>
+        </Flex>
         <Flex mt={6} alignItems={'center'} w={['85%', '300px']}>
-          {userInfo?.username !== undefined && (
-            <Flex alignItems={'center'} w={['85%', '300px']}>
-              <Box flex={'0 0 80px'}>Username:&nbsp;</Box>
-              <Box flex={1}>{userInfo?.username}</Box>
-            </Flex>
-          )}
-          {userInfo?.email !== undefined && (
-            <Flex alignItems={'center'} w={['85%', '300px']}>
-              <Box flex={'0 0 80px'}>Email:&nbsp;</Box>
-              <Box flex={1}>{userInfo?.email}</Box>
-            </Flex>
-          )}
-          {userInfo?.phone !== undefined && (
-            <Flex alignItems={'center'} w={['85%', '300px']}>
-              <Box flex={'0 0 80px'}>Phone:&nbsp;</Box>
-              <Box flex={1}>{userInfo?.phone}</Box>
-            </Flex>
-          )}
-          {/* <Flex mt={6} alignItems={'center'} w={['85%', '300px']}>
           <Box flex={'0 0 80px'}>{t('user.Team')}:&nbsp;</Box>
           <Box flex={1}>
             <TeamMenu />
           </Box>
-        </Flex> */}
         </Flex>
         <Flex mt={6} alignItems={'center'} w={['85%', '300px']}>
           <Box flex={'0 0 80px'}>{t('user.Language')}:&nbsp;</Box>
@@ -264,54 +229,72 @@ const UserInfo = () => {
         <Flex mt={6} alignItems={'center'} w={['85%', '300px']}>
           <Box flex={'0 0 80px'}>{t('user.Password')}:&nbsp;</Box>
           <Box flex={1}>*****</Box>
-          <Button size={['sm', 'md']} variant={'base'} ml={5} onClick={onOpenUpdatePsw}>
+          <Button size={['sm', 'md']} variant={'whitePrimary'} ml={5} onClick={onOpenUpdatePsw}>
             {t('user.Change')}
           </Button>
         </Flex>
         <Box mt={6} whiteSpace={'nowrap'} w={['85%', '300px']}>
           <Flex alignItems={'center'}>
-            <Box flex={'0 0 80px'}>Balance:&nbsp; </Box>
-
+            <Box flex={'0 0 80px'} fontSize={'md'}>
+              {t('user.team.Balance')}:&nbsp;
+            </Box>
             <Box flex={1}>
-              <strong>{userInfo?.token}</strong> TKN
+              <strong>{formatStorePrice2Read(userInfo?.team?.balance).toFixed(3)}</strong> 元
             </Box>
             {feConfigs?.show_pay && userInfo?.team?.canWrite && (
               <Button size={['sm', 'md']} ml={5} onClick={onOpenPayModal}>
                 {t('user.Pay')}
               </Button>
             )}
-            <Button size={['sm', 'md']} variant={'base'} ml={5} onClick={onOpenBuyTokenModal}>
-              Buy Tokens
-            </Button>
           </Flex>
         </Box>
-        {feConfigs?.docUrl && false && (
-          <>
-            <Flex
-              mt={4}
-              w={['85%', '300px']}
-              py={3}
-              px={6}
-              border={theme.borders.sm}
-              borderWidth={'1.5px'}
-              borderRadius={'md'}
-              alignItems={'center'}
-              cursor={'pointer'}
-              userSelect={'none'}
-              onClick={() => {
-                window.open(getDocPath('/docs/intro'));
-              }}
-            >
-              <MyIcon name={'common/courseLight'} w={'18px'} />
-              <Box ml={2} flex={1}>
-                {t('system.Help Document')}
-              </Box>
-              <Box w={'8px'} h={'8px'} borderRadius={'50%'} bg={'#67c13b'} />
-              <Box fontSize={'md'} ml={2}>
-                V{systemVersion}
-              </Box>
-            </Flex>
-          </>
+        {feConfigs?.docUrl && (
+          <Link
+            href={getDocPath('/docs/intro')}
+            target="_blank"
+            display={'flex'}
+            mt={4}
+            w={['85%', '300px']}
+            py={3}
+            px={6}
+            border={theme.borders.sm}
+            borderWidth={'1.5px'}
+            borderRadius={'md'}
+            alignItems={'center'}
+            userSelect={'none'}
+            textDecoration={'none !important'}
+          >
+            <MyIcon name={'common/courseLight'} w={'18px'} />
+            <Box ml={2} flex={1}>
+              {t('system.Help Document')}
+            </Box>
+            <Box w={'8px'} h={'8px'} borderRadius={'50%'} bg={'#67c13b'} />
+            <Box fontSize={'md'} ml={2}>
+              V{systemVersion}
+            </Box>
+          </Link>
+        )}
+        {feConfigs?.chatbotUrl && (
+          <Link
+            href={feConfigs.chatbotUrl}
+            target="_blank"
+            display={'flex'}
+            mt={4}
+            w={['85%', '300px']}
+            py={3}
+            px={6}
+            border={theme.borders.sm}
+            borderWidth={'1.5px'}
+            borderRadius={'md'}
+            alignItems={'center'}
+            userSelect={'none'}
+            textDecoration={'none !important'}
+          >
+            <MyIcon name={'core/app/aiLight'} w={'18px'} />
+            <Box ml={2} flex={1}>
+              {t('common.system.Help Chatbot')}
+            </Box>
+          </Link>
         )}
         {feConfigs?.show_openai_account && (
           <>
@@ -320,7 +303,7 @@ const UserInfo = () => {
             <MyTooltip label={'点击配置账号'}>
               <Flex
                 w={['85%', '300px']}
-                py={3}
+                py={4}
                 px={6}
                 border={theme.borders.sm}
                 borderWidth={'1.5px'}
@@ -346,7 +329,7 @@ const UserInfo = () => {
           </>
         )}
       </Box>
-      {isOpenBuyTokenModal && <BuyTokenModal onClose={onCloseBuyTokenModal} />}
+
       {isOpenPayModal && <PayModal onClose={onClosePayModal} />}
       {isOpenUpdatePsw && <UpdatePswModal onClose={onCloseUpdatePsw} />}
       {isOpenOpenai && userInfo && (

@@ -12,19 +12,18 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
-import { AddIcon, LinkIcon } from '@chakra-ui/icons';
+import { AddIcon } from '@chakra-ui/icons';
 import { delModelById } from '@/web/core/app/api';
 import { useToast } from '@/web/common/hooks/useToast';
 import { useConfirm } from '@/web/common/hooks/useConfirm';
 import { serviceSideProps } from '@/web/common/utils/i18n';
 import { useTranslation } from 'next-i18next';
 
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import PageContainer from '@/components/PageContainer';
 import Avatar from '@/components/Avatar';
 import MyTooltip from '@/components/MyTooltip';
 import CreateModal from './component/CreateModal';
-import EmbedModal from './component/EmbedModal';
 import { useAppStore } from '@/web/core/app/store/useAppStore';
 import PermissionIconText from '@/components/support/permission/IconText';
 import { useUserStore } from '@/web/support/user/useUserStore';
@@ -37,19 +36,13 @@ const MyApps = () => {
   const { userInfo } = useUserStore();
   const { myApps, loadMyApps } = useAppStore();
   const { openConfirm, ConfirmModal } = useConfirm({
-    title: 'Delete prompt',
-    content: 'Confirm that delete all the information of the application?'
+    title: '删除提示',
+    content: '确认删除该应用所有信息？'
   });
   const {
     isOpen: isOpenCreateModal,
     onOpen: onOpenCreateModal,
     onClose: onCloseCreateModal
-  } = useDisclosure();
-
-  const {
-    isOpen: isOpenEmbedModal,
-    onOpen: onOpenEmbedModal,
-    onClose: onCloseEmbedModal
   } = useDisclosure();
 
   /* 点击删除 */
@@ -58,13 +51,13 @@ const MyApps = () => {
       try {
         await delModelById(id);
         toast({
-          title: 'successfully deleted',
+          title: '删除成功',
           status: 'success'
         });
         loadMyApps(true);
       } catch (err: any) {
         toast({
-          title: err?.message || 'failed to delete',
+          title: err?.message || '删除失败',
           status: 'error'
         });
       }
@@ -72,29 +65,24 @@ const MyApps = () => {
     [toast, loadMyApps]
   );
 
+  /* 加载模型 */
   const { isFetching } = useQuery(['loadApps'], () => loadMyApps(true), {
     refetchOnMount: true
   });
 
   return (
-    <PageContainer isLoading={isFetching}>
-      <Flex pt={3} px={5} alignItems={'center'}>
-        <Flex flex={1} alignItems={'center'}>
-          <Image src={'/imgs/module/ai.svg'} alt={''} mr={2} h={'24px'} />
-          <Box className="textlg" letterSpacing={1} fontSize={['20px', '24px']} fontWeight={'bold'}>
-            My Apps
-          </Box>
-        </Flex>
-        <Button leftIcon={<AddIcon />} variant={'base'} onClick={onOpenCreateModal}>
+    <PageContainer isLoading={isFetching} insertProps={{ px: [5, '48px'] }}>
+      <Flex pt={[4, '30px']} alignItems={'center'} justifyContent={'space-between'}>
+        <Box letterSpacing={1} fontSize={['20px', '24px']} color={'myGray.900'}>
+          {t('app.My Apps')}
+        </Box>
+        <Button leftIcon={<AddIcon />} variant={'primaryOutline'} onClick={onOpenCreateModal}>
           {t('common.New Create')}
-        </Button>
-        <Button leftIcon={<LinkIcon />} ml={1} variant={'base'} onClick={onOpenEmbedModal}>
-          Embed
         </Button>
       </Flex>
       <Grid
-        p={5}
-        gridTemplateColumns={['1fr', 'repeat(3,1fr)', 'repeat(4,1fr)', 'repeat(5,1fr)']}
+        py={[4, 6]}
+        gridTemplateColumns={['1fr', 'repeat(2,1fr)', 'repeat(3,1fr)', 'repeat(4,1fr)']}
         gridGap={5}
       >
         {myApps.map((app) => (
@@ -102,26 +90,28 @@ const MyApps = () => {
             key={app._id}
             label={userInfo?.team.canWrite ? t('app.To Settings') : t('app.To Chat')}
           >
-            <Card
+            <Box
               lineHeight={1.5}
               h={'100%'}
               py={3}
               px={5}
               cursor={'pointer'}
-              border={theme.borders.md}
-              boxShadow={'none'}
+              borderWidth={'1.5px'}
+              borderColor={'borderColor.low'}
+              bg={'white'}
+              borderRadius={'md'}
               userSelect={'none'}
               position={'relative'}
               display={'flex'}
               flexDirection={'column'}
               _hover={{
-                boxShadow: '1px 1px 10px rgba(0,0,0,0.2)',
-                borderColor: 'transparent',
+                borderColor: 'primary.300',
+                boxShadow: '1.5',
                 '& .delete': {
-                  display: 'block'
+                  display: 'flex'
                 },
                 '& .chat': {
-                  display: 'block'
+                  display: 'flex'
                 }
               }}
               onClick={() => {
@@ -141,15 +131,11 @@ const MyApps = () => {
                     position={'absolute'}
                     top={4}
                     right={4}
-                    size={'sm'}
+                    size={'xsSquare'}
+                    variant={'whiteDanger'}
                     icon={<MyIcon name={'delete'} w={'14px'} />}
-                    variant={'base'}
-                    borderRadius={'md'}
                     aria-label={'delete'}
                     display={['', 'none']}
-                    _hover={{
-                      bg: 'red.100'
-                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       openConfirm(() => onclickDelApp(app._id))();
@@ -165,7 +151,7 @@ const MyApps = () => {
                 fontSize={'sm'}
                 color={'myGray.600'}
               >
-                {app.intro || "I haven't written this application yet "}
+                {app.intro || '这个应用还没写介绍~'}
               </Box>
               <Flex h={'34px'} alignItems={'flex-end'}>
                 <Box flex={1}>
@@ -174,19 +160,15 @@ const MyApps = () => {
                 {userInfo?.team.canWrite && (
                   <IconButton
                     className="chat"
-                    size={'sm'}
+                    size={'xsSquare'}
+                    variant={'whitePrimary'}
                     icon={
-                      <MyTooltip label={'Chat'}>
-                        <MyIcon name={'chat'} w={'14px'} />
+                      <MyTooltip label={'去聊天'}>
+                        <MyIcon name={'core/chat/chatLight'} w={'14px'} />
                       </MyTooltip>
                     }
-                    variant={'base'}
-                    borderRadius={'md'}
-                    aria-label={'delete'}
+                    aria-label={'chat'}
                     display={['', 'none']}
-                    _hover={{
-                      bg: 'myGray.100'
-                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/chat?appId=${app._id}`);
@@ -194,7 +176,7 @@ const MyApps = () => {
                   />
                 )}
               </Flex>
-            </Card>
+            </Box>
           </MyTooltip>
         ))}
       </Grid>
@@ -202,16 +184,13 @@ const MyApps = () => {
         <Flex mt={'35vh'} flexDirection={'column'} alignItems={'center'}>
           <MyIcon name="empty" w={'48px'} h={'48px'} color={'transparent'} />
           <Box mt={2} color={'myGray.500'}>
-            There is no application yet, go and create one!
+            还没有应用，快去创建一个吧！
           </Box>
         </Flex>
       )}
       <ConfirmModal />
       {isOpenCreateModal && (
         <CreateModal onClose={onCloseCreateModal} onSuccess={() => loadMyApps(true)} />
-      )}
-      {isOpenEmbedModal && (
-        <EmbedModal onClose={onCloseEmbedModal} onSuccess={() => loadMyApps(true)} />
       )}
     </PageContainer>
   );

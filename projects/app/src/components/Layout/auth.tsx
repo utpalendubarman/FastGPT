@@ -1,4 +1,3 @@
-import React from 'react';
 import { useRouter } from 'next/router';
 import { useToast } from '@chakra-ui/react';
 import { useUserStore } from '@/web/support/user/useUserStore';
@@ -11,14 +10,13 @@ const unAuthPage: { [key: string]: boolean } = {
   '/login/fastlogin': true,
   '/appStore': true,
   '/chat/share': true,
-  '/share': true,
-  '/share/share': true
+  '/tools/price': true
 };
 
 const Auth = ({ children }: { children: JSX.Element }) => {
   const router = useRouter();
   const toast = useToast({
-    title: 'Please log in first',
+    title: '请先登录',
     position: 'top',
     status: 'warning'
   });

@@ -14,8 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       name = 'APP',
       avatar,
       type = AppTypeEnum.advanced,
-      modules,
-      mid
+      modules
     } = req.body as CreateAppParams;
 
     if (!name || !Array.isArray(modules)) {
@@ -23,23 +22,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     // 凭证校验
-    const { userId } = await authUserNotVisitor({ req, authToken: true });
+    const { teamId, tmbId } = await authUserNotVisitor({ req, authToken: true });
 
     // 上限校验
-    // const authCount = await MongoApp.countDocuments({
-    //   teamId
-    // });
-    // if (authCount >= 50) {
-    //   throw new Error('每个团队上限 50 个应用');
-    // }
+    const authCount = await MongoApp.countDocuments({
+      teamId
+    });
+    if (authCount >= 50) {
+      throw new Error('每个团队上限 50 个应用');
+    }
 
     // 创建模型
     const response = await MongoApp.create({
-      userId,
       avatar,
       name,
+      teamId,
+      tmbId,
       modules,
-      mid,
       type,
       simpleTemplateId: SimpleModeTemplate_FastGPT_Universal.id
     });

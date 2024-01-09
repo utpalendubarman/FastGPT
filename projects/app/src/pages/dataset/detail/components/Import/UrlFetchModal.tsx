@@ -1,25 +1,25 @@
 import React from 'react';
 import { useTranslation } from 'next-i18next';
 import MyModal from '@/components/MyModal';
-import { Box, Button, Input, ModalBody, ModalFooter, Textarea } from '@chakra-ui/react';
+import { Box, Button, Input, Link, ModalBody, ModalFooter, Textarea } from '@chakra-ui/react';
 import { useRequest } from '@/web/common/hooks/useRequest';
 import { postFetchUrls } from '@/web/common/tools/api';
 import { useForm } from 'react-hook-form';
 import { UrlFetchResponse } from '@fastgpt/global/common/file/api.d';
+import { getDocPath } from '@/web/common/system/doc';
+import { feConfigs } from '@/web/common/system/staticData';
 
 const UrlFetchModal = ({
   onClose,
-  url,
   onSuccess
 }: {
   onClose: () => void;
-  url: string;
   onSuccess: (e: UrlFetchResponse) => void;
 }) => {
   const { t } = useTranslation();
   const { register, handleSubmit } = useForm({
     defaultValues: {
-      urls: url,
+      urls: '',
       selector: ''
     }
   });
@@ -37,32 +37,6 @@ const UrlFetchModal = ({
     },
     errorToast: t('core.dataset.import.Fetch Error')
   });
-
-  const Automate = async (urlList: string[]) => {
-    try {
-      const res = await postFetchUrls({
-        urlList,
-        selector: ''
-      });
-      onSuccess(res);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  if (url.length != 0) {
-    onClose();
-    console.log('should automate');
-    /*try{
-      Automate(url,'');
-    }catch(e){
-      console.log(e);
-    }*/
-
-    const urlList = url.split('\n').filter((e) => e);
-    Automate(urlList);
-    //console.log(urlList);
-  }
 
   return (
     <MyModal
@@ -96,12 +70,17 @@ const UrlFetchModal = ({
         <Box mt={4}>
           <Box fontWeight={'bold'}>
             {t('core.dataset.website.Selector')}({t('common.choosable')})
-          </Box>{' '}
+          </Box>
+          {feConfigs?.docUrl && (
+            <Link href={getDocPath('/docs/course/websync/#选择器如何使用')} target="_blank">
+              {t('core.dataset.website.Selector Course')}
+            </Link>
+          )}
           <Input {...register('selector')} placeholder="body .content #document" />
         </Box>
       </ModalBody>
       <ModalFooter>
-        <Button variant={'base'} mr={4} onClick={onClose}>
+        <Button variant={'whiteBase'} mr={4} onClick={onClose}>
           {t('common.Close')}
         </Button>
         <Button isLoading={isLoading} onClick={handleSubmit((data) => mutate(data))}>

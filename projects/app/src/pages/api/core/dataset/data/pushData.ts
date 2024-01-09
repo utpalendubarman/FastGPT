@@ -33,7 +33,7 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     }
 
     // 凭证校验
-    const { userId } = await authDatasetCollection({
+    const { teamId, tmbId } = await authDatasetCollection({
       req,
       authToken: true,
       authApiKey: true,
@@ -43,8 +43,9 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
 
     jsonRes<PushDataResponse>(res, {
       data: await pushDataToDatasetCollection({
-        userId,
-        ...req.body
+        ...req.body,
+        teamId,
+        tmbId
       })
     });
   } catch (err) {
@@ -56,16 +57,18 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
 });
 
 export async function pushDataToDatasetCollection({
-  userId,
+  teamId,
+  tmbId,
   collectionId,
   data,
   mode,
   prompt,
   billId
 }: {
-  userId: string;
+  teamId: string;
+  tmbId: string;
 } & PushDatasetDataProps): Promise<PushDataResponse> {
-  const { datasetId, model, maxToken } = await checkModelValid({
+  const { datasetId, model, maxToken, weight } = await checkModelValid({
     mode,
     collectionId
   });
@@ -93,37 +96,37 @@ export async function pushDataToDatasetCollection({
     repeat: [],
     error: []
   };
-  await Promise.all(
-    data.map(async (item) => {
-      if (!item.q) {
-        filterResult.error.push(item);
-        return;
-      }
 
-      const text = item.q + item.a;
+  data.forEach((item) => {
+    if (!item.q) {
+      filterResult.error.push(item);
+      return;
+    }
 
-      // count q token
-      const token = countPromptTokens(item.q);
+    const text = item.q + item.a;
 
-      if (token > maxToken) {
-        filterResult.overToken.push(item);
-        return;
-      }
+    // count q token
+    const token = countPromptTokens(item.q);
 
-      if (set.has(text)) {
-        console.log('repeat', item);
-        filterResult.repeat.push(item);
-      } else {
-        filterResult.success.push(item);
-        set.add(text);
-      }
-    })
-  );
+    if (token > maxToken) {
+      filterResult.overToken.push(item);
+      return;
+    }
+
+    if (set.has(text)) {
+      console.log('repeat', item);
+      filterResult.repeat.push(item);
+    } else {
+      filterResult.success.push(item);
+      set.add(text);
+    }
+  });
 
   // 插入记录
   const insertRes = await MongoDatasetTraining.insertMany(
     filterResult.success.map((item, i) => ({
-      userId,
+      teamId,
+      tmbId,
       datasetId,
       collectionId,
       billId,
@@ -132,7 +135,8 @@ export async function pushDataToDatasetCollection({
       model,
       q: item.q,
       a: item.a,
-      chunkIndex: i,
+      chunkIndex: item.chunkIndex ?? i,
+      weight: weight ?? 0,
       indexes: item.indexes
     }))
   );
@@ -163,10 +167,12 @@ export async function checkModelValid({
     if (!vectorModelData) {
       return Promise.reject(`Model ${vectorModel} is inValid`);
     }
+
     return {
       datasetId,
       maxToken: vectorModelData.maxToken * 1.5,
-      model: vectorModelData.model
+      model: vectorModelData.model,
+      weight: vectorModelData.weight
     };
   }
 
@@ -178,7 +184,8 @@ export async function checkModelValid({
     return {
       datasetId,
       maxToken: qaModelData.maxContext * 0.8,
-      model: qaModelData.model
+      model: qaModelData.model,
+      weight: 0
     };
   }
   return Promise.reject(`Mode ${mode} is inValid`);

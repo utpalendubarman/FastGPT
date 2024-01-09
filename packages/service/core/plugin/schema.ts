@@ -11,7 +11,16 @@ export const PluginCollectionName = 'plugins';
 const PluginSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'user'
+  },
+  teamId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
     required: true
   },
   name: {

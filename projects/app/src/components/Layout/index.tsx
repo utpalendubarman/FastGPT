@@ -25,21 +25,23 @@ const pcUnShowLayoutRoute: Record<string, boolean> = {
   '/login/fastlogin': true,
   '/chat/share': true,
   '/app/edit': true,
-  '/chat': true
+  '/chat': true,
+  '/tools/price': true
 };
 const phoneUnShowLayoutRoute: Record<string, boolean> = {
   '/': true,
   '/login': true,
   '/login/provider': true,
   '/login/fastlogin': true,
-  '/chat/share': true
+  '/chat/share': true,
+  '/tools/price': true
 };
 
 const Layout = ({ children }: { children: JSX.Element }) => {
   const router = useRouter();
   const { colorMode, setColorMode } = useColorMode();
   const { Loading } = useLoading();
-  const { loading, setScreenWidth, isPc, loadGitStar } = useSystemStore();
+  const { loading, setScreenWidth, isPc } = useSystemStore();
   const { userInfo } = useUserStore();
 
   const isChatPage = useMemo(
@@ -61,12 +63,11 @@ const Layout = ({ children }: { children: JSX.Element }) => {
     window.addEventListener('resize', resize);
 
     resize();
-    loadGitStar();
 
     return () => {
       window.removeEventListener('resize', resize);
     };
-  }, [loadGitStar, setScreenWidth]);
+  }, [setScreenWidth]);
 
   const { data: unread = 0 } = useQuery(['getUnreadCount'], getUnreadCount, {
     enabled: !!userInfo && !!feConfigs.isPlus,
@@ -75,14 +76,14 @@ const Layout = ({ children }: { children: JSX.Element }) => {
 
   return (
     <>
-      <Box h={'100%'} bg={'myWhite.600'}>
+      <Box h={'100%'} bg={'myGray.100'}>
         {isPc === true && (
           <>
             {pcUnShowLayoutRoute[router.pathname] ? (
               <Auth>{children}</Auth>
             ) : (
               <>
-                <Box h={'100%'} position={'fixed'} left={0} top={0} w={'70px'}>
+                <Box h={'100%'} position={'fixed'} left={0} top={0} w={'64px'}>
                   <Navbar unread={unread} />
                 </Box>
                 <Box h={'100%'} ml={'70px'} overflow={'overlay'}>

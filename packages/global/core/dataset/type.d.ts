@@ -6,6 +6,7 @@ import {
   DatasetDataIndexTypeEnum,
   DatasetStatusEnum,
   DatasetTypeEnum,
+  SearchScoreTypeEnum,
   TrainingModeEnum
 } from './constant';
 
@@ -14,6 +15,8 @@ export type DatasetSchemaType = {
   _id: string;
   parentId: string;
   userId: string;
+  teamId: string;
+  tmbId: string;
   updateTime: Date;
   avatar: string;
   name: string;
@@ -31,6 +34,8 @@ export type DatasetSchemaType = {
 
 export type DatasetCollectionSchemaType = {
   _id: string;
+  teamId: string;
+  tmbId: string;
   datasetId: string;
   parentId?: string;
   name: string;
@@ -41,7 +46,13 @@ export type DatasetCollectionSchemaType = {
   chunkSize: number;
   fileId?: string;
   rawLink?: string;
-  metadata?: Record<string, any>;
+  qaPrompt?: string;
+  rawTextLength?: number;
+  hashRawText?: string;
+  metadata?: {
+    webPageSelector?: string;
+    [key: string]: any;
+  };
 };
 
 export type DatasetDataIndexItemType = {
@@ -53,6 +64,8 @@ export type DatasetDataIndexItemType = {
 export type DatasetDataSchemaType = {
   _id: string;
   userId: string;
+  teamId: string;
+  tmbId: string;
   datasetId: string;
   collectionId: string;
   datasetId: string;
@@ -68,6 +81,8 @@ export type DatasetDataSchemaType = {
 export type DatasetTrainingSchemaType = {
   _id: string;
   userId: string;
+  teamId: string;
+  tmbId: string;
   datasetId: string;
   collectionId: string;
   billId: string;
@@ -79,6 +94,7 @@ export type DatasetTrainingSchemaType = {
   q: string;
   a: string;
   chunkIndex: number;
+  weight: number;
   indexes: Omit<DatasetDataIndexItemType, 'dataId'>[];
 };
 
@@ -126,6 +142,7 @@ export type DatasetDataItemType = {
   sourceId?: string;
   q: string;
   a: string;
+  chunkIndex: number;
   indexes: DatasetDataIndexItemType[];
   isOwner: boolean;
   canWrite: boolean;
@@ -148,6 +165,10 @@ export type DatasetFileSchema = {
 };
 
 /* ============= search =============== */
-export type SearchDataResponseItemType = Omit<DatasetDataItemType, 'isOwner' | 'canWrite'> & {
-  score: number;
+export type SearchDataResponseItemType = Omit<
+  DatasetDataItemType,
+  'indexes' | 'isOwner' | 'canWrite'
+> & {
+  score: { type: `${SearchScoreTypeEnum}`; value: number; index: number }[];
+  // score: number;
 };

@@ -14,6 +14,7 @@ import {
 import { getFileById } from '../../../common/file/gridfs/controller';
 import { BucketNameEnum } from '@fastgpt/global/common/file/constants';
 import { getTeamInfoByTmbId } from '../../user/team/controller';
+import { CommonErrEnum } from '@fastgpt/global/common/error/code/common';
 
 export async function authDatasetByTmbId({
   teamId,
@@ -105,13 +106,33 @@ export async function authDatasetCollection({
     collection: CollectionWithDatasetType;
   }
 > {
-  const { uid } = await parseHeaderCert(props);
-  const userId = uid;
+  const { userId, teamId, tmbId } = await parseHeaderCert(props);
+  const { role } = await getTeamInfoByTmbId({ tmbId });
 
   const { collection, isOwner, canWrite } = await (async () => {
     const collection = await getCollectionWithDataset(collectionId);
-    const isOwner = collection.userId == userId;
-    const canWrite = collection.userId == userId;
+
+    if (!collection || String(collection.teamId) !== teamId) {
+      return Promise.reject(DatasetErrEnum.unAuthDatasetCollection);
+    }
+
+    const isOwner = String(collection.tmbId) === tmbId || role === TeamMemberRoleEnum.owner;
+    const canWrite =
+      isOwner ||
+      (role !== TeamMemberRoleEnum.visitor &&
+        collection.datasetId.permission === PermissionTypeEnum.public);
+
+    if (per === 'r') {
+      if (!isOwner && collection.datasetId.permission !== PermissionTypeEnum.public) {
+        return Promise.reject(DatasetErrEnum.unAuthDatasetCollection);
+      }
+    }
+    if (per === 'w' && !canWrite) {
+      return Promise.reject(DatasetErrEnum.unAuthDatasetCollection);
+    }
+    if (per === 'owner' && !isOwner) {
+      return Promise.reject(DatasetErrEnum.unAuthDatasetCollection);
+    }
 
     return {
       collection,
@@ -122,6 +143,8 @@ export async function authDatasetCollection({
 
   return {
     userId,
+    teamId,
+    tmbId,
     collection,
     isOwner,
     canWrite
@@ -143,6 +166,10 @@ export async function authDatasetFile({
   const { role } = await getTeamInfoByTmbId({ tmbId });
 
   const file = await getFileById({ bucketName: BucketNameEnum.dataset, fileId });
+
+  if (!file) {
+    return Promise.reject(CommonErrEnum.fileNotFound);
+  }
 
   if (file.metadata.teamId !== teamId) {
     return Promise.reject(DatasetErrEnum.unAuthDatasetFile);

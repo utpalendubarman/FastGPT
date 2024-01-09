@@ -1,17 +1,15 @@
 import React, { useCallback, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { getInitChatSiteInfo, delChatRecordById, putChatHistory } from '@/web/core/chat/api';
+import { getInitChatInfo } from '@/web/core/chat/api';
 import {
   Box,
   Flex,
   useDisclosure,
   Drawer,
   DrawerOverlay,
-  Text,
   DrawerContent,
-  useTheme,
-  background
+  useTheme
 } from '@chakra-ui/react';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +21,6 @@ import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 12);
 import type { ChatHistoryItemType } from '@fastgpt/global/core/chat/type.d';
 import { useTranslation } from 'next-i18next';
-import { useState } from 'react';
 
 import ChatBox, { type ComponentRef, type StartChatFnProps } from '@/components/ChatBox';
 import PageContainer from '@/components/PageContainer';
@@ -37,6 +34,7 @@ import { serviceSideProps } from '@/web/common/utils/i18n';
 import { useAppStore } from '@/web/core/app/store/useAppStore';
 import { checkChatSupportSelectFileByChatModels } from '@/web/core/chat/utils';
 import { chatContentReplaceBlock } from '@fastgpt/global/core/chat/utils';
+import { ChatStatusEnum } from '@fastgpt/global/core/chat/constants';
 
 const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
   const router = useRouter();
@@ -52,13 +50,15 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
     setLastChatAppId,
     lastChatId,
     setLastChatId,
-    history,
-    loadHistory,
+    histories,
+    loadHistories,
+    pushHistory,
     updateHistory,
-    delHistory,
-    clearHistory,
+    delOneHistory,
+    clearHistories,
     chatData,
-    setChatData
+    setChatData,
+    delOneHistoryItem
   } = useChatStore();
   const { myApps, loadMyApps } = useAppStore();
   const { userInfo } = useUserStore();
@@ -86,9 +86,9 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
       const newTitle =
         chatContentReplaceBlock(prompts[0].content).slice(0, 20) ||
         prompts[1]?.value?.slice(0, 20) ||
-        'New conversation';
+        '新对话';
 
-      // update history
+      // new chat
       if (completionChatId !== chatId) {
         const newHistory: ChatHistoryItemType = {
           chatId: completionChatId,
@@ -97,7 +97,7 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
           appId,
           top: false
         };
-        updateHistory(newHistory);
+        pushHistory(newHistory);
         if (controller.signal.reason !== 'leave') {
           forbidRefresh.current = true;
           router.replace({
@@ -108,7 +108,8 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
           });
         }
       } else {
-        const currentChat = history.find((item) => item.chatId === chatId);
+        // update chat
+        const currentChat = histories.find((item) => item.chatId === chatId);
         currentChat &&
           updateHistory({
             ...currentChat,
@@ -120,30 +121,12 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
       setChatData((state) => ({
         ...state,
         title: newTitle,
-        history: ChatBoxRef.current?.getChatHistory() || state.history
+        history: ChatBoxRef.current?.getChatHistories() || state.history
       }));
 
       return { responseText, responseData, isNewChat: forbidRefresh.current };
     },
-    [appId, chatId, history, router, setChatData, updateHistory]
-  );
-
-  // del one chat content
-  const delOneHistoryItem = useCallback(
-    async ({ contentId, index }: { contentId?: string; index: number }) => {
-      if (!chatId || !contentId) return;
-
-      try {
-        setChatData((state) => ({
-          ...state,
-          history: state.history.filter((_, i) => i !== index)
-        }));
-        await delChatRecordById({ chatId, contentId });
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    [chatId, setChatData]
+    [appId, chatId, histories, pushHistory, router, setChatData, updateHistory]
   );
 
   // get chat app info
@@ -159,10 +142,10 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
     }) => {
       try {
         loading && setIsLoading(true);
-        const res = await getInitChatSiteInfo({ appId, chatId });
+        const res = await getInitChatInfo({ appId, chatId });
         const history = res.history.map((item) => ({
           ...item,
-          status: 'finish' as any
+          status: ChatStatusEnum.finish
         }));
 
         setChatData({
@@ -183,13 +166,18 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
         setLastChatAppId('');
         setLastChatId('');
         toast({
-          title: getErrText(e, 'Initialized chat failed'),
+          title: getErrText(e, '初始化聊天失败'),
           status: 'error'
         });
         if (e?.code === 501) {
           router.replace('/app/list');
-        } else {
-          router.replace('/chat');
+        } else if (chatId) {
+          router.replace({
+            query: {
+              ...router.query,
+              chatId: ''
+            }
+          });
         }
       }
       setIsLoading(false);
@@ -253,98 +241,7 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
     });
   });
 
-  useQuery(['loadHistory', appId], () => (appId ? loadHistory({ appId }) : null));
-  const containerStyle = {
-    display: 'flex',
-    height: '100%'
-  };
-
-  const sideBySideStyle = {
-    flex: 1,
-    height: '100%'
-  };
-
-  const productStyle = {};
-
-  const Product = ({ name, price, color, image }) => {
-    return (
-      <div
-        style={{
-          border: '1px solid var(--chakra-colors-gray-300)',
-          background: 'white',
-          borderRadius: 7,
-          margin: '5px',
-          width: '150px'
-        }}
-      >
-        <div>
-          <img
-            src={image}
-            alt={name}
-            style={{ width: '100%', borderTopRightRadius: 7, borderTopLeftRadius: 7 }}
-          />
-        </div>
-        <div style={{ padding: 10 }}>
-          <h3 style={{ fontWeight: 'bold' }}>{name}</h3>
-          <p>Price: ${price}</p>
-          <p>Color: {color}</p>
-        </div>
-      </div>
-    );
-  };
-
-  const ProductGrid = () => {
-    return (
-      <div style={{ display: 'flex', flexWrap: 'wrap' }} id="products">
-        {products.map((product) => (
-          <Product key={product.id} {...product} />
-        ))}
-      </div>
-    );
-  };
-  function CSVtoArray(text) {
-    let ret = [''],
-      i = 0,
-      p = '',
-      s = true;
-    for (let l in text) {
-      l = text[l];
-      if ('"' === l) {
-        s = !s;
-        if ('"' === p) {
-          ret[i] += '"';
-          l = '-';
-        } else if ('' === p) l = '-';
-      } else if (s && ',' === l) l = ret[++i] = '';
-      else ret[i] += l;
-      p = l;
-    }
-    return ret;
-  }
-  const updateProducts = (e) => {
-    var historyDom = document.getElementById('products');
-    var htmlnew = '';
-
-    e.all.map((item) => {
-      const itm = CSVtoArray(item.q);
-      if (e.found.includes(Number(itm[0]))) {
-        const name = itm[1].length < 36 ? itm[1] : itm[1].substring(0, 33) + '...';
-        htmlnew += `<a target="_blank" href="${
-          itm[5]
-        }"><div style="border: 1px solid var(--chakra-colors-gray-300); background: white; border-radius: 7px; text-decoration: none; color: black;">
-        <div>
-        <div style="display:flex; justify-content: center;"><img src="${
-          itm[4]
-        }" alt="Product 2" style="border-top-right-radius: 7px; border-top-left-radius: 7px; padding: 10px; width: 200px; height: 200px" onerror="this.src='/imgs/errImg.png'"></div>
-        </div><div style="padding: 10px;">
-        <h3 style="font-weight: bold;">${name}</h3>
-        <p>Price: ${itm[8] !== '' ? itm[8] : 'May Vary'}</p>
-        </div>
-        </div></a>`;
-      }
-    });
-    historyDom.innerHTML = htmlnew;
-  };
+  useQuery(['loadHistories', appId], () => (appId ? loadHistories({ appId }) : null));
 
   return (
     <Flex h={'100%'}>
@@ -358,8 +255,8 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
         </Box>
       )}
 
-      <PageContainer flex={'1 0 0'} w={0} bg={'myWhite.600'} position={'relative'}>
-        <Flex h={'100%'} flexDirection={['column', 'row']}>
+      <PageContainer flex={'1 0 0'} w={0} p={[0, '16px']} position={'relative'}>
+        <Flex h={'100%'} flexDirection={['column', 'row']} bg={'white'}>
           {/* pc always show history. */}
           {((children: React.ReactNode) => {
             return isPc || !appId ? (
@@ -383,7 +280,7 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
               appAvatar={chatData.app.avatar}
               activeChatId={chatId}
               onClose={onCloseSlider}
-              history={history.map((item, i) => ({
+              history={histories.map((item, i) => ({
                 id: item.chatId,
                 title: item.title,
                 customTitle: item.customTitle,
@@ -400,39 +297,25 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
                   onCloseSlider();
                 }
               }}
-              onDelHistory={delHistory}
+              onDelHistory={(e) => delOneHistory({ ...e, appId })}
               onClearHistory={() => {
-                clearHistory(appId);
+                clearHistories({ appId });
                 router.replace({
                   query: {
                     appId
                   }
                 });
               }}
-              onSetHistoryTop={async (e) => {
-                try {
-                  await putChatHistory(e);
-                  const historyItem = history.find((item) => item.chatId === e.chatId);
-                  if (!historyItem) return;
-                  updateHistory({
-                    ...historyItem,
-                    top: e.top
-                  });
-                } catch (error) {}
+              onSetHistoryTop={(e) => {
+                updateHistory({ ...e, appId });
               }}
               onSetCustomTitle={async (e) => {
-                try {
-                  putChatHistory({
-                    chatId: e.chatId,
-                    customTitle: e.title
-                  });
-                  const historyItem = history.find((item) => item.chatId === e.chatId);
-                  if (!historyItem) return;
-                  updateHistory({
-                    ...historyItem,
-                    customTitle: e.title
-                  });
-                } catch (error) {}
+                updateHistory({
+                  appId,
+                  chatId: e.chatId,
+                  title: e.title,
+                  customTitle: e.title
+                });
               }}
             />
           )}
@@ -452,71 +335,26 @@ const Chat = ({ appId, chatId }: { appId: string; chatId: string }) => {
               history={chatData.history}
               chatModels={chatData.app.chatModels}
               onOpenSlider={onOpenSlider}
+              showHistory
             />
 
             {/* chat box */}
-            {chatData.app?.mid == 'askforProduct' ? (
-              <Box flex={1}>
-                <div style={containerStyle}>
-                  <div
-                    style={{
-                      ...sideBySideStyle,
-                      ...{
-                        flex: '3',
-                        borderRight: '1px solid var(--chakra-colors-myGray-200)',
-                        background: 'var(--chakra-colors-myGray-100',
-                        overflow: 'scroll'
-                      }
-                    }}
-                  >
-                    <div style={{ padding: 10 }}>
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(3, 1fr)',
-                          gap: '10px'
-                        }}
-                        id="products"
-                      ></div>
-                    </div>
-                  </div>
-                  <div style={{ ...sideBySideStyle, ...{ flex: '2' } }}>
-                    <ChatBox
-                      ref={ChatBoxRef}
-                      showEmptyIntro
-                      appDetails={chatData.app}
-                      appAvatar={chatData.app.avatar}
-                      userAvatar={userInfo?.avatar}
-                      userGuideModule={chatData.app?.userGuideModule}
-                      showFileSelector={checkChatSupportSelectFileByChatModels(
-                        chatData.app.chatModels
-                      )}
-                      feedbackType={'user'}
-                      onUpdateVariable={(e) => {}}
-                      onStartChat={startChat}
-                      onProducts={(e) => updateProducts(e)}
-                      onDelMessage={delOneHistoryItem}
-                    />
-                  </div>
-                </div>
-              </Box>
-            ) : (
-              <Box flex={1}>
-                <ChatBox
-                  ref={ChatBoxRef}
-                  showEmptyIntro
-                  appDetails={chatData.app}
-                  appAvatar={chatData.app.avatar}
-                  userAvatar={userInfo?.avatar}
-                  userGuideModule={chatData.app?.userGuideModule}
-                  showFileSelector={checkChatSupportSelectFileByChatModels(chatData.app.chatModels)}
-                  feedbackType={'user'}
-                  onUpdateVariable={(e) => {}}
-                  onStartChat={startChat}
-                  onDelMessage={delOneHistoryItem}
-                />
-              </Box>
-            )}
+            <Box flex={1}>
+              <ChatBox
+                ref={ChatBoxRef}
+                showEmptyIntro
+                appAvatar={chatData.app.avatar}
+                userAvatar={userInfo?.avatar}
+                userGuideModule={chatData.app?.userGuideModule}
+                showFileSelector={checkChatSupportSelectFileByChatModels(chatData.app.chatModels)}
+                feedbackType={'user'}
+                onUpdateVariable={(e) => {}}
+                onStartChat={startChat}
+                onDelMessage={(e) => delOneHistoryItem({ ...e, appId, chatId })}
+                appId={appId}
+                chatId={chatId}
+              />
+            </Box>
           </Flex>
         </Flex>
         <Loading fixed={false} />

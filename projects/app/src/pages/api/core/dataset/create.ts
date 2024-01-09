@@ -20,11 +20,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     } = req.body as CreateDatasetParams;
 
     // 凭证校验
-    const { userId } = await authUserNotVisitor({ req, authToken: true });
+    const { teamId, tmbId } = await authUserNotVisitor({ req, authToken: true });
 
     const { _id } = await MongoDataset.create({
       name,
-      userId,
+      teamId,
+      tmbId,
       vectorModel,
       agentModel,
       avatar,
@@ -32,12 +33,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       type
     });
 
-    // if (type === DatasetTypeEnum.dataset) {
-    //   await createDefaultCollection({
-    //     datasetId: _id,
-    //     userId
-    //   });
-    // }
+    if (type === DatasetTypeEnum.dataset) {
+      await createDefaultCollection({
+        datasetId: _id,
+        teamId,
+        tmbId
+      });
+    }
 
     jsonRes(res, { data: _id });
   } catch (err) {

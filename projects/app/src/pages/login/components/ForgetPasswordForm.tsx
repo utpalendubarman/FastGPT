@@ -1,5 +1,5 @@
 import React, { useState, Dispatch, useCallback } from 'react';
-import { FormControl, Box, Input, Button, FormErrorMessage, Flex } from '@chakra-ui/react';
+import { FormControl, Box, Input, Button } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { PageTypeEnum } from '@/constants/user';
 import { postFindPassword } from '@/web/support/user/api';
@@ -57,12 +57,12 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
           })
         );
         toast({
-          title: `Password has been retrieved`,
+          title: `密码已找回`,
           status: 'success'
         });
       } catch (error: any) {
         toast({
-          title: error.message || 'Exception when changing password',
+          title: error.message || '修改密码异常',
           status: 'error'
         });
       }
@@ -76,106 +76,115 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
       <Box fontWeight={'bold'} fontSize={'2xl'} textAlign={'center'}>
         找回 {feConfigs?.systemTitle} 账号
       </Box>
-      <form onSubmit={handleSubmit(onclickFindPassword)}>
-        <FormControl mt={5} isInvalid={!!errors.username}>
+      <Box
+        mt={'42px'}
+        onKeyDown={(e) => {
+          if (e.keyCode === 13 && !e.shiftKey && !requesting) {
+            handleSubmit(onclickFindPassword)();
+          }
+        }}
+      >
+        <FormControl isInvalid={!!errors.username}>
           <Input
-            placeholder="Email/Mobile phone number"
-            size={['md', 'lg']}
+            bg={'myGray.50'}
+            placeholder="邮箱/手机号"
             {...register('username', {
-              required: 'Email/mobile phone number cannot be empty',
+              required: '邮箱/手机号不能为空',
               pattern: {
                 value:
                   /(^1[3456789]\d{9}$)|(^[A-Za-z0-9]+([_\.][A-Za-z0-9]+)*@([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6}$)/,
-                message: 'Email/mobile phone number format error'
+                message: '邮箱/手机号格式错误'
               }
             })}
           ></Input>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.username && errors.username.message}
-          </FormErrorMessage>
         </FormControl>
-        <FormControl mt={8} isInvalid={!!errors.username}>
-          <Flex>
-            <Input
-              flex={1}
-              placeholder="Verification code"
-              size={['md', 'lg']}
-              {...register('code', {
-                required: 'Verification code must be filled'
-              })}
-            ></Input>
-            <Button
-              ml={5}
-              w={'145px'}
-              maxW={'50%'}
-              size={['md', 'lg']}
-              onClick={onclickSendCode}
-              isDisabled={codeCountDown > 0}
-              isLoading={codeSending}
-            >
-              {sendCodeText}
-            </Button>
-          </Flex>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.code && errors.code.message}
-          </FormErrorMessage>
-        </FormControl>
-        <FormControl mt={8} isInvalid={!!errors.password}>
+        <FormControl
+          mt={6}
+          isInvalid={!!errors.code}
+          display={'flex'}
+          alignItems={'center'}
+          position={'relative'}
+        >
           <Input
+            bg={'myGray.50'}
+            flex={1}
+            maxLength={8}
+            placeholder="验证码"
+            {...register('code', {
+              required: '验证码不能为空'
+            })}
+          ></Input>
+          <Box
+            position={'absolute'}
+            right={3}
+            zIndex={1}
+            fontSize={'sm'}
+            {...(codeCountDown > 0
+              ? {
+                  color: 'myGray.500'
+                }
+              : {
+                  color: 'primary.700',
+                  cursor: 'pointer',
+                  onClick: onclickSendCode
+                })}
+          >
+            {sendCodeText}
+          </Box>
+        </FormControl>
+        <FormControl mt={6} isInvalid={!!errors.password}>
+          <Input
+            bg={'myGray.50'}
             type={'password'}
-            placeholder="New Password"
-            size={['md', 'lg']}
+            placeholder="新密码(4~20位)"
             {...register('password', {
-              required: 'password can not be blank',
+              required: '密码不能为空',
               minLength: {
                 value: 4,
-                message: 'Password must be at least 4 characters and at most 20 characters'
+                message: '密码最少 4 位最多 20 位'
               },
               maxLength: {
                 value: 20,
-                message: 'Password must be at least 4 characters and at most 20 characters'
+                message: '密码最少 4 位最多 20 位'
               }
             })}
           ></Input>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.password && errors.password.message}
-          </FormErrorMessage>
         </FormControl>
-        <FormControl mt={8} isInvalid={!!errors.password2}>
+        <FormControl mt={6} isInvalid={!!errors.password2}>
           <Input
+            bg={'myGray.50'}
             type={'password'}
-            placeholder="Confirm Password"
-            size={['md', 'lg']}
+            placeholder="确认密码"
             {...register('password2', {
               validate: (val) => (getValues('password') === val ? true : '两次密码不一致')
             })}
           ></Input>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.password2 && errors.password2.message}
-          </FormErrorMessage>
         </FormControl>
-        <Box
-          float={'right'}
-          fontSize="sm"
-          mt={2}
-          color={'myBlue.600'}
-          cursor={'pointer'}
-          _hover={{ textDecoration: 'underline' }}
-          onClick={() => setPageType('login')}
-        >
-          Go to login
-        </Box>
+
         <Button
           type="submit"
-          mt={5}
+          mt={10}
           w={'100%'}
           size={['md', 'lg']}
           colorScheme="blue"
           isLoading={requesting}
+          onClick={handleSubmit(onclickFindPassword)}
         >
-          Retrieve password
+          找回密码
         </Button>
-      </form>
+        <Box
+          float={'right'}
+          fontSize="sm"
+          mt={2}
+          mb={'50px'}
+          color={'primary.700'}
+          cursor={'pointer'}
+          _hover={{ textDecoration: 'underline' }}
+          onClick={() => setPageType('login')}
+        >
+          去登录
+        </Box>
+      </Box>
     </>
   );
 };

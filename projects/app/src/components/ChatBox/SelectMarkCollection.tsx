@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ModalBody, useTheme, ModalFooter, Button, Box, Card, Flex, Grid } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
 import Avatar from '../Avatar';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constant';
 import DatasetSelectModal, { useDatasetSelect } from '@/components/core/dataset/SelectModal';
 import dynamic from 'next/dynamic';
@@ -35,7 +35,7 @@ const SelectMarkCollection = ({
   const theme = useTheme();
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>();
   const [selectedDatasetCollectionIds, setSelectedDatasetCollectionIds] = useState<string[]>([]);
-  const { paths, parentId, setParentId, datasets, isFetching } = useDatasetSelect();
+  const { paths, setParentId, datasets, isFetching } = useDatasetSelect();
 
   return (
     <>
@@ -70,7 +70,7 @@ const SelectMarkCollection = ({
                       }}
                       {...(selected
                         ? {
-                            bg: 'myBlue.300'
+                            bg: 'primary.200'
                           }
                         : {})}
                       onClick={() => {
@@ -100,7 +100,7 @@ const SelectMarkCollection = ({
               <Flex mt={'10vh'} flexDirection={'column'} alignItems={'center'}>
                 <MyIcon name="empty" w={'48px'} h={'48px'} color={'transparent'} />
                 <Box mt={2} color={'myGray.500'}>
-                  There is nothing to choose this directory
+                  这个目录已经没东西可选了~
                 </Box>
               </Flex>
             )}
@@ -132,7 +132,7 @@ const SelectMarkCollection = ({
           CustomFooter={
             <ModalFooter>
               <Button
-                variant={'base'}
+                variant={'whiteBase'}
                 mr={2}
                 onClick={() => {
                   setAdminMarkData({

@@ -1,11 +1,5 @@
 import { OAuthEnum } from './constant';
 
-export type PostRegisterByEmail = {
-  email: string;
-  password: string;
-  name: string;
-};
-
 export type PostLoginProps = {
   username: string;
   password: string;

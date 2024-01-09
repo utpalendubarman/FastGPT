@@ -1,32 +1,26 @@
 import { startQueue } from './utils/tools';
 import { PRICE_SCALE } from '@fastgpt/global/support/wallet/bill/constants';
-import { initPg } from '@fastgpt/service/common/pg';
 import { MongoUser } from '@fastgpt/service/support/user/schema';
 import { connectMongo } from '@fastgpt/service/common/mongo/init';
 import { hashStr } from '@fastgpt/global/common/string/tools';
-import { getInitConfig } from '@/pages/api/system/getInitData';
 import { createDefaultTeam } from '@fastgpt/service/support/user/team/controller';
 import { exit } from 'process';
+import { initVectorStore } from '@fastgpt/service/common/vectorStore/controller';
 
 /**
  * connect MongoDB and init data
  */
 export function connectToDatabase(): Promise<void> {
   return connectMongo({
-    beforeHook: () => {
-      getInitConfig();
-    },
+    beforeHook: () => {},
     afterHook: () => {
-      initPg();
+      initVectorStore();
       // start queue
       startQueue();
-      test();
       return initRootUser();
     }
   });
 }
-
-async function test() {}
 
 async function initRootUser() {
   try {
@@ -42,13 +36,13 @@ async function initRootUser() {
       await MongoUser.findOneAndUpdate(
         { username: 'root' },
         {
-          password: psw
+          password: hashStr(psw)
         }
       );
     } else {
       const { _id } = await MongoUser.create({
         username: 'root',
-        password: psw
+        password: hashStr(psw)
       });
       rootId = _id;
     }

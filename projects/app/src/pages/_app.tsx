@@ -12,7 +12,7 @@ import { clientInitData, feConfigs } from '@/web/common/system/staticData';
 import { appWithTranslation, useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import type { FeConfigsType } from '@fastgpt/global/common/system/types/index.d';
+import type { FastGPTFeConfigsType } from '@fastgpt/global/common/system/types/index.d';
 import { change2DefaultLng, setLngStore } from '@/web/common/utils/i18n';
 
 import 'nprogress/nprogress.css';
@@ -39,20 +39,31 @@ function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const { hiId } = router.query as { hiId?: string };
   const { i18n } = useTranslation();
-  const [scripts, setScripts] = useState<FeConfigsType['scripts']>([]);
-  const [title, setTitle] = useState(process.env.SYSTEM_NAME || 'TellsellingGPT');
+  const { loadGitStar } = useSystemStore();
+  const [scripts, setScripts] = useState<FastGPTFeConfigsType['scripts']>([]);
+  const [title, setTitle] = useState(process.env.SYSTEM_NAME || 'Tellselling GPT');
 
   useEffect(() => {
     // get init data
     (async () => {
       const {
-        feConfigs: { scripts, isPlus, systemTitle }
+        feConfigs: { scripts, isPlus, show_git, systemTitle }
       } = await clientInitData();
 
-      setTitle(systemTitle || 'TellsellingGPT');
+      setTitle(systemTitle || 'FastGPT');
 
       // log fastgpt
-      !isPlus && console.log('');
+      if (!isPlus) {
+        console.log(
+          '%cWelcome to FastGPT',
+          'font-family:Arial; color:#3370ff ; font-size:18px; font-weight:bold;',
+          `GitHub：https://github.com/labring/FastGPT`
+        );
+      }
+      if (show_git) {
+        loadGitStar();
+      }
+
       setScripts(scripts || []);
     })();
 
@@ -90,8 +101,11 @@ function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>TellsellingGPT</title>
-        <meta name="description" content={`${title}`} />
+        <title>{title}</title>
+        <meta
+          name="description"
+          content={`${title} 是一个大模型应用编排系统，提供开箱即用的数据处理、模型调用等能力，可以快速的构建知识库并通过 Flow 可视化进行工作流编排，实现复杂的知识库场景！`}
+        />
         <meta
           name="viewport"
           content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no, viewport-fit=cover"

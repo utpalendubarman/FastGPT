@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const body = req.body as CreateDatasetCollectionParams;
 
     // auth. not visitor and dataset is public
-    const { userId } = await authUserNotVisitor({ req, authToken: true });
+    const { teamId, tmbId } = await authUserNotVisitor({ req, authToken: true });
     await authDataset({
       req,
       authToken: true,
@@ -26,7 +26,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     jsonRes(res, {
       data: await createOneCollection({
         ...body,
-        userId
+        teamId,
+        tmbId
       })
     });
   } catch (err) {

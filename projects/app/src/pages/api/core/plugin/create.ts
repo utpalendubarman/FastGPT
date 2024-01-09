@@ -8,12 +8,13 @@ import { MongoPlugin } from '@fastgpt/service/core/plugin/schema';
 export default async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
     await connectToDatabase();
-    const { userId } = await authUserNotVisitor({ req, authToken: true });
+    const { teamId, tmbId } = await authUserNotVisitor({ req, authToken: true });
     const body = req.body as CreateOnePluginParams;
 
     const { _id } = await MongoPlugin.create({
       ...body,
-      userId
+      teamId,
+      tmbId
     });
 
     jsonRes(res, {

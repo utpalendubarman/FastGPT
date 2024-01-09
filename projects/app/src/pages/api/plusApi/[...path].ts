@@ -2,12 +2,15 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { jsonRes } from '@fastgpt/service/common/response';
 import { request } from '@fastgpt/service/common/api/plusRequest';
 import type { Method } from 'axios';
-import { connectToDatabase } from '@/service/mongo';
 import { setCookie } from '@fastgpt/service/support/permission/controller';
+import { getInitConfig } from '../common/system/getInitData';
+import { FastGPTProUrl } from '@fastgpt/service/common/system/constants';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    await connectToDatabase();
+    if (!FastGPTProUrl) {
+      await getInitConfig();
+    }
 
     const method = (req.method || 'POST') as Method;
     const { path = [], ...query } = req.query as any;

@@ -4,16 +4,19 @@ import { connectToDatabase } from '@/service/mongo';
 import { MongoApp } from '@fastgpt/service/core/app/schema';
 import { mongoRPermission } from '@fastgpt/global/support/permission/utils';
 import { AppListItemType } from '@fastgpt/global/core/app/type';
-import { authUserNotVisitor } from '@fastgpt/service/support/permission/auth/user';
+import { authUserRole } from '@fastgpt/service/support/permission/auth/user';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
     await connectToDatabase();
     // 凭证校验
-    // const { teamId, tmbId, teamOwner, role } = await authUserRole({ req, authToken: true });
-    const { userId } = await authUserNotVisitor({ req, authToken: true });
+    const { teamId, tmbId, teamOwner, role } = await authUserRole({ req, authToken: true });
+
     // 根据 userId 获取模型信息
-    const myApps = await MongoApp.find({ userId }, '_id avatar name intro permission').sort({
+    const myApps = await MongoApp.find(
+      { ...mongoRPermission({ teamId, tmbId, role }) },
+      '_id avatar name intro tmbId permission'
+    ).sort({
       updateTime: -1
     });
     jsonRes<AppListItemType[]>(res, {
@@ -22,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         avatar: app.avatar,
         name: app.name,
         intro: app.intro,
-        isOwner: true,
+        isOwner: teamOwner || String(app.tmbId) === tmbId,
         permission: app.permission
       }))
     });

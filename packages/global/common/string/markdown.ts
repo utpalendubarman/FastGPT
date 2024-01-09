@@ -1,5 +1,4 @@
 import { simpleText } from './tools';
-import { NodeHtmlMarkdown } from 'node-html-markdown';
 
 /* Delete redundant text in markdown */
 export const simpleMarkdownText = (rawText: string) => {
@@ -26,72 +25,50 @@ export const simpleMarkdownText = (rawText: string) => {
   rawText = rawText.replace(/\\\\n/g, '\\n');
 
   // Remove headings and code blocks front spaces
-  ['####', '###', '##', '#', '```', '~~~'].forEach((item) => {
+  ['####', '###', '##', '#', '```', '~~~'].forEach((item, i) => {
     const reg = new RegExp(`\\n\\s*${item}`, 'g');
     if (reg.test(rawText)) {
-      rawText = rawText.replace(new RegExp(`\\n\\s*(${item})`, 'g'), '\n$1');
+      rawText = rawText.replace(new RegExp(`(\\n)( *)(${item})`, 'g'), '$1$3');
     }
   });
 
   return rawText.trim();
 };
 
-/* html string to markdown */
-export const htmlToMarkdown = (html?: string | null) => {
-  if (!html) return '';
+/**
+ * format markdown
+ * 1. upload base64
+ * 2. replace \
+ */
+export const uploadMarkdownBase64 = async ({
+  rawText,
+  uploadImgController
+}: {
+  rawText: string;
+  uploadImgController: (base64: string) => Promise<string>;
+}) => {
+  // match base64, upload and replace it
+  const base64Regex = /data:image\/.*;base64,([^\)]+)/g;
+  const base64Arr = rawText.match(base64Regex) || [];
+  // upload base64 and replace it
+  await Promise.all(
+    base64Arr.map(async (base64Img) => {
+      try {
+        const str = await uploadImgController(base64Img);
 
-  const surround = (source: string, surroundStr: string) => `${surroundStr}${source}${surroundStr}`;
-
-  const nhm = new NodeHtmlMarkdown(
-    {
-      codeFence: '```',
-      codeBlockStyle: 'fenced',
-      ignore: ['i', 'script']
-    },
-    {
-      code: ({ node, parent, options: { codeFence, codeBlockStyle }, visitor }) => {
-        const isCodeBlock = ['PRE', 'WRAPPED-PRE'].includes(parent?.tagName!);
-
-        if (!isCodeBlock) {
-          return {
-            spaceIfRepeatingChar: true,
-            noEscape: true,
-            postprocess: ({ content }) => {
-              // Find longest occurring sequence of running backticks and add one more (so content is escaped)
-              const delimiter =
-                '`' + (content.match(/`+/g)?.sort((a, b) => b.length - a.length)?.[0] || '');
-              const padding = delimiter.length > 1 ? ' ' : '';
-
-              return surround(surround(content, padding), delimiter);
-            }
-          };
-        }
-
-        /* Handle code block */
-        if (codeBlockStyle === 'fenced') {
-          const language =
-            node.getAttribute('class')?.match(/language-(\S+)/)?.[1] ||
-            parent?.getAttribute('class')?.match(/language-(\S+)/)?.[1] ||
-            '';
-
-          return {
-            noEscape: true,
-            prefix: `${codeFence}${language}\n`,
-            postfix: `\n${codeFence}\n`,
-            childTranslators: visitor.instance.codeBlockTranslators
-          };
-        }
-
-        return {
-          noEscape: true,
-          postprocess: ({ content }) => content.replace(/^/gm, '    '),
-          childTranslators: visitor.instance.codeBlockTranslators
-        };
+        rawText = rawText.replace(base64Img, str);
+      } catch (error) {
+        rawText = rawText.replace(base64Img, '');
+        rawText = rawText.replace(/!\[.*\]\(\)/g, '');
       }
-    }
+    })
   );
 
-  const markdown = nhm.translate(html).trim();
+  // Remove white space on both sides of the picture
+  const trimReg = /(!\[.*\]\(.*\))\s*/g;
+  if (trimReg.test(rawText)) {
+    rawText = rawText.replace(trimReg, '$1');
+  }
 
-  return simpleMarkdownText(markdown);
+  return simpleMarkdownText(rawText);
 };

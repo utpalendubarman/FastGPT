@@ -1,8 +1,7 @@
 export const chatNodeSystemPromptTip =
-  'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}';
-export const userGuideTip =
-  'You can set introductory words before the conversation, set global variables, and set next steps.';
+  '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}';
+export const userGuideTip = '可以在对话前设置引导语，设置全局变量，设置下一步指引';
 export const welcomeTextTip =
-  'Before each conversation starts, send an initial content. Supports standard Markdown syntax, additional tags that can be used:\n[Shortcut keys]: users can directly send the question after clicking it';
+  '每次对话开始前，发送一个初始内容。支持标准 Markdown 语法，可使用的额外标记:\n[快捷按键]: 用户点击后可以直接发送该问题';
 export const variableTip =
-  'Before the conversation starts, the user can be asked to fill in some content as specific variables for this round of conversation. This module is located after the opening boot. \nVariables can be injected into the string type input of other modules in the form of {{variable key}}, such as: prompt words, qualifiers, etc.';
+  '可以在对话开始前，要求用户填写一些内容作为本轮对话的特定变量。该模块位于开场引导之后。\n变量可以通过 {{变量key}} 的形式注入到其他模块 string 类型的输入中，例如：提示词、限定词等';

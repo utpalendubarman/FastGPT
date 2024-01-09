@@ -20,6 +20,16 @@ const ChatSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'user'
   },
+  teamId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
+    required: true
+  },
   appId: {
     type: Schema.Types.ObjectId,
     ref: appCollectionName,
@@ -31,7 +41,7 @@ const ChatSchema = new Schema({
   },
   title: {
     type: String,
-    default: 'history record'
+    default: '历史记录'
   },
   customTitle: {
     type: String,
@@ -39,10 +49,6 @@ const ChatSchema = new Schema({
   },
   top: {
     type: Boolean
-  },
-  variables: {
-    type: Object,
-    default: {}
   },
   source: {
     type: String,
@@ -52,9 +58,17 @@ const ChatSchema = new Schema({
   shareId: {
     type: String
   },
-  isInit: {
-    type: Boolean,
-    default: false
+  outLinkUid: {
+    type: String
+  },
+  variables: {
+    type: Object,
+    default: {}
+  },
+  metadata: {
+    //For special storage
+    type: Object,
+    default: {}
   },
   content: {
     type: [
@@ -79,9 +93,10 @@ const ChatSchema = new Schema({
 });
 
 try {
-  ChatSchema.index({ tmbId: 1 });
-  ChatSchema.index({ updateTime: -1 });
   ChatSchema.index({ appId: 1 });
+  ChatSchema.index({ tmbId: 1 });
+  ChatSchema.index({ shareId: 1 });
+  ChatSchema.index({ updateTime: -1 });
 } catch (error) {
   console.log(error);
 }

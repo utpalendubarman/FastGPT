@@ -6,10 +6,7 @@ import { Types } from '@fastgpt/service/common/mongo';
 import type { DatasetCollectionsListItemType } from '@/global/core/dataset/type.d';
 import type { GetDatasetCollectionsProps } from '@/global/core/api/datasetReq';
 import { PagingData } from '@/types';
-import {
-  DatasetColCollectionName,
-  MongoDatasetCollection
-} from '@fastgpt/service/core/dataset/collection/schema';
+import { MongoDatasetCollection } from '@fastgpt/service/core/dataset/collection/schema';
 import { DatasetCollectionTypeEnum } from '@fastgpt/global/core/dataset/constant';
 import { startQueue } from '@/service/utils/tools';
 import { authDataset } from '@fastgpt/service/support/permission/auth/dataset';
@@ -32,8 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     searchText = searchText?.replace(/'/g, '');
 
     // auth dataset and get my role
-    // const { tmbId } = await authDataset({ req, authToken: true, datasetId, per: 'r' });
-    // const { canWrite } = await authUserRole({ req, authToken: true });
+    const { tmbId } = await authDataset({ req, authToken: true, datasetId, per: 'r' });
+    const { canWrite } = await authUserRole({ req, authToken: true });
 
     const match = {
       datasetId: new Types.ObjectId(datasetId),
@@ -115,6 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
           $project: {
             _id: 1,
             parentId: 1,
+            tmbId: 1,
             name: 1,
             type: 1,
             status: 1,
@@ -141,7 +139,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const data = await Promise.all(
       collections.map(async (item, i) => ({
         ...item,
-        canWrite: true || canWrite
+        canWrite: String(item.tmbId) === tmbId || canWrite
       }))
     );
 

@@ -51,7 +51,9 @@ const RenderHeaderContainer = React.memo(function RenderHeaderContainer({
             return false;
           })
         ) {
-          return Promise.reject(`【${item.name}】存在未填或未连接参数`);
+          return Promise.reject(
+            `【${item.name}】Existence without filling or uninterrupted parameters`
+          );
         }
       }
 
@@ -61,8 +63,8 @@ const RenderHeaderContainer = React.memo(function RenderHeaderContainer({
         permission: undefined
       });
     },
-    successToast: '保存配置成功',
-    errorToast: '保存配置异常',
+    successToast: 'Save the configuration successfully',
+    errorToast: 'Save the configuration abnormal',
     onSuccess() {
       ChatTestRef.current?.resetChatTest();
     }
@@ -77,7 +79,7 @@ const RenderHeaderContainer = React.memo(function RenderHeaderContainer({
         alignItems={'center'}
         userSelect={'none'}
       >
-        <MyTooltip label={'返回'} offset={[10, 10]}>
+        <MyTooltip label={'return'} offset={[10, 10]}>
           <IconButton
             size={'sm'}
             icon={<MyIcon name={'back'} w={'14px'} />}
@@ -132,7 +134,7 @@ const RenderHeaderContainer = React.memo(function RenderHeaderContainer({
             onClick={() => setTestModules(undefined)}
           />
         ) : (
-          <MyTooltip label={'测试对话'}>
+          <MyTooltip label={'Test dialogue'}>
             <IconButton
               mr={[3, 6]}
               icon={<MyIcon name={'chat'} w={['14px', '16px']} />}
@@ -146,7 +148,7 @@ const RenderHeaderContainer = React.memo(function RenderHeaderContainer({
           </MyTooltip>
         )}
 
-        <MyTooltip label={'保存配置'}>
+        <MyTooltip label={'Save configuration'}>
           <IconButton
             icon={<MyIcon name={'save'} w={['14px', '16px']} />}
             borderRadius={'lg'}

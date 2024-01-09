@@ -21,8 +21,18 @@ const DatasetSchema = new Schema({
     default: null
   },
   userId: {
+    //abandon
     type: Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'user'
+  },
+  teamId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
     required: true
   },
   type: {

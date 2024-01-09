@@ -12,7 +12,6 @@ export interface AppSchema {
   teamId: string;
   tmbId: string;
   name: string;
-  mid: string;
   type: `${AppTypeEnum}`;
   simpleTemplateId: string;
   avatar: string;
@@ -66,7 +65,11 @@ export type AppSimpleEditFormType = {
     similarity: number;
     limit: number;
     searchMode: `${DatasetSearchModeEnum}`;
+    usingReRank: boolean;
     searchEmptyText: string;
+  };
+  cfr: {
+    background: string;
   };
   userGuide: {
     welcomeText: string;
@@ -110,7 +113,11 @@ export type AppSimpleEditConfigTemplateType = {
       similarity?: boolean;
       limit?: boolean;
       searchMode: `${DatasetSearchModeEnum}`;
+      usingReRank: boolean;
       searchEmptyText?: boolean;
+    };
+    cfr?: {
+      background?: boolean;
     };
     userGuide?: {
       welcomeText?: boolean;

@@ -34,7 +34,7 @@ import { AddIcon, QuestionOutlineIcon } from '@chakra-ui/icons';
 import { useCopyData } from '@/web/common/hooks/useCopyData';
 import { feConfigs } from '@/web/common/system/staticData';
 import { useTranslation } from 'next-i18next';
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import MyModal from '@/components/MyModal';
 import { useForm } from 'react-hook-form';
 import { useRequest } from '@/web/common/hooks/useRequest';
@@ -54,7 +54,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
   const { Loading } = useLoading();
   const theme = useTheme();
   const { copyData } = useCopyData();
-  const [baseUrl, setBaseUrl] = useState('https://fastgpt.run/api');
+  const [baseUrl, setBaseUrl] = useState('https://fastgpt.in/api');
   const [editData, setEditData] = useState<EditProps>();
   const [apiKey, setApiKey] = useState('');
 
@@ -72,7 +72,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
   } = useQuery(['getOpenApiKeys', appId], () => getOpenApiKeys({ appId }));
 
   useEffect(() => {
-    setBaseUrl(`${location.origin}/api`);
+    setBaseUrl(feConfigs?.customApiDomain || `${location.origin}/api`);
   }, []);
 
   return (
@@ -81,16 +81,16 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
         <Box flex={1}>
           <Flex alignItems={'flex-end'}>
             <Box fontSize={['md', 'xl']} fontWeight={'bold'}>
-              API Secret management
+              API 秘钥管理
             </Box>
             {feConfigs?.docUrl && (
               <Link
                 href={feConfigs.openAPIDocUrl || getDocPath('/docs/development/openapi')}
                 target={'_blank'}
                 ml={1}
-                color={'myBlue.600'}
+                color={'primary.500'}
               >
-                Look at the documentation
+                查看文档
               </Link>
             )}
           </Flex>
@@ -109,7 +109,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
           onClick={() => copyData(baseUrl, '已复制 API 地址')}
         >
           <Box border={theme.borders.md} px={2} borderRadius={'md'} fontSize={'sm'}>
-            API root address
+            API根地址
           </Box>
           <Box ml={2} color={'myGray.900'} fontSize={['sm', 'md']}>
             {baseUrl}
@@ -119,7 +119,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
           <Button
             ml={3}
             leftIcon={<AddIcon fontSize={'md'} />}
-            variant={'base'}
+            variant={'whitePrimary'}
             onClick={() =>
               setEditData({
                 ...defaultEditData,
@@ -127,7 +127,7 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
               })
             }
           >
-            Newly built
+            新建
           </Button>
         </Box>
       </Box>
@@ -137,16 +137,16 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
             <Tr>
               <Th>{t('Name')}</Th>
               <Th>Api Key</Th>
-              <Th>Equitative(￥)</Th>
+              <Th>已用额度(￥)</Th>
               {feConfigs?.isPlus && (
                 <>
-                  <Th>Maximum amount(￥)</Th>
-                  <Th>Expiration</Th>
+                  <Th>最大额度(￥)</Th>
+                  <Th>过期时间</Th>
                 </>
               )}
 
-              <Th>Creation time</Th>
-              <Th>Last use time</Th>
+              <Th>创建时间</Th>
+              <Th>最后一次使用时间</Th>
               <Th />
             </Tr>
           </Thead>
@@ -229,10 +229,10 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
         title={
           <Box>
             <Box fontWeight={'bold'} fontSize={'xl'}>
-              New API Secret Key
+              新的 API 秘钥
             </Box>
             <Box fontSize={'sm'} color={'myGray.600'}>
-              Please keep your key, the secret key will not be displayed again ~
+              请保管好你的秘钥，秘钥不会再次展示~
             </Box>
           </Box>
         }
@@ -254,8 +254,8 @@ const ApiKeyTable = ({ tips, appId }: { tips: string; appId?: string }) => {
           </Flex>
         </ModalBody>
         <ModalFooter>
-          <Button variant="base" onClick={() => setApiKey('')}>
-            OK
+          <Button variant="whiteBase" onClick={() => setApiKey('')}>
+            {t('common.OK')}
           </Button>
         </ModalFooter>
       </MyModal>
@@ -290,7 +290,7 @@ function EditKeyModal({
 
   const { mutate: onclickCreate, isLoading: creating } = useRequest({
     mutationFn: async (e: EditProps) => createAOpenApiKey(e),
-    errorToast: 'Create links abnormal',
+    errorToast: '创建链接异常',
     onSuccess: onCreate
   });
   const { mutate: onclickUpdate, isLoading: updating } = useRequest({
@@ -298,7 +298,7 @@ function EditKeyModal({
       //@ts-ignore
       return putOpenApiKey(e);
     },
-    errorToast: 'Update links abnormal',
+    errorToast: '更新链接异常',
     onSuccess: onEdit
   });
 
@@ -358,7 +358,7 @@ function EditKeyModal({
       </ModalBody>
 
       <ModalFooter>
-        <Button variant={'base'} mr={3} onClick={onClose}>
+        <Button variant={'whiteBase'} mr={3} onClick={onClose}>
           {t('Cancel')}
         </Button>
 

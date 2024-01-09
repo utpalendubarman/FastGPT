@@ -1,7 +1,7 @@
 import { GET, POST, PUT } from '@/web/common/api/request';
 import { hashStr } from '@fastgpt/global/common/string/tools';
 import type { ResLogin } from '@/global/support/api/userRes.d';
-import { UserAuthTypeEnum } from '@/constants/common';
+import { UserAuthTypeEnum } from '@fastgpt/global/support/user/constant';
 import { UserUpdateParams } from '@/types/user';
 import { UserType } from '@fastgpt/global/support/user/type.d';
 import type {
@@ -17,7 +17,7 @@ export const sendAuthCode = (data: {
 }) => POST(`/plusApi/support/user/inform/sendAuthCode`, data);
 
 export const getTokenLogin = () =>
-  GET<UserType>('/user/account/tokenLogin', {}, { maxQuantity: 1 });
+  GET<UserType>('/support/user/account/tokenLogin', {}, { maxQuantity: 1 });
 export const oauthLogin = (params: OauthLoginProps) =>
   POST<ResLogin>('/plusApi/support/user/account/login/oauth', params);
 export const postFastLogin = (params: FastLoginProps) =>
@@ -26,16 +26,19 @@ export const postFastLogin = (params: FastLoginProps) =>
 export const postRegister = ({
   username,
   password,
-  name
+  code,
+  inviterId
 }: {
   username: string;
+  code: string;
   password: string;
-  name: string;
+  inviterId?: string;
 }) =>
-  POST<ResLogin>(`/user/account/register/byEmail`, {
-    email: username,
-    password: password,
-    name: name
+  POST<ResLogin>(`/plusApi/support/user/account/register/emailAndPhone`, {
+    username,
+    code,
+    inviterId,
+    password: hashStr(password)
   });
 
 export const postFindPassword = ({
@@ -50,21 +53,26 @@ export const postFindPassword = ({
   POST<ResLogin>(`/plusApi/support/user/account/password/updateByCode`, {
     username,
     code,
-    password
+    password: hashStr(password)
   });
 
 export const updatePasswordByOld = ({ oldPsw, newPsw }: { oldPsw: string; newPsw: string }) =>
-  POST('/user/account/updatePasswordByOld', {
-    oldPsw: oldPsw,
-    newPsw: newPsw
+  POST('/support/user/account/updatePasswordByOld', {
+    oldPsw: hashStr(oldPsw),
+    newPsw: hashStr(newPsw)
   });
 
 export const postLogin = ({ password, ...props }: PostLoginProps) =>
-  POST<ResLogin>('/user/account/loginByPassword', {
+  POST<ResLogin>('/support/user/account/loginByPassword', {
     ...props,
-    password: password
+    password: hashStr(password)
   });
 
-export const loginOut = () => GET('/user/account/loginout');
+export const loginOut = () => GET('/support/user/account/loginout');
 
-export const putUserInfo = (data: UserUpdateParams) => PUT('/user/account/update', data);
+export const putUserInfo = (data: UserUpdateParams) => PUT('/support/user/account/update', data);
+
+/* team limit */
+export const checkTeamExportDatasetLimit = (datasetId: string) =>
+  GET(`/support/user/team/limit/exportDatasetLimit`, { datasetId });
+export const checkTeamWebSyncLimit = () => GET(`/support/user/team/limit/webSyncLimit`);

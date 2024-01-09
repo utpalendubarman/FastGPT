@@ -1,4 +1,4 @@
-import MyIcon from '@/components/Icon';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useLoading } from '@/web/common/hooks/useLoading';
 import { useSelectFile } from '@/web/common/file/hooks/useSelectFile';
 import { useToast } from '@/web/common/hooks/useToast';
@@ -7,12 +7,12 @@ import { simpleText } from '@fastgpt/global/common/string/tools';
 import {
   fileDownload,
   readCsvContent,
-  readTxtContent,
   readPdfContent,
   readDocContent
 } from '@/web/common/file/utils';
-import { uploadFiles } from '@/web/common/file/controller';
-import { Box, Flex, useDisclosure, type BoxProps, Button, Input } from '@chakra-ui/react';
+import { readFileRawText, readMdFile, readHtmlFile } from '@fastgpt/web/common/file/read';
+import { getUploadMdImgController, uploadFiles } from '@/web/common/file/controller';
+import { Box, Flex, useDisclosure, type BoxProps } from '@chakra-ui/react';
 import React, { DragEvent, useCallback, useState } from 'react';
 import { useTranslation } from 'next-i18next';
 import { customAlphabet } from 'nanoid';
@@ -35,12 +35,13 @@ export type FileItemType = {
   id: string; // fileId / raw Link
   filename: string;
   chunks: PushDatasetDataChunkProps[];
-  text: string; // raw text
+  rawText: string; // raw text
   icon: string;
   tokens: number; // total tokens
   type: DatasetCollectionTypeEnum.file | DatasetCollectionTypeEnum.link;
   fileId?: string;
   rawLink?: string;
+  metadata?: Record<string, any>;
 };
 
 export interface Props extends BoxProps {
@@ -48,6 +49,7 @@ export interface Props extends BoxProps {
   onPushFiles: (files: FileItemType[]) => void;
   tipText?: string;
   chunkLen?: number;
+  customSplitChar?: string;
   overlapRatio?: number;
   fileTemplate?: {
     type: string;
@@ -64,9 +66,9 @@ const FileSelect = ({
   onPushFiles,
   tipText,
   chunkLen = 500,
+  customSplitChar,
   overlapRatio,
   fileTemplate,
-  RequestType,
   showUrlFetch = true,
   showCreateFile = true,
   tip,
@@ -134,69 +136,82 @@ const FileSelect = ({
           });
           const fileId = filesId[0];
 
-          // /* csv file */
-          // if (extension === 'csv') {
-          //   const { header, data } = await readCsvContent(file);
-          //   if (header[0] !== 'index' || header[1] !== 'content') {
-          //     throw new Error(t('core.dataset.import.Csv format error'));
-          //   }
+          /* QA csv file */
+          if (extension === 'csv') {
+            const { header, data } = await readCsvContent(file);
+            if (header[0] !== 'index' || header[1] !== 'content') {
+              throw new Error(t('core.dataset.import.Csv format error'));
+            }
 
-          //   const filterData = data
-          //     .filter((item) => item[0])
-          //     .map((item) => ({
-          //       q: item[0] || '',
-          //       a: item[1] || ''
-          //     }));
+            const filterData = data
+              .filter((item) => item[0])
+              .map((item) => ({
+                q: item[0] || '',
+                a: item[1] || ''
+              }));
 
-          //   const fileItem: FileItemType = {
-          //     id: nanoid(),
-          //     filename: file.name,
-          //     icon,
-          //     tokens: filterData.reduce((sum, item) => sum + countPromptTokens(item.q), 0),
-          //     text: `${header.join(',')}\n${data
-          //       .map((item) => `"${item[0]}","${item[1]}"`)
-          //       .join('\n')}`,
-          //     chunks: filterData,
-          //     type: DatasetCollectionTypeEnum.file,
-          //     fileId
-          //   };
+            const fileItem: FileItemType = {
+              id: nanoid(),
+              filename: file.name,
+              icon,
+              tokens: filterData.reduce((sum, item) => sum + countPromptTokens(item.q), 0),
+              rawText: `${header.join(',')}\n${data
+                .map((item) => `"${item[0]}","${item[1]}"`)
+                .join('\n')}`,
+              chunks: filterData,
+              type: DatasetCollectionTypeEnum.file,
+              fileId
+            };
 
-          //   onPushFiles([fileItem]);
-          //   continue;
-          // }
+            onPushFiles([fileItem]);
+            continue;
+          }
 
           // parse and upload files
           let text = await (async () => {
             switch (extension) {
               case 'txt':
-              case 'csv':
+                return readFileRawText(file);
               case 'md':
-                return readTxtContent(file);
+                return readMdFile({
+                  file,
+                  uploadImgController: (base64Img) =>
+                    getUploadMdImgController({ base64Img, metadata: { fileId } })
+                });
+              case 'html':
+                return readHtmlFile({
+                  file,
+                  uploadImgController: (base64Img) =>
+                    getUploadMdImgController({ base64Img, metadata: { fileId } })
+                });
               case 'pdf':
                 return readPdfContent(file);
               case 'docx':
-                return readDocContent(file);
+                return readDocContent(file, {
+                  fileId
+                });
             }
             return '';
           })();
 
           if (text) {
             text = simpleText(text);
-            const splitRes = splitText2Chunks({
+            const { chunks, tokens } = splitText2Chunks({
               text,
               chunkLen,
-              overlapRatio
+              overlapRatio,
+              customReg: customSplitChar ? [customSplitChar] : []
             });
 
             const fileItem: FileItemType = {
               id: nanoid(),
               filename: file.name,
               icon,
-              text,
-              tokens: splitRes.tokens,
+              rawText: text,
+              tokens,
               type: DatasetCollectionTypeEnum.file,
               fileId,
-              chunks: splitRes.chunks.map((chunk) => ({
+              chunks: chunks.map((chunk) => ({
                 q: chunk,
                 a: ''
               }))
@@ -213,35 +228,38 @@ const FileSelect = ({
       }
       setSelectingText(undefined);
     },
-    [chunkLen, datasetDetail._id, onPushFiles, overlapRatio, t, toast]
+    [chunkLen, customSplitChar, datasetDetail._id, onPushFiles, overlapRatio, t, toast]
   );
   // link fetch
   const onUrlFetch = useCallback(
     (e: UrlFetchResponse) => {
-      const result: FileItemType[] = e.map<FileItemType>(({ url, content }) => {
-        const splitRes = splitText2Chunks({
+      const result: FileItemType[] = e.map<FileItemType>(({ url, content, selector }) => {
+        const { chunks, tokens } = splitText2Chunks({
           text: content,
           chunkLen,
-          overlapRatio
+          overlapRatio,
+          customReg: customSplitChar ? [customSplitChar] : []
         });
-        setLoadText('Submit');
         return {
           id: nanoid(),
           filename: url,
           icon: '/imgs/files/link.svg',
-          text: content,
-          tokens: splitRes.tokens,
+          rawText: content,
+          tokens,
           type: DatasetCollectionTypeEnum.link,
           rawLink: url,
-          chunks: splitRes.chunks.map((chunk) => ({
+          chunks: chunks.map((chunk) => ({
             q: chunk,
             a: ''
-          }))
+          })),
+          metadata: {
+            webPageSelector: selector
+          }
         };
       });
       onPushFiles(result);
     },
-    [chunkLen, onPushFiles, overlapRatio]
+    [chunkLen, customSplitChar, onPushFiles, overlapRatio]
   );
   // manual create file and copy data
   const onCreateFile = useCallback(
@@ -260,10 +278,11 @@ const FileSelect = ({
         metadata: { datasetId: datasetDetail._id }
       });
 
-      const splitRes = splitText2Chunks({
+      const { chunks, tokens } = splitText2Chunks({
         text: content,
         chunkLen,
-        overlapRatio
+        overlapRatio,
+        customReg: customSplitChar ? [customSplitChar] : []
       });
 
       onPushFiles([
@@ -271,18 +290,18 @@ const FileSelect = ({
           id: nanoid(),
           filename,
           icon: '/imgs/files/txt.svg',
-          text: content,
-          tokens: splitRes.tokens,
+          rawText: content,
+          tokens,
           type: DatasetCollectionTypeEnum.file,
           fileId: fileIds[0],
-          chunks: splitRes.chunks.map((chunk) => ({
+          chunks: chunks.map((chunk) => ({
             q: chunk,
             a: ''
           }))
         }
       ]);
     },
-    [chunkLen, datasetDetail._id, onPushFiles, overlapRatio]
+    [chunkLen, customSplitChar, datasetDetail._id, onPushFiles, overlapRatio]
   );
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
@@ -353,152 +372,92 @@ const FileSelect = ({
     ml: 1,
     as: 'span',
     cursor: 'pointer',
-    color: 'myBlue.700',
+    color: 'primary.600',
     _hover: {
       textDecoration: 'underline'
     }
   };
 
-  const [url, setUrl] = useState('');
-  const [urls, setUrls] = useState('');
-
-  const FindSublinks = (rqst: string) => {
-    try {
-      fetch('https://app-dev.onwintop.com/findlinks.php', {
-        method: 'POST',
-        body: JSON.stringify({ url: rqst })
-      })
-        .then((res) => {
-          return res.json();
-        })
-        .then((res) => {
-          //console.log(res);
-          var temp = '';
-          var i = 0;
-          for (i = 0; i < res.length; i++) {
-            temp += res[i] + '\n';
-          }
-          setUrl(temp);
-          setLoadText('Crawling');
-          onOpenUrlFetch();
-        });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const [loadText, setLoadText] = useState('Submit');
-
-  const SubmitCrawl = () => {
-    setLoadText('Loading');
-    FindSublinks(url);
-  };
-
   return (
-    <>
-      {RequestType == 'webCrawl' ? (
-        <Box textAlign={'center'} bg={'#ffffff'} p={1} w={'100%'} position={'relative'}>
-          <Flex>
-            <Box flex={1}>
-              <Input
-                type="text"
-                onChange={(e) => setUrl(e.target.value)}
-                name=""
-                placeholder="Enter website url"
-                style={{ border: '1px solid #ebebeb' }}
-                id=""
-              />
-            </Box>
-            <Button ml={2} onClick={SubmitCrawl}>
-              {loadText}
-            </Button>
-          </Flex>
-        </Box>
-      ) : (
-        <Box
-          display={'inline-block'}
-          textAlign={'center'}
-          bg={'myWhite.400'}
-          p={5}
-          borderRadius={'lg'}
-          border={'1px dashed'}
-          borderColor={'myGray.300'}
-          w={'100%'}
-          position={'relative'}
-          {...props}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <Flex justifyContent={'center'} alignItems={'center'}>
-            <MyIcon mr={1} name={'uploadFile'} w={'16px'} />
-            {isDragging ? (
-              t('file.Release the mouse to upload the file')
-            ) : (
-              <Box>
-                {t('file.Drag and drop')},
-                <MyTooltip label={t('file.max 10')}>
-                  <Box {...SelectTextStyles} onClick={onOpen}>
-                    {t('file.select a document')}
-                  </Box>
-                </MyTooltip>
-                {showUrlFetch && (
-                  <>
-                    ,
-                    <Box {...SelectTextStyles} onClick={onOpenUrlFetch}>
-                      {t('file.Fetch Url')}
-                    </Box>
-                  </>
-                )}
-                {showCreateFile && (
-                  <>
-                    ,
-                    <Box {...SelectTextStyles} onClick={onOpenCreateFile}>
-                      {t('file.Create file')}
-                    </Box>
-                  </>
-                )}
-                {/* Submit URL */}
+    <Box
+      display={'inline-block'}
+      textAlign={'center'}
+      bg={'myWhite.400'}
+      p={5}
+      borderRadius={'md'}
+      border={'1px dashed'}
+      borderColor={'myGray.300'}
+      w={'100%'}
+      position={'relative'}
+      {...props}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <Flex justifyContent={'center'} alignItems={'center'}>
+        <MyIcon mr={1} name={'file/uploadFile'} w={'16px'} />
+        {isDragging ? (
+          t('file.Release the mouse to upload the file')
+        ) : (
+          <Box>
+            {t('file.Drag and drop')},
+            <MyTooltip label={t('file.max 10')}>
+              <Box {...SelectTextStyles} onClick={onOpen}>
+                {t('file.select a document')}
               </Box>
+            </MyTooltip>
+            {showUrlFetch && (
+              <>
+                ,
+                <Box {...SelectTextStyles} onClick={onOpenUrlFetch}>
+                  {t('file.Fetch Url')}
+                </Box>
+              </>
             )}
-            <Box mt={1}>{t('file.support', { fileExtension: fileExtension })}</Box>
-          </Flex>
-
-          {tipText && (
-            <Box mt={1} fontSize={'sm'} color={'myGray.600'}>
-              {t(tipText)}
-            </Box>
-          )}
-          {!!fileTemplate && (
-            <Box
-              mt={1}
-              cursor={'pointer'}
-              textDecoration={'underline'}
-              color={'myBlue.600'}
-              fontSize={'12px'}
-              onClick={() =>
-                fileDownload({
-                  text: fileTemplate.value,
-                  type: fileTemplate.type,
-                  filename: fileTemplate.filename
-                })
-              }
-            >
-              {t('file.Click to download file template', { name: fileTemplate.filename })}
-            </Box>
-          )}
-          {!!tip && <Box color={'myGray.500'}>{tip}</Box>}
-          {selectingText !== undefined && (
-            <FileSelectLoading loading text={selectingText} fixed={false} />
-          )}
+            {showCreateFile && (
+              <>
+                ,
+                <Box {...SelectTextStyles} onClick={onOpenCreateFile}>
+                  {t('file.Create file')}
+                </Box>
+              </>
+            )}
+          </Box>
+        )}
+      </Flex>
+      <Box mt={1}>{t('file.support', { fileExtension: fileExtension })}</Box>
+      {tipText && (
+        <Box mt={1} fontSize={'sm'} color={'myGray.600'}>
+          {t(tipText)}
         </Box>
+      )}
+      {!!fileTemplate && (
+        <Box
+          mt={1}
+          cursor={'pointer'}
+          textDecoration={'underline'}
+          color={'primary.500'}
+          fontSize={'12px'}
+          onClick={() =>
+            fileDownload({
+              text: fileTemplate.value,
+              type: fileTemplate.type,
+              filename: fileTemplate.filename
+            })
+          }
+        >
+          {t('file.Click to download file template', { name: fileTemplate.filename })}
+        </Box>
+      )}
+      {!!tip && <Box color={'myGray.500'}>{tip}</Box>}
+      {selectingText !== undefined && (
+        <FileSelectLoading loading text={selectingText} fixed={false} />
       )}
       <FileSelector onSelect={onSelectFile} />
-      {isOpenUrlFetch && (
-        <UrlFetchModal onClose={onCloseUrlFetch} url={url} onSuccess={onUrlFetch} />
-      )}
+      {isOpenUrlFetch && <UrlFetchModal onClose={onCloseUrlFetch} onSuccess={onUrlFetch} />}
       {isOpenCreateFile && <CreateFileModal onClose={onCloseCreateFile} onSuccess={onCreateFile} />}
-    </>
+    </Box>
   );
 };
 

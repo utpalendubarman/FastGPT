@@ -2,10 +2,9 @@ import { useSpeech } from '@/web/common/hooks/useSpeech';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { Box, Flex, Image, Spinner, Textarea } from '@chakra-ui/react';
 import React, { useRef, useEffect, useCallback, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 import MyTooltip from '../MyTooltip';
-import MyIcon from '../Icon';
-import styles from './index.module.scss';
+import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useRouter } from 'next/router';
 import { useSelectFile } from '@/web/common/file/hooks/useSelectFile';
 import { compressImgFileAndUpload } from '@/web/common/file/controller';
@@ -69,78 +68,85 @@ const MessageInput = ({
     maxCount: 10
   });
 
-  const uploadFile = async (file: FileItemType) => {
-    if (file.type === FileTypeEnum.image) {
-      try {
-        const src = await compressImgFileAndUpload({
-          file: file.rawFile,
-          maxW: 4329,
-          maxH: 4329,
-          maxSize: 1024 * 1024 * 5,
-          // 30 day expired.
-          expiredTime: addDays(new Date(), 30)
-        });
-        setFileList((state) =>
-          state.map((item) =>
-            item.id === file.id
-              ? {
-                  ...item,
-                  src: `${location.origin}${src}`
-                }
-              : item
-          )
-        );
-      } catch (error) {
-        setFileList((state) => state.filter((item) => item.id !== file.id));
-        console.log(error);
+  const uploadFile = useCallback(
+    async (file: FileItemType) => {
+      if (file.type === FileTypeEnum.image) {
+        try {
+          const src = await compressImgFileAndUpload({
+            file: file.rawFile,
+            maxW: 4329,
+            maxH: 4329,
+            maxSize: 1024 * 1024 * 5,
+            // 30 day expired.
+            expiredTime: addDays(new Date(), 30),
+            shareId
+          });
+          setFileList((state) =>
+            state.map((item) =>
+              item.id === file.id
+                ? {
+                    ...item,
+                    src: `${location.origin}${src}`
+                  }
+                : item
+            )
+          );
+        } catch (error) {
+          setFileList((state) => state.filter((item) => item.id !== file.id));
+          console.log(error);
 
-        toast({
-          status: 'error',
-          title: t('common.Upload File Failed')
-        });
+          toast({
+            status: 'error',
+            title: t('common.Upload File Failed')
+          });
+        }
       }
-    }
-  };
-  const onSelectFile = useCallback(async (files: File[]) => {
-    if (!files || files.length === 0) {
-      return;
-    }
-    const loadFiles = await Promise.all(
-      files.map(
-        (file) =>
-          new Promise<FileItemType>((resolve, reject) => {
-            if (file.type.includes('image')) {
-              const reader = new FileReader();
-              reader.readAsDataURL(file);
-              reader.onload = () => {
-                const item = {
+    },
+    [shareId, t, toast]
+  );
+  const onSelectFile = useCallback(
+    async (files: File[]) => {
+      if (!files || files.length === 0) {
+        return;
+      }
+      const loadFiles = await Promise.all(
+        files.map(
+          (file) =>
+            new Promise<FileItemType>((resolve, reject) => {
+              if (file.type.includes('image')) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                  const item = {
+                    id: nanoid(),
+                    rawFile: file,
+                    type: FileTypeEnum.image,
+                    name: file.name,
+                    icon: reader.result as string
+                  };
+                  uploadFile(item);
+                  resolve(item);
+                };
+                reader.onerror = () => {
+                  reject(reader.error);
+                };
+              } else {
+                resolve({
                   id: nanoid(),
                   rawFile: file,
-                  type: FileTypeEnum.image,
+                  type: FileTypeEnum.file,
                   name: file.name,
-                  icon: reader.result as string
-                };
-                uploadFile(item);
-                resolve(item);
-              };
-              reader.onerror = () => {
-                reject(reader.error);
-              };
-            } else {
-              resolve({
-                id: nanoid(),
-                rawFile: file,
-                type: FileTypeEnum.file,
-                name: file.name,
-                icon: 'pdf'
-              });
-            }
-          })
-      )
-    );
+                  icon: 'file/pdf'
+                });
+              }
+            })
+        )
+      );
 
-    setFileList((state) => [...state, ...loadFiles]);
-  }, []);
+      setFileList((state) => [...state, ...loadFiles]);
+    },
+    [uploadFile]
+  );
 
   const handleSend = useCallback(async () => {
     const textareaValue = TextareaDom.current?.value || '';
@@ -209,7 +215,7 @@ ${images.map((img) => JSON.stringify({ src: img.src })).join('\n')}
           pl={5}
           alignItems={'center'}
           bg={'white'}
-          color={'myBlue.600'}
+          color={'primary.500'}
           visibility={isSpeaking && isTransCription ? 'visible' : 'hidden'}
         >
           <Spinner size={'sm'} mr={4} />
@@ -237,7 +243,7 @@ ${images.map((img) => JSON.stringify({ src: img.src })).join('\n')}
                   alignItems={'center'}
                   justifyContent={'center'}
                   rounded={'md'}
-                  color={'myBlue.600'}
+                  color={'primary.500'}
                   top={0}
                   left={0}
                   bottom={0}
@@ -253,7 +259,7 @@ ${images.map((img) => JSON.stringify({ src: img.src })).join('\n')}
                 h={'16px'}
                 color={'myGray.700'}
                 cursor={'pointer'}
-                _hover={{ color: 'myBlue.600' }}
+                _hover={{ color: 'primary.500' }}
                 position={'absolute'}
                 bg={'white'}
                 right={'-8px'}
@@ -389,7 +395,7 @@ ${images.map((img) => JSON.stringify({ src: img.src })).join('\n')}
                       name={isSpeaking ? 'core/chat/stopSpeechFill' : 'core/chat/recordFill'}
                       width={['20px', '22px']}
                       height={['20px', '22px']}
-                      color={'myBlue.600'}
+                      color={'primary.500'}
                     />
                   </MyTooltip>
                 </Flex>
@@ -408,7 +414,7 @@ ${images.map((img) => JSON.stringify({ src: img.src })).join('\n')}
                 h={['28px', '32px']}
                 w={['28px', '32px']}
                 borderRadius={'md'}
-                bg={isSpeaking || isChatting ? '' : !havInput ? '#E5E5E5' : 'myBlue.600'}
+                bg={isSpeaking || isChatting ? '' : !havInput ? '#E5E5E5' : 'primary.500'}
                 cursor={havInput ? 'pointer' : 'not-allowed'}
                 lineHeight={1}
                 onClick={() => {
@@ -422,7 +428,7 @@ ${images.map((img) => JSON.stringify({ src: img.src })).join('\n')}
               >
                 {isChatting ? (
                   <MyIcon
-                    className={styles.stopIcon}
+                    animation={'zoomStopIcon 0.4s infinite alternate'}
                     width={['22px', '25px']}
                     height={['22px', '25px']}
                     cursor={'pointer'}

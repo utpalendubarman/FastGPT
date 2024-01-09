@@ -1,26 +1,32 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { initShareChatInfo } from '@/web/support/outLink/api';
 import { Box, Flex, useDisclosure, Drawer, DrawerOverlay, DrawerContent } from '@chakra-ui/react';
 import { useToast } from '@/web/common/hooks/useToast';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import { useQuery } from '@tanstack/react-query';
 import { streamFetch } from '@/web/common/api/fetch';
-import { useShareChatStore, defaultHistory } from '@/web/core/chat/storeShareChat';
+import { useShareChatStore } from '@/web/core/chat/storeShareChat';
 import SideBar from '@/components/SideBar';
 import { gptMessage2ChatType } from '@/utils/adapt';
 import { getErrText } from '@fastgpt/global/common/error/utils';
-import type { ChatSiteItemType } from '@fastgpt/global/core/chat/type.d';
+import type { ChatHistoryItemType, ChatSiteItemType } from '@fastgpt/global/core/chat/type.d';
 import { customAlphabet } from 'nanoid';
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 12);
-import SliderAppsShare from './components/SliderAppsShare';
+
 import ChatBox, { type ComponentRef, type StartChatFnProps } from '@/components/ChatBox';
 import PageContainer from '@/components/PageContainer';
 import ChatHeader from './components/ChatHeader';
 import ChatHistorySlider from './components/ChatHistorySlider';
 import { serviceSideProps } from '@/web/common/utils/i18n';
 import { checkChatSupportSelectFileByChatModels } from '@/web/core/chat/utils';
+import { useTranslation } from 'next-i18next';
+import { getInitOutLinkChatInfo } from '@/web/core/chat/api';
+import { POST } from '@/web/common/api/request';
+import { chatContentReplaceBlock } from '@fastgpt/global/core/chat/utils';
+import { useChatStore } from '@/web/core/chat/storeChat';
+import { ChatStatusEnum } from '@fastgpt/global/core/chat/constants';
+import MyBox from '@/components/common/MyBox';
 
 const OutLink = ({
   shareId,
@@ -33,29 +39,34 @@ const OutLink = ({
   showHistory: '0' | '1';
   authToken?: string;
 }) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const { toast } = useToast();
   const { isOpen: isOpenSlider, onClose: onCloseSlider, onOpen: onOpenSlider } = useDisclosure();
   const { isPc } = useSystemStore();
-  const forbidRefresh = useRef(false);
-  const [isEmbed, setIdEmbed] = useState(true);
-  const isIframe = window.location !== window.parent.location;
-
   const ChatBoxRef = useRef<ComponentRef>(null);
+  const forbidRefresh = useRef(false);
+  const initSign = useRef(false);
+  const [isEmbed, setIdEmbed] = useState(true);
 
   const {
-    shareChatData,
-    setShareChatData,
-    shareChatHistory,
-    saveChatResponse,
-    delShareChatHistoryItemById,
-    delOneShareHistoryByChatId,
-    delManyShareChatHistoryByShareId
+    localUId,
+    shareChatHistory, // abandon
+    clearLocalHistory // abandon
   } = useShareChatStore();
-  const history = useMemo(
-    () => shareChatHistory.filter((item) => item.shareId === shareId),
-    [shareChatHistory, shareId]
-  );
+  const {
+    histories,
+    loadHistories,
+    pushHistory,
+    updateHistory,
+    delOneHistory,
+    chatData,
+    setChatData,
+    delOneHistoryItem,
+    clearHistories
+  } = useChatStore();
+  const appId = chatData.appId;
+  const outLinkUid: string = authToken || localUId;
 
   const startChat = useCallback(
     async ({ messages, controller, generatingMessage, variables }: StartChatFnProps) => {
@@ -68,36 +79,63 @@ const OutLink = ({
           variables,
           shareId,
           chatId: completionChatId,
-          authToken
+          outLinkUid
         },
         onMessage: generatingMessage,
         abortSignal: controller
       });
 
+      const newTitle =
+        chatContentReplaceBlock(prompts[0].content).slice(0, 20) ||
+        prompts[1]?.value?.slice(0, 20) ||
+        '新对话';
+
+      // new chat
+      if (completionChatId !== chatId) {
+        const newHistory: ChatHistoryItemType = {
+          chatId: completionChatId,
+          updateTime: new Date(),
+          title: newTitle,
+          appId,
+          top: false
+        };
+        pushHistory(newHistory);
+        if (controller.signal.reason !== 'leave') {
+          forbidRefresh.current = true;
+          router.replace({
+            query: {
+              ...router.query,
+              chatId: completionChatId
+            }
+          });
+        }
+      } else {
+        // update chat
+        const currentChat = histories.find((item) => item.chatId === chatId);
+        currentChat &&
+          updateHistory({
+            ...currentChat,
+            updateTime: new Date(),
+            title: newTitle,
+            shareId,
+            outLinkUid
+          });
+      }
+
+      // update chat window
+      setChatData((state) => ({
+        ...state,
+        title: newTitle,
+        history: ChatBoxRef.current?.getChatHistories() || state.history
+      }));
+
+      /* post message to report result */
       const result: ChatSiteItemType[] = gptMessage2ChatType(prompts).map((item) => ({
         ...item,
         status: 'finish'
       }));
       result[1].value = responseText;
       result[1].responseData = responseData;
-
-      /* save chat */
-      saveChatResponse({
-        chatId: completionChatId,
-        prompts: result,
-        variables,
-        shareId
-      });
-
-      if (completionChatId !== chatId && controller.signal.reason !== 'leave') {
-        forbidRefresh.current = true;
-        router.replace({
-          query: {
-            ...router.query,
-            chatId: completionChatId
-          }
-        });
-      }
 
       window.top?.postMessage(
         {
@@ -112,338 +150,244 @@ const OutLink = ({
 
       return { responseText, responseData, isNewChat: forbidRefresh.current };
     },
-    [authToken, chatId, router, saveChatResponse, shareId]
+    [chatId, shareId, outLinkUid, setChatData, appId, pushHistory, router, histories, updateHistory]
   );
 
-  const [apps, setApps] = useState([]);
-
-  const loadAppInfo = useCallback(
-    async (shareId: string, chatId: string, authToken?: string) => {
+  const loadChatInfo = useCallback(
+    async (shareId: string, chatId: string) => {
       if (!shareId) return null;
-      const history = shareChatHistory.find((item) => item.chatId === chatId) || defaultHistory;
-
-      ChatBoxRef.current?.resetHistory(history.chats);
-      ChatBoxRef.current?.resetVariables(history.variables);
 
       try {
-        fetch('https://app-dev.onwintop.com/api/findlinks.php', {
-          method: 'POST',
-          body: JSON.stringify({
-            shareId: shareId
-          })
-        })
-          .then((out) => {
-            return out.json();
-          })
-          .then((out) => {
-            if (out.success && out.result.length != 0) {
-              setApps(out.result);
-            }
-          });
-      } catch (error) {
-        console.log(error);
-      }
+        const res = await getInitOutLinkChatInfo({
+          chatId,
+          shareId,
+          outLinkUid
+        });
+        const history = res.history.map((item) => ({
+          ...item,
+          status: ChatStatusEnum.finish
+        }));
 
-      try {
-        const chatData = await (async () => {
-          if (shareChatData.app.name === '') {
-            return initShareChatInfo({
-              shareId,
-              authToken
-            });
-          }
-          return shareChatData;
-        })();
-
-        setShareChatData({
-          ...chatData,
+        setChatData({
+          ...res,
           history
         });
 
-        console.log(shareChatData);
+        ChatBoxRef.current?.resetHistory(history);
+        ChatBoxRef.current?.resetVariables(res.variables);
+
+        // send init message
+        if (!initSign.current) {
+          initSign.current = true;
+          if (window !== top) {
+            window.top?.postMessage({ type: 'shareChatReady' }, '*');
+          }
+        }
+
+        if (chatId && res.history.length > 0) {
+          setTimeout(() => {
+            ChatBoxRef.current?.scrollToBottom('auto');
+          }, 500);
+        }
       } catch (e: any) {
+        console.log(e);
         toast({
           status: 'error',
-          title: getErrText(e, 'Failure to obtain application')
+          title: getErrText(e, t('core.shareChat.Init Error'))
         });
-        if (e?.code === 501) {
-          delManyShareChatHistoryByShareId(shareId);
+        if (chatId) {
+          router.replace({
+            query: {
+              ...router.query,
+              chatId: ''
+            }
+          });
         }
       }
 
-      if (history.chats.length > 0) {
-        setTimeout(() => {
-          ChatBoxRef.current?.scrollToBottom('auto');
-        }, 500);
-      }
-
-      return history;
+      return null;
     },
-    [delManyShareChatHistoryByShareId, setShareChatData, shareChatData, shareChatHistory, toast]
+    [outLinkUid, router, setChatData, t, toast]
   );
 
-  useQuery(['init', shareId, chatId, authToken], () => {
+  const { isFetching } = useQuery(['init', shareId, chatId], () => {
     if (forbidRefresh.current) {
       forbidRefresh.current = false;
       return null;
     }
-    return loadAppInfo(shareId, chatId, authToken);
+
+    return loadChatInfo(shareId, chatId);
   });
 
-  useEffect(() => {
-    if (window !== top) {
-      window.top?.postMessage({ type: 'shareChatReady' }, '*');
+  // load histories
+  useQuery(['loadHistories', outLinkUid, shareId], () => {
+    if (shareId && outLinkUid) {
+      return loadHistories({
+        shareId,
+        outLinkUid
+      });
     }
+    return null;
+  });
+
+  // window init
+  useEffect(() => {
     setIdEmbed(window !== top);
   }, []);
 
-  function CSVtoArray(text) {
-    let ret = [''],
-      i = 0,
-      p = '',
-      s = true;
-    for (let l in text) {
-      l = text[l];
-      if ('"' === l) {
-        s = !s;
-        if ('"' === p) {
-          ret[i] += '"';
-          l = '-';
-        } else if ('' === p) l = '-';
-      } else if (s && ',' === l) l = ret[++i] = '';
-      else ret[i] += l;
-      p = l;
-    }
-    return ret;
-  }
-  const updateProducts = (e: any) => {
-    var historyDom = document.getElementById('products');
-    var htmlnew = '';
-    e.all.map((item: any) => {
-      const itm = CSVtoArray(item.q);
-      if (e.found.includes(Number(itm[0]))) {
-        const name = itm[1].length < 36 ? itm[1] : itm[1].substring(0, 33) + '...';
-        htmlnew += `<a target="_blank" href="${itm[5]}"><div style="${
-          shareChatData.app?.style?.font !== undefined && shareChatData.app.style.font !== ''
-            ? 'font-family:' + shareChatData.app.style.font + '; '
-            : ''
-        } border: 1px solid var(--chakra-colors-gray-300); background: white; border-radius: ${
-          shareChatData.app?.style?.border_radius !== undefined &&
-          shareChatData.app.style.border_radius !== ''
-            ? shareChatData.app.style.border_radius
-            : '3'
-        }px; text-decoration: none; color: black;">
-        <div>
-        <div style="display:flex; justify-content: center;"><img src="${
-          itm[4]
-        }" alt="${name}" style="border-top-right-radius: 7px; border-top-left-radius: 7px; padding: 10px; height: 200px" onerror="this.src='/imgs/errImg.png'"></div>
-        </div><div style="padding: 10px;">
-        <h3 style="font-weight: bold;">${name}</h3>
-        <p>Price: ${itm[8] !== '' ? itm[8] : 'May Vary'}</p>
-        </div>
-        </div></a>`;
+  // todo:4.6.4 init: update local chat history, add outLinkUid
+  useEffect(() => {
+    const activeHistory = shareChatHistory.filter((item) => !item.delete);
+    if (!localUId || !shareId || activeHistory.length === 0) return;
+    (async () => {
+      try {
+        await POST('/core/chat/initLocalShareHistoryV464', {
+          shareId,
+          outLinkUid: localUId,
+          chatIds: shareChatHistory.map((item) => item.chatId)
+        });
+        clearLocalHistory();
+        // router.reload();
+      } catch (error) {
+        toast({
+          status: 'warning',
+          title: getErrText(error, t('core.shareChat.Init Error'))
+        });
       }
-    });
-    historyDom.innerHTML = htmlnew;
-  };
-
-  const containerStyle = {
-    display: 'flex',
-    height: '100%'
-  };
-
-  const sideBySideStyle = {
-    flex: 1,
-    height: '100%'
-  };
-  showHistory = '0';
+    })();
+  }, [clearLocalHistory, localUId, router, shareChatHistory, shareId, t, toast]);
 
   return (
-    <Flex h={'100%'}>
+    <PageContainer
+      {...(isEmbed
+        ? { p: '0 !important', insertProps: { borderRadius: '0', boxShadow: 'none' } }
+        : { p: [0, 5] })}
+    >
       <Head>
-        <title>{shareChatData.app.name}</title>
+        <title>{chatData.app.name}</title>
       </Head>
-      <Box w={'220px'} flexShrink={0}>
-        <SliderAppsShare apps={apps} />
-      </Box>
-      <PageContainer
-        {...(isEmbed ? { p: '0 !important', borderRadius: '0' } : {})}
-        flex={'1 0 0'}
-        w={0}
-        bg={'myWhite.600'}
-        position={'relative'}
+      <MyBox
+        isLoading={isFetching}
+        h={'100%'}
+        display={'flex'}
+        flexDirection={['column', 'row']}
+        bg={'white'}
       >
-        <Flex h={'100%'} flexDirection={['column', 'row']}>
-          {showHistory === '1'
-            ? ((children: React.ReactNode) => {
-                return isPc ? (
-                  <SideBar>{children}</SideBar>
-                ) : (
-                  <Drawer
-                    isOpen={isOpenSlider}
-                    placement="left"
-                    autoFocus={false}
-                    size={'xs'}
-                    onClose={onCloseSlider}
-                  >
-                    <DrawerOverlay backgroundColor={'rgba(255,255,255,0.5)'} />
-                    <DrawerContent maxWidth={'250px'} boxShadow={'2px 0 10px rgba(0,0,0,0.15)'}>
-                      {children}
-                    </DrawerContent>
-                  </Drawer>
-                );
-              })(
-                <ChatHistorySlider
-                  appName={shareChatData.app.name}
-                  appAvatar={shareChatData.app.avatar}
-                  activeChatId={chatId}
-                  history={history.map((item) => ({
-                    id: item.chatId,
-                    title: 'item.title'
-                  }))}
+        {showHistory === '1'
+          ? ((children: React.ReactNode) => {
+              return isPc ? (
+                <SideBar>{children}</SideBar>
+              ) : (
+                <Drawer
+                  isOpen={isOpenSlider}
+                  placement="left"
+                  autoFocus={false}
+                  size={'xs'}
                   onClose={onCloseSlider}
-                  onChangeChat={(chatId) => {
-                    router.replace({
-                      query: {
-                        ...router.query,
-                        chatId: chatId || ''
-                      }
-                    });
-                    if (!isPc) {
-                      onCloseSlider();
+                >
+                  <DrawerOverlay backgroundColor={'rgba(255,255,255,0.5)'} />
+                  <DrawerContent maxWidth={'250px'} boxShadow={'2px 0 10px rgba(0,0,0,0.15)'}>
+                    {children}
+                  </DrawerContent>
+                </Drawer>
+              );
+            })(
+              <ChatHistorySlider
+                appName={chatData.app.name}
+                appAvatar={chatData.app.avatar}
+                activeChatId={chatId}
+                history={histories.map((item) => ({
+                  id: item.chatId,
+                  title: item.title,
+                  customTitle: item.customTitle,
+                  top: item.top
+                }))}
+                onClose={onCloseSlider}
+                onChangeChat={(chatId) => {
+                  router.replace({
+                    query: {
+                      ...router.query,
+                      chatId: chatId || ''
                     }
-                  }}
-                  onDelHistory={delOneShareHistoryByChatId}
-                  onClearHistory={() => {
-                    delManyShareChatHistoryByShareId(shareId);
-                    router.replace({
-                      query: {
-                        ...router.query,
-                        chatId: ''
-                      }
-                    });
-                  }}
-                />
-              )
-            : null}
-
-          {/* chat container */}
-          <Flex
-            position={'relative'}
-            h={[0, '100%']}
-            w={['100%', 0]}
-            flex={'1 0 0'}
-            flexDirection={'column'}
-          >
-            {/* header */}
-            {shareChatData.app?.style?.show_header !== undefined &&
-              shareChatData.app.style.show_header === true && (
-                <ChatHeader
-                  appAvatar={shareChatData.app.avatar}
-                  appName={shareChatData.app.name}
-                  history={[]}
-                  onOpenSlider={onOpenSlider}
-                  mymode="share"
-                />
-              )}
-
-            {/* chat box */}
-            {shareChatData.app?.mid !== undefined && shareChatData.app?.mid === 'askforProduct' ? (
-              <Box flex={1}>
-                <div style={containerStyle}>
-                  <div
-                    style={{
-                      ...sideBySideStyle,
-                      ...{
-                        flex: '3',
-                        borderRight: '1px solid var(--chakra-colors-myGray-200)',
-                        background: 'var(--chakra-colors-myGray-100',
-                        overflow: 'scroll'
-                      }
-                    }}
-                  >
-                    <div style={{ padding: 10 }}>
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(3, 1fr)',
-                          gap: '10px'
-                        }}
-                        id="products"
-                      ></div>
-                    </div>
-                  </div>
-                  <div style={{ ...sideBySideStyle, ...{ flex: '2' } }}>
-                    <ChatBox
-                      active={!!shareChatData.app.name}
-                      ref={ChatBoxRef}
-                      appDetails={shareChatData.app}
-                      appAvatar={shareChatData.app.avatar}
-                      userAvatar={shareChatData.userAvatar}
-                      userGuideModule={shareChatData.app?.userGuideModule}
-                      showFileSelector={checkChatSupportSelectFileByChatModels(
-                        shareChatData.app.chatModels
-                      )}
-                      onProducts={(e) => updateProducts(e)}
-                      feedbackType={'user'}
-                      onUpdateVariable={(e) => {
-                        setShareChatData((state) => ({
-                          ...state,
-                          history: {
-                            ...state.history,
-                            variables: e
-                          }
-                        }));
-                      }}
-                      onStartChat={startChat}
-                      onDelMessage={({ contentId, index }) =>
-                        delShareChatHistoryItemById({ chatId, contentId, index })
-                      }
-                      mystyle={{
-                        chatColor:
-                          shareChatData.app?.style?.accent !== undefined &&
-                          shareChatData.app.style.accent !== ''
-                            ? shareChatData.app.style.accent
-                            : 'myBlue.300'
-                      }}
-                    />
-                  </div>
-                </div>
-              </Box>
-            ) : (
-              <Box flex={1}>
-                <ChatBox
-                  active={!!shareChatData.app.name}
-                  ref={ChatBoxRef}
-                  appDetails={shareChatData.app}
-                  appAvatar={shareChatData.app.avatar}
-                  userAvatar={shareChatData.userAvatar}
-                  userGuideModule={shareChatData.app?.userGuideModule}
-                  showFileSelector={checkChatSupportSelectFileByChatModels(
-                    shareChatData.app.chatModels
-                  )}
-                  onProducts={(e) => {}}
-                  feedbackType={'user'}
-                  onUpdateVariable={(e) => {
-                    setShareChatData((state) => ({
-                      ...state,
-                      history: {
-                        ...state.history,
-                        variables: e
-                      }
-                    }));
-                  }}
-                  onStartChat={startChat}
-                  onDelMessage={({ contentId, index }) =>
-                    delShareChatHistoryItemById({ chatId, contentId, index })
+                  });
+                  if (!isPc) {
+                    onCloseSlider();
                   }
-                />
-              </Box>
-            )}
-          </Flex>
+                }}
+                onDelHistory={({ chatId }) =>
+                  delOneHistory({ appId: chatData.appId, chatId, shareId, outLinkUid })
+                }
+                onClearHistory={() => {
+                  clearHistories({ shareId, outLinkUid });
+                  router.replace({
+                    query: {
+                      ...router.query,
+                      chatId: ''
+                    }
+                  });
+                }}
+                onSetHistoryTop={(e) => {
+                  updateHistory({
+                    ...e,
+                    appId: chatData.appId,
+                    shareId,
+                    outLinkUid
+                  });
+                }}
+                onSetCustomTitle={async (e) => {
+                  updateHistory({
+                    appId: chatData.appId,
+                    chatId: e.chatId,
+                    title: e.title,
+                    customTitle: e.title,
+                    shareId,
+                    outLinkUid
+                  });
+                }}
+              />
+            )
+          : null}
+
+        {/* chat container */}
+        <Flex
+          position={'relative'}
+          h={[0, '100%']}
+          w={['100%', 0]}
+          flex={'1 0 0'}
+          flexDirection={'column'}
+        >
+          {/* header */}
+          <ChatHeader
+            appAvatar={chatData.app.avatar}
+            appName={chatData.app.name}
+            history={chatData.history}
+            showHistory={showHistory === '1'}
+            onOpenSlider={onOpenSlider}
+          />
+          {/* chat box */}
+          <Box flex={1}>
+            <ChatBox
+              active={!!chatData.app.name}
+              ref={ChatBoxRef}
+              appAvatar={chatData.app.avatar}
+              userAvatar={chatData.userAvatar}
+              userGuideModule={chatData.app?.userGuideModule}
+              showFileSelector={checkChatSupportSelectFileByChatModels(chatData.app.chatModels)}
+              feedbackType={'user'}
+              onUpdateVariable={(e) => {}}
+              onStartChat={startChat}
+              onDelMessage={(e) =>
+                delOneHistoryItem({ ...e, appId: chatData.appId, chatId, shareId, outLinkUid })
+              }
+              appId={chatData.appId}
+              chatId={chatId}
+              shareId={shareId}
+              outLinkUid={outLinkUid}
+            />
+          </Box>
         </Flex>
-      </PageContainer>
-    </Flex>
+      </MyBox>
+    </PageContainer>
   );
 };
 

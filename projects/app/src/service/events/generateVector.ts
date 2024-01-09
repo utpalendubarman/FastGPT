@@ -2,11 +2,11 @@ import { insertData2Dataset } from '@/service/core/dataset/data/controller';
 import { MongoDatasetTraining } from '@fastgpt/service/core/dataset/training/schema';
 import { TrainingModeEnum } from '@fastgpt/global/core/dataset/constant';
 import { sendOneInform } from '../support/user/inform/api';
-import { addLog } from '@fastgpt/service/common/mongo/controller';
+import { addLog } from '@fastgpt/service/common/system/log';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { authTeamBalance } from '@/service/support/permission/auth/bill';
 import { pushGenerateVectorBill } from '@/service/support/wallet/bill/push';
-import user, { UserErrEnum } from '@fastgpt/global/common/error/code/user';
+import { UserErrEnum } from '@fastgpt/global/common/error/code/user';
 import { lockTrainingDataByTeamId } from '@fastgpt/service/core/dataset/training/controller';
 
 const reduceQueue = (retry = false) => {
@@ -26,6 +26,8 @@ export async function generateVector(): Promise<any> {
   if (global.vectorQueueLen >= global.systemEnv.vectorMaxProcess) return;
   global.vectorQueueLen++;
 
+  const start = Date.now();
+
   // get training data
   const {
     data,
@@ -43,9 +45,14 @@ export async function generateVector(): Promise<any> {
           lockTime: new Date()
         }
       )
+        .sort({
+          weight: -1
+        })
         .select({
           _id: 1,
           userId: 1,
+          teamId: 1,
+          tmbId: 1,
           datasetId: 1,
           collectionId: 1,
           q: 1,
@@ -78,8 +85,7 @@ export async function generateVector(): Promise<any> {
       };
     }
   })();
-  console.log('********************************************************8');
-  console.log(data);
+
   if (done || !data) {
     if (reduceQueue()) {
       console.log(`【index】Task done`);
@@ -93,7 +99,7 @@ export async function generateVector(): Promise<any> {
 
   // auth balance
   try {
-    await authTeamBalance(data.userId);
+    await authTeamBalance(data.teamId);
   } catch (error: any) {
     if (error?.statusText === UserErrEnum.balanceNotEnough) {
       // send inform and lock data
@@ -103,10 +109,10 @@ export async function generateVector(): Promise<any> {
           title: '文本训练任务中止',
           content:
             '该团队账号余额不足，文本训练任务中止，重新充值后将会继续。暂停的任务将在 7 天后被删除。',
-          tmbId: data.userId
+          tmbId: data.tmbId
         });
         console.log('余额不足，暂停【向量】生成任务');
-        lockTrainingDataByTeamId(data.userId);
+        lockTrainingDataByTeamId(data.teamId);
       } catch (error) {}
     }
 
@@ -115,73 +121,78 @@ export async function generateVector(): Promise<any> {
   }
 
   // create vector and insert
-  // try {
-  // invalid data
-  if (!data.q.trim()) {
+  try {
+    // invalid data
+    if (!data.q.trim()) {
+      await MongoDatasetTraining.findByIdAndDelete(data._id);
+      reduceQueue();
+      generateVector();
+      return;
+    }
+
+    // insert data to pg
+    const { tokens } = await insertData2Dataset({
+      teamId: data.teamId,
+      tmbId: data.tmbId,
+      datasetId: data.datasetId,
+      collectionId: data.collectionId,
+      q: dataItem.q,
+      a: dataItem.a,
+      chunkIndex: data.chunkIndex,
+      indexes: dataItem.indexes,
+      model: data.model
+    });
+
+    // push bill
+    pushGenerateVectorBill({
+      teamId: data.teamId,
+      tmbId: data.tmbId,
+      tokens,
+      model: data.model,
+      billId: data.billId
+    });
+
+    // delete data from training
     await MongoDatasetTraining.findByIdAndDelete(data._id);
     reduceQueue();
     generateVector();
-    return;
+
+    console.log(`embedding finished, time: ${Date.now() - start}ms`);
+  } catch (err: any) {
+    reduceQueue(true);
+    // log
+    if (err?.response) {
+      addLog.info('openai error: 生成向量错误', {
+        status: err.response?.status,
+        stateusText: err.response?.statusText,
+        data: err.response?.data
+      });
+    } else {
+      console.log(err);
+      addLog.error(getErrText(err, '生成向量错误'));
+    }
+
+    // message error or openai account error
+    if (
+      err?.message === 'invalid message format' ||
+      err.response?.data?.error?.type === 'invalid_request_error' ||
+      err?.code === 500
+    ) {
+      addLog.info('Lock training data');
+      console.log(err?.code);
+      console.log(err.response?.data?.error?.type);
+      console.log(err?.message);
+
+      try {
+        await MongoDatasetTraining.findByIdAndUpdate(data._id, {
+          lockTime: new Date('2998/5/5')
+        });
+      } catch (error) {}
+      return generateVector();
+    }
+
+    setTimeout(() => {
+      generateVector();
+    }, 1000);
   }
-  console.log('++++++++++++++++++ MEEE ++++++++++++++=');
-  // insert data to pg
-  const { tokenLen } = await insertData2Dataset({
-    userId: data.userId,
-    datasetId: data.datasetId,
-    collectionId: data.collectionId,
-    q: dataItem.q,
-    a: dataItem.a,
-    chunkIndex: data.chunkIndex,
-    indexes: dataItem.indexes,
-    model: data.model
-  });
-  console.log('TOKENLEN');
-  console.log(tokenLen);
-  // push bill
-  // pushGenerateVectorBill({
-  //   userId: data.userId,
-  //   tokenLen: tokenLen,
-  //   model: data.model,
-  //   billId: data.billId
-  // });
-
-  // delete data from training
-  await MongoDatasetTraining.findByIdAndDelete(data._id);
-  reduceQueue();
-  // generateVector();
-  // } catch (err: any) {
-  //   reduceQueue(true);
-  //   // log
-  //   if (err?.response) {
-  //     addLog.info('openai error: 生成向量错误', {
-  //       status: err.response?.status,
-  //       stateusText: err.response?.statusText,
-  //       data: err.response?.data
-  //     });
-  //   } else {
-  //     console.log(err);
-  //     addLog.error(getErrText(err, '生成向量错误'));
-  //   }
-
-  //   // message error or openai account error
-  //   if (
-  //     err?.message === 'invalid message format' ||
-  //     err.response?.data?.error?.type === 'invalid_request_error' ||
-  //     err?.code === 500
-  //   ) {
-  //     addLog.info('invalid message format', {
-  //       dataItem
-  //     });
-  //     try {
-  //       await MongoDatasetTraining.findByIdAndUpdate(data._id, {
-  //         lockTime: new Date('2998/5/5')
-  //       });
-  //     } catch (error) { }
-  //     return generateVector();
-  //   }
-
-  setTimeout(() => {
-    generateVector();
-  }, 1000);
-  // }
 }

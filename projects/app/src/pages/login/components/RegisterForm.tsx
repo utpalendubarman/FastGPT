@@ -19,7 +19,7 @@ interface RegisterType {
   username: string;
   password: string;
   password2: string;
-  name: string;
+  code: string;
 }
 
 const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
@@ -34,7 +34,7 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
     mode: 'onBlur'
   });
 
-  const { codeSending, sendCodeText, sendCode, codeCountDown } = useSendCode();
+  const { sendCodeText, sendCode, codeCountDown } = useSendCode();
 
   const onclickSendCode = useCallback(async () => {
     const check = await trigger('username');
@@ -48,34 +48,35 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
   const [requesting, setRequesting] = useState(false);
 
   const onclickRegister = useCallback(
-    async ({ username, password, name }: RegisterType) => {
+    async ({ username, password, code }: RegisterType) => {
       setRequesting(true);
       try {
         loginSuccess(
           await postRegister({
             username,
+            code,
             password,
-            name
+            inviterId: localStorage.getItem('inviterId') || undefined
           })
         );
         toast({
-          title: `Welcome`,
+          title: `注册成功`,
           status: 'success'
         });
         // auto register template app
-        // setTimeout(() => {
-        //   appTemplates.forEach((template) => {
-        //     postCreateApp({
-        //       avatar: template.avatar,
-        //       name: template.name,
-        //       modules: template.modules,
-        //       type: template.type
-        //     });
-        //   });
-        // }, 100);
+        setTimeout(() => {
+          appTemplates.forEach((template) => {
+            postCreateApp({
+              avatar: template.avatar,
+              name: template.name,
+              modules: template.modules,
+              type: template.type
+            });
+          });
+        }, 100);
       } catch (error: any) {
         toast({
-          title: error.message || 'Registration exception',
+          title: error.message || '注册异常',
           status: 'error'
         });
       }
@@ -87,125 +88,116 @@ const RegisterForm = ({ setPageType, loginSuccess }: Props) => {
   return (
     <>
       <Box fontWeight={'bold'} fontSize={'2xl'} textAlign={'center'}>
-        Signup
+        注册 {feConfigs?.systemTitle} 账号
       </Box>
-      <form onSubmit={handleSubmit(onclickRegister)}>
-        <FormControl mt={5} isInvalid={!!errors.name}>
+      <Box
+        mt={'42px'}
+        onKeyDown={(e) => {
+          if (e.keyCode === 13 && !e.shiftKey && !requesting) {
+            handleSubmit(onclickRegister)();
+          }
+        }}
+      >
+        <FormControl isInvalid={!!errors.username}>
           <Input
-            placeholder="Full Name"
-            size={['md', 'lg']}
-            {...register('name', {
-              required: 'Name cannot be empty',
-              pattern: {
-                value: /(^[A-Za-z]+(?: [A-Za-z]+)?$)/,
-                message: 'Invalid Name'
-              }
-            })}
-          ></Input>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.name && errors.name.message}
-          </FormErrorMessage>
-        </FormControl>
-        <FormControl mt={6} isInvalid={!!errors.username}>
-          <Input
-            placeholder="Email"
-            size={['md', 'lg']}
+            bg={'myGray.50'}
+            placeholder="邮箱/手机号"
             {...register('username', {
-              required: 'Email number cannot be empty',
+              required: '邮箱/手机号不能为空',
               pattern: {
                 value:
                   /(^1[3456789]\d{9}$)|(^[A-Za-z0-9]+([_\.][A-Za-z0-9]+)*@([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6}$)/,
-                message: 'Invalid Email'
+                message: '邮箱/手机号格式错误'
               }
             })}
           ></Input>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.username && errors.username.message}
-          </FormErrorMessage>
         </FormControl>
-        {/* <FormControl mt={8} isInvalid={!!errors.username}>
-          <Flex>
-            <Input
-              flex={1}
-              size={['md', 'lg']}
-              placeholder="Verification code"
-              {...register('code', {
-                required: 'Verification code must be filled'
-              })}
-            ></Input>
-            <Button
-              ml={5}
-              w={'145px'}
-              maxW={'50%'}
-              size={['md', 'lg']}
-              onClick={onclickSendCode}
-              isDisabled={codeCountDown > 0}
-              isLoading={codeSending}
-            >
-              Send Code
-            </Button>
-          </Flex>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.code && errors.code.message}
-          </FormErrorMessage>
-        </FormControl> */}
-        <FormControl mt={8} isInvalid={!!errors.password}>
+        <FormControl
+          mt={6}
+          isInvalid={!!errors.code}
+          display={'flex'}
+          alignItems={'center'}
+          position={'relative'}
+        >
           <Input
+            bg={'myGray.50'}
+            flex={1}
+            maxLength={8}
+            placeholder="验证码"
+            {...register('code', {
+              required: '验证码不能为空'
+            })}
+          ></Input>
+          <Box
+            position={'absolute'}
+            right={3}
+            zIndex={1}
+            fontSize={'sm'}
+            {...(codeCountDown > 0
+              ? {
+                  color: 'myGray.500'
+                }
+              : {
+                  color: 'primary.700',
+                  cursor: 'pointer',
+                  onClick: onclickSendCode
+                })}
+          >
+            {sendCodeText}
+          </Box>
+        </FormControl>
+        <FormControl mt={6} isInvalid={!!errors.password}>
+          <Input
+            bg={'myGray.50'}
             type={'password'}
-            placeholder="Password"
-            size={['md', 'lg']}
+            placeholder="密码(4~20位)"
             {...register('password', {
-              required: 'Password can not be blank',
+              required: '密码不能为空',
               minLength: {
                 value: 4,
-                message: 'Password must be at least 4 characters and at most 20 characters'
+                message: '密码最少 4 位最多 20 位'
               },
               maxLength: {
                 value: 20,
-                message: 'Password must be at least 4 characters and at most 20 characters'
+                message: '密码最少 4 位最多 20 位'
               }
             })}
           ></Input>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.password && errors.password.message}
-          </FormErrorMessage>
         </FormControl>
-        <FormControl mt={8} isInvalid={!!errors.password2}>
+        <FormControl mt={6} isInvalid={!!errors.password2}>
           <Input
+            bg={'myGray.50'}
             type={'password'}
-            placeholder="Confirm Password"
-            size={['md', 'lg']}
+            placeholder="确认密码"
             {...register('password2', {
-              validate: (val) =>
-                getValues('password') === val ? true : 'Two passwords are not same'
+              validate: (val) => (getValues('password') === val ? true : '两次密码不一致')
             })}
           ></Input>
-          <FormErrorMessage position={'absolute'} fontSize="xs">
-            {!!errors.password2 && errors.password2.message}
-          </FormErrorMessage>
         </FormControl>
-        <Box
-          float={'right'}
-          fontSize="sm"
-          mt={2}
-          color={'myBlue.600'}
-          cursor={'pointer'}
-          _hover={{ textDecoration: 'underline' }}
-          onClick={() => setPageType('login')}
-        >
-          Already have an account? Log in
-        </Box>
         <Button
           type="submit"
-          mt={5}
+          mt={6}
           w={'100%'}
           size={['md', 'lg']}
           colorScheme="blue"
           isLoading={requesting}
+          onClick={handleSubmit(onclickRegister)}
         >
-          Register
+          确认注册
         </Button>
-      </form>
+        <Box
+          float={'right'}
+          fontSize="sm"
+          mt={2}
+          mb={'50px'}
+          color={'primary.700'}
+          cursor={'pointer'}
+          _hover={{ textDecoration: 'underline' }}
+          onClick={() => setPageType('login')}
+        >
+          已有账号，去登录
+        </Box>
+      </Box>
     </>
   );
 };

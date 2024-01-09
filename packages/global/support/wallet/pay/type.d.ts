@@ -1,9 +1,10 @@
-export type PayModelSchema = {
+export type PaySchema = {
   _id: string;
   userId: string;
-  sessionId: string;
+  teamId: string;
+  tmbId: string;
   createTime: Date;
   price: number;
-  product: string;
-  status: 'SUCCESS' | 'REFUND' | 'INITIATED' | 'CLOSED' | 'FAILED';
+  orderId: string;
+  status: 'SUCCESS' | 'REFUND' | 'NOTPAY' | 'CLOSED';
 };

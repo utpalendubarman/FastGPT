@@ -4,7 +4,7 @@ import type { OutLinkEditType } from '@fastgpt/global/support/outLink/type.d';
 export const defaultApp: AppDetailType = {
   _id: '',
   userId: 'userId',
-  name: 'Model loading',
+  name: '应用加载中',
   type: 'simple',
   simpleTemplateId: 'fastgpt-universal',
   avatar: '/icon/logo.svg',
@@ -20,17 +20,10 @@ export const defaultApp: AppDetailType = {
 
 export const defaultOutLinkForm: OutLinkEditType = {
   name: '',
-  responseDetail: true,
+  responseDetail: false,
   limit: {
     QPM: 100,
     credit: -1
-  },
-  style: {
-    font: 'sans-serif',
-    font_color: 'black',
-    accent: '#E2E8F0',
-    border_radius: 7,
-    show_header: true
   }
 };
 

@@ -6,16 +6,22 @@ import { connectToDatabase } from '@/service/mongo';
 import { authDataset } from '@fastgpt/service/support/permission/auth/dataset';
 import { authTeamBalance } from '@/service/support/permission/auth/bill';
 import { pushGenerateVectorBill } from '@/service/support/wallet/bill/push';
-import { countModelPrice } from '@/service/support/wallet/bill/utils';
-import { searchDatasetData } from '@/service/core/dataset/data/pg';
+import { searchDatasetData } from '@/service/core/dataset/data/controller';
 import { updateApiKeyUsage } from '@fastgpt/service/support/openapi/tools';
-import { ModelTypeEnum } from '@/service/core/ai/model';
 import { BillSourceEnum } from '@fastgpt/global/support/wallet/bill/constants';
+import { searchQueryExtension } from '@fastgpt/service/core/ai/functions/queryExtension';
 
 export default withNextCors(async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
     await connectToDatabase();
-    const { datasetId, text, limit = 20, searchMode } = req.body as SearchTestProps;
+    const {
+      datasetId,
+      text,
+      limit = 1500,
+      similarity,
+      searchMode,
+      usingReRank
+    } = req.body as SearchTestProps;
 
     if (!datasetId || !text) {
       throw new Error('缺少参数');
@@ -35,19 +41,28 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     // auth balance
     await authTeamBalance(teamId);
 
-    const { searchRes, tokenLen } = await searchDatasetData({
-      text,
+    // query extension
+    // const { queries } = await searchQueryExtension({
+    //   query: text,
+    //   model: global.chatModels[0].model
+    // });
+
+    const { searchRes, tokens, ...result } = await searchDatasetData({
+      rawQuery: text,
+      queries: [text],
       model: dataset.vectorModel,
-      limit: Math.min(limit, 50),
+      limit: Math.min(limit, 20000),
+      similarity,
       datasetIds: [datasetId],
-      searchMode
+      searchMode,
+      usingReRank
     });
 
     // push bill
     const { total } = pushGenerateVectorBill({
       teamId,
       tmbId,
-      tokenLen: tokenLen,
+      tokens,
       model: dataset.vectorModel,
       source: apikey ? BillSourceEnum.api : BillSourceEnum.fastgpt
     });
@@ -61,7 +76,8 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
     jsonRes<SearchTestResponse>(res, {
       data: {
         list: searchRes,
-        duration: `${((Date.now() - start) / 1000).toFixed(3)}s`
+        duration: `${((Date.now() - start) / 1000).toFixed(3)}s`,
+        ...result
       }
     });
   } catch (err) {

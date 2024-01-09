@@ -7,12 +7,6 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: process.env.NODE_ENV === 'development' ? false : true,
   compress: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   webpack(config, { isServer }) {
     if (!isServer) {
       config.resolve = {
@@ -51,7 +45,7 @@ const nextConfig = {
   },
   transpilePackages: ['@fastgpt/*'],
   experimental: {
-    serverComponentsExternalPackages: ['mongoose', 'winston', 'winston-mongodb', 'pg'],
+    serverComponentsExternalPackages: ['mongoose', 'pg'],
     outputFileTracingRoot: path.join(__dirname, '../../')
   }
 };

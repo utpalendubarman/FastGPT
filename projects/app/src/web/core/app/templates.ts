@@ -10,13 +10,14 @@ export const appTemplates: (AppItemType & {
   {
     id: 'simpleChat',
     avatar: '/imgs/module/AI.png',
-    name: 'Simple Conversation',
-    intro: 'An extremely simple AI conversation application',
+    name: 'Simple conversation',
+    intro: 'An extremely simple AI dialogue application',
     type: AppTypeEnum.simple,
     modules: [
       {
         moduleId: 'userGuide',
         name: 'User guidance',
+        avatar: '/imgs/module/userGuide.png',
         flowType: 'userGuide',
         position: {
           x: 454.98510354678695,
@@ -25,17 +26,48 @@ export const appTemplates: (AppItemType & {
         inputs: [
           {
             key: 'welcomeText',
-            type: 'input',
-            label: 'opening remarks',
-            value: '',
-            connected: true
+            type: 'hidden',
+            valueType: 'string',
+            label: 'Opening remark',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'variables',
+            type: 'hidden',
+            valueType: 'any',
+            label: 'Dialog box variable',
+            value: [],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'questionGuide',
+            valueType: 'boolean',
+            type: 'switch',
+            label: 'Problem guidance',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'tts',
+            type: 'hidden',
+            valueType: 'any',
+            label: 'Voice broadcast',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           }
         ],
         outputs: []
       },
       {
         moduleId: 'userChatInput',
-        name: 'User questions (dialogue entry)',
+        name: 'User problem (dialog entrance)',
+        avatar: '/imgs/module/userChatInput.png',
         flowType: 'questionInput',
         position: {
           x: 464.32198615344566,
@@ -45,8 +77,11 @@ export const appTemplates: (AppItemType & {
           {
             key: 'userChatInput',
             type: 'systemInput',
+            valueType: 'string',
             label: 'User problem',
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           }
         ],
         outputs: [
@@ -65,48 +100,9 @@ export const appTemplates: (AppItemType & {
         ]
       },
       {
-        moduleId: 'history',
-        name: 'Chat Record',
-        flowType: 'historyNode',
-        position: {
-          x: 452.5466249541586,
-          y: 1276.3930310334215
-        },
-        inputs: [
-          {
-            key: 'maxContext',
-            type: 'numberInput',
-            label: 'Maximum record number',
-            value: 6,
-            min: 0,
-            max: 50,
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'hidden',
-            label: 'chat record',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'history',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'history'
-              }
-            ]
-          }
-        ]
-      },
-      {
         moduleId: 'chatModule',
         name: 'AI dialogue',
+        avatar: '/imgs/module/AI.png',
         flowType: 'chatNode',
         showStatus: true,
         position: {
@@ -115,40 +111,56 @@ export const appTemplates: (AppItemType & {
         },
         inputs: [
           {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
             key: 'model',
-            type: 'custom',
+            type: 'selectChatModel',
             label: 'Dialog',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
             value: 'gpt-3.5-turbo-16k',
-            list: [],
-            connected: true
+            connected: false
           },
           {
             key: 'temperature',
-            type: 'slider',
+            type: 'hidden',
             label: 'temperature',
             value: 0,
+            valueType: 'number',
             min: 0,
             max: 10,
             step: 1,
             markList: [
               {
-                label: '严谨',
+                label: 'rigorous',
                 value: 0
               },
               {
-                label: '发散',
+                label: 'Disperse',
                 value: 10
               }
             ],
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           },
           {
             key: 'maxToken',
-            type: 'custom',
+            type: 'hidden',
             label: 'The upper limit',
             value: 8000,
+            valueType: 'number',
             min: 100,
-            max: 16000,
+            max: 4000,
             step: 50,
             markList: [
               {
@@ -156,51 +168,96 @@ export const appTemplates: (AppItemType & {
                 value: 100
               },
               {
-                label: '16000',
-                value: 16000
+                label: '4000',
+                value: 4000
               }
             ],
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'isResponseAnswerText',
+            type: 'hidden',
+            label: 'Return to AI content',
+            value: true,
+            valueType: 'boolean',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'quoteTemplate',
+            type: 'hidden',
+            label: 'Quote content template',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'quotePrompt',
+            type: 'hidden',
+            label: 'Quote content prompt words',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'aiSettings',
+            type: 'aiSettings',
+            label: '',
+            valueType: 'any',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           },
           {
             key: 'systemPrompt',
             type: 'textarea',
-            label: 'System prompt word',
+            label: 'System prompt',
+            max: 300,
             valueType: 'string',
             description:
-              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
+              'The guidance of the model fixed can guide the model to chat direction by adjusting the content.This content will be fixed at the beginning of the context.Can use variables, such as {Language}}',
             placeholder:
-              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
-            value: '',
-            connected: true
+              'The guidance of the model fixed can guide the model to chat direction by adjusting the content.This content will be fixed at the beginning of the context.Can use variables, such as {Language}}',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
           },
           {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
+            key: 'history',
+            type: 'numberInput',
+            label: 'core.module.input.label.chat history',
+            required: true,
+            min: 0,
+            max: 30,
+            valueType: 'chatHistory',
+            value: 6,
+            showTargetInApp: true,
+            showTargetInPlugin: true,
             connected: false
           },
           {
             key: 'quoteQA',
             type: 'target',
             label: 'Cited content',
+            description: "Object number format, structure：\n [{Q: 'Questions', A: 'Answer'}]",
             valueType: 'datasetQuote',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
             connected: false
-          },
-          {
-            key: 'history',
-            type: 'target',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            connected: true
           },
           {
             key: 'userChatInput',
             type: 'target',
-            label: 'User problem',
+            label: 'core.module.input.label.user question',
             required: true,
             valueType: 'string',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
             connected: true
           }
         ],
@@ -208,15 +265,25 @@ export const appTemplates: (AppItemType & {
           {
             key: 'answerText',
             label: 'AI reply',
-            description: '直接响应，无需配置',
-            type: 'hidden',
+            description: 'Will be triggered after the stream replies',
+            valueType: 'string',
+            type: 'source',
             targets: []
           },
           {
             key: 'finish',
-            label: 'Reply end',
-            description: 'AI Trigger after replying',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
             valueType: 'boolean',
+            type: 'source',
+            targets: []
+          },
+          {
+            key: 'history',
+            label: 'New context',
+            description:
+              'Taking the historical record of this reply content, return as a new context',
+            valueType: 'chatHistory',
             type: 'source',
             targets: []
           }
@@ -227,27 +294,63 @@ export const appTemplates: (AppItemType & {
   {
     id: 'simpleDatasetChat',
     avatar: '/imgs/module/db.png',
-    name: 'Ask for Travel',
+    name: 'Knowledge Base + Dialogue Guide',
     intro:
-      'A knowledge base search is performed every time a question is asked, and the search results are injected into the LLM model for reference answers.',
+      'Search for a knowledge base when asking questions, inject the search results into the LLM model for reference and answer',
     type: AppTypeEnum.simple,
     modules: [
       {
         moduleId: 'userGuide',
         name: 'User guidance',
+        avatar: '/imgs/module/userGuide.png',
         flowType: 'userGuide',
         position: {
-          x: 454.98510354678695,
+          x: 447.98520778293346,
           y: 721.4016845336229
         },
         inputs: [
           {
             key: 'welcomeText',
-            type: 'input',
+            type: 'hidden',
+            valueType: 'string',
             label: 'Opening remark',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
             value:
-              'Hello, I am the assistant of the knowledge base, please don’t forget to choose the knowledge base ~',
-            connected: true
+              'Hello, I am the assistant of the knowledge base, please do not forget to choose the knowledge base ~  n [Who are you]  n [How to use]',
+            connected: false
+          },
+          {
+            key: 'variables',
+            type: 'hidden',
+            valueType: 'any',
+            label: 'Dialog box variable',
+            value: [],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'questionGuide',
+            valueType: 'boolean',
+            type: 'switch',
+            label: 'Problem guidance',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: false,
+            connected: false
+          },
+          {
+            key: 'tts',
+            type: 'hidden',
+            valueType: 'any',
+            label: 'Voice broadcast',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: {
+              type: 'web'
+            },
+            connected: false
           }
         ],
         outputs: []
@@ -255,6 +358,468 @@ export const appTemplates: (AppItemType & {
       {
         moduleId: 'userChatInput',
         name: 'User problem (dialog entrance)',
+        avatar: '/imgs/module/userChatInput.png',
+        flowType: 'questionInput',
+        position: {
+          x: 324.81436595478294,
+          y: 1527.0012457753612
+        },
+        inputs: [
+          {
+            key: 'userChatInput',
+            type: 'systemInput',
+            valueType: 'string',
+            label: 'User problem',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          }
+        ],
+        outputs: [
+          {
+            key: 'userChatInput',
+            label: 'User problem',
+            type: 'source',
+            valueType: 'string',
+            targets: [
+              {
+                moduleId: 'datasetSearch',
+                key: 'userChatInput'
+              },
+              {
+                moduleId: 'chatModule',
+                key: 'userChatInput'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        moduleId: 'datasetSearch',
+        name: 'Knowledge Base Search',
+        avatar: '/imgs/module/db.png',
+        flowType: 'datasetSearchNode',
+        showStatus: true,
+        position: {
+          x: 1351.5043753345153,
+          y: 947.0780385418003
+        },
+        inputs: [
+          {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'datasets',
+            type: 'selectDataset',
+            label: 'Related knowledge base',
+            value: [],
+            valueType: 'selectDataset',
+            list: [],
+            required: true,
+            showTargetInApp: false,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'similarity',
+            type: 'hidden',
+            label: 'Minimum correlation',
+            value: 0.4,
+            valueType: 'number',
+            min: 0,
+            max: 1,
+            step: 0.01,
+            markList: [
+              {
+                label: '0',
+                value: 0
+              },
+              {
+                label: '1',
+                value: 1
+              }
+            ],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'limit',
+            type: 'hidden',
+            label: 'Reference the upper limit',
+            description:
+              'The largest number of tokens in a single search, about 1 word in Chinese = 1.7TOKENS, about 1 word in English = 1Tokens',
+            value: 1500,
+            valueType: 'number',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'searchMode',
+            type: 'hidden',
+            label: 'core.dataset.search.Mode',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: 'embedding',
+            connected: false
+          },
+          {
+            key: 'datasetParamsModal',
+            type: 'selectDatasetParamsModal',
+            label: '',
+            valueType: 'any',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'userChatInput',
+            type: 'target',
+            label: 'core.module.input.label.user question',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          }
+        ],
+        outputs: [
+          {
+            key: 'isEmpty',
+            label: 'The search result is empty',
+            type: 'source',
+            valueType: 'boolean',
+            targets: []
+          },
+          {
+            key: 'unEmpty',
+            label: 'The search results are not empty',
+            type: 'source',
+            valueType: 'boolean',
+            targets: []
+          },
+          {
+            key: 'quoteQA',
+            label: 'Cited content',
+            description:
+              'Always return to the array. If you want to perform additional operations when the search results are executed in the air, you need to use the two inputs above and the trigger of the target module',
+            type: 'source',
+            valueType: 'datasetQuote',
+            targets: [
+              {
+                moduleId: 'chatModule',
+                key: 'quoteQA'
+              }
+            ]
+          },
+          {
+            key: 'finish',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
+            valueType: 'boolean',
+            type: 'source',
+            targets: []
+          }
+        ]
+      },
+      {
+        moduleId: 'chatModule',
+        name: 'AI dialogue',
+        avatar: '/imgs/module/AI.png',
+        flowType: 'chatNode',
+        showStatus: true,
+        position: {
+          x: 2022.7264786978908,
+          y: 1006.3102431257475
+        },
+        inputs: [
+          {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'model',
+            type: 'selectChatModel',
+            label: 'Dialog',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: 'gpt-3.5-turbo-16k',
+            connected: false
+          },
+          {
+            key: 'temperature',
+            type: 'hidden',
+            label: 'temperature',
+            value: 0,
+            valueType: 'number',
+            min: 0,
+            max: 10,
+            step: 1,
+            markList: [
+              {
+                label: 'rigorous',
+                value: 0
+              },
+              {
+                label: 'Disperse',
+                value: 10
+              }
+            ],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'maxToken',
+            type: 'hidden',
+            label: 'The upper limit',
+            value: 8000,
+            valueType: 'number',
+            min: 100,
+            max: 4000,
+            step: 50,
+            markList: [
+              {
+                label: '100',
+                value: 100
+              },
+              {
+                label: '4000',
+                value: 4000
+              }
+            ],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'isResponseAnswerText',
+            type: 'hidden',
+            label: 'Return to AI content',
+            value: true,
+            valueType: 'boolean',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'quoteTemplate',
+            type: 'hidden',
+            label: 'Quote content template',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: '',
+            connected: false
+          },
+          {
+            key: 'quotePrompt',
+            type: 'hidden',
+            label: 'Quote content prompt words',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: '',
+            connected: false
+          },
+          {
+            key: 'aiSettings',
+            type: 'aiSettings',
+            label: '',
+            valueType: 'any',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'systemPrompt',
+            type: 'textarea',
+            label: 'System prompt',
+            max: 300,
+            valueType: 'string',
+            description:
+              'The guidance of the model fixed can guide the model to chat direction by adjusting the content.This content will be fixed at the beginning of the context.Can use variables, such as {Language}}',
+            placeholder:
+              'The guidance of the model fixed can guide the model to chat direction by adjusting the content.This content will be fixed at the beginning of the context.Can use variables, such as {Language}}',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            value: '',
+            connected: false
+          },
+          {
+            key: 'history',
+            type: 'numberInput',
+            label: 'core.module.input.label.chat history',
+            required: true,
+            min: 0,
+            max: 30,
+            valueType: 'chatHistory',
+            value: 6,
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'quoteQA',
+            type: 'target',
+            label: 'Cited content',
+            description: "Object number format, structure:\n [{Q: 'Questions', A: 'Answer'}]",
+            valueType: 'datasetQuote',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          },
+          {
+            key: 'userChatInput',
+            type: 'target',
+            label: 'core.module.input.label.user question',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          }
+        ],
+        outputs: [
+          {
+            key: 'answerText',
+            label: 'AI reply',
+            description: 'Will be triggered after the stream replies',
+            valueType: 'string',
+            type: 'source',
+            targets: []
+          },
+          {
+            key: 'finish',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
+            valueType: 'boolean',
+            type: 'source',
+            targets: []
+          },
+          {
+            key: 'history',
+            label: 'New context',
+            description:
+              'Taking the historical record of this reply content, return as a new context',
+            valueType: 'chatHistory',
+            type: 'source',
+            targets: []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'chatGuide',
+    avatar: '/imgs/module/userGuide.png',
+    name: 'Dialogue guidance + variable',
+    intro:
+      'You can send a prompt at the beginning of the dialogue, or let the user fill in some content as a variable for this conversation',
+    type: AppTypeEnum.simple,
+    modules: [
+      {
+        moduleId: 'userGuide',
+        name: 'User guidance',
+        avatar: '/imgs/module/userGuide.png',
+        flowType: 'userGuide',
+        position: {
+          x: 447.98520778293346,
+          y: 721.4016845336229
+        },
+        inputs: [
+          {
+            key: 'welcomeText',
+            type: 'hidden',
+            valueType: 'string',
+            label: 'Opening remark',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value:
+              'Hello, I can translate various languages for you, please tell me what language do you need to translate into?',
+            connected: false
+          },
+          {
+            key: 'variables',
+            type: 'hidden',
+            valueType: 'any',
+            label: 'Dialog box variable',
+            value: [
+              {
+                id: '35c640eb-cf22-431f-bb57-3fc21643880e',
+                key: 'language',
+                label: 'Target language',
+                type: 'input',
+                required: true,
+                maxLen: 50,
+                enums: [
+                  {
+                    value: ''
+                  }
+                ]
+              },
+              {
+                id: '2011ff08-91aa-4f60-ae69-f311ab4797b3',
+                key: 'language2',
+                label: 'Drop -down box test',
+                type: 'select',
+                required: false,
+                maxLen: 50,
+                enums: [
+                  {
+                    value: 'English'
+                  },
+                  {
+                    value: 'French'
+                  }
+                ]
+              }
+            ],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'questionGuide',
+            valueType: 'boolean',
+            type: 'switch',
+            label: 'Problem guidance',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: false,
+            connected: false
+          },
+          {
+            key: 'tts',
+            type: 'hidden',
+            valueType: 'any',
+            label: 'Voice broadcast',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          }
+        ],
+        outputs: []
+      },
+      {
+        moduleId: 'userChatInput',
+        name: 'User problem (dialog entrance)',
+        avatar: '/imgs/module/userChatInput.png',
         flowType: 'questionInput',
         position: {
           x: 464.32198615344566,
@@ -264,180 +829,23 @@ export const appTemplates: (AppItemType & {
           {
             key: 'userChatInput',
             type: 'systemInput',
-            label: 'User problem',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'userChatInput',
-            label: 'User problem',
-            type: 'source',
             valueType: 'string',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'userChatInput'
-              },
-              {
-                moduleId: 'datasetSearch',
-                key: 'userChatInput'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'history',
-        name: 'chat record',
-        flowType: 'historyNode',
-        position: {
-          x: 452.5466249541586,
-          y: 1276.3930310334215
-        },
-        inputs: [
-          {
-            key: 'maxContext',
-            type: 'numberInput',
-            label: 'Maximum record number',
-            value: 6,
-            min: 0,
-            max: 50,
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'hidden',
-            label: 'chat record',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'history',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'history'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'datasetSearch',
-        name: '知识库搜索',
-        flowType: 'datasetSearchNode',
-        showStatus: true,
-        position: {
-          x: 956.0838440206068,
-          y: 887.462827870246
-        },
-        inputs: [
-          {
-            key: 'datasets',
-            type: 'custom',
-            label: '关联的知识库',
-            value: [],
-            list: [],
-            connected: true
-          },
-          {
-            key: 'similarity',
-            type: 'slider',
-            label: '相似度',
-            value: 0.4,
-            min: 0,
-            max: 1,
-            step: 0.01,
-            markList: [
-              {
-                label: '100',
-                value: 100
-              },
-              {
-                label: '1',
-                value: 1
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'limit',
-            type: 'slider',
-            label: '单次搜索上限',
-            description: '最多取 n 条记录作为本次问题引用',
-            value: 5,
-            min: 1,
-            max: 20,
-            step: 1,
-            markList: [
-              {
-                label: '1',
-                value: 1
-              },
-              {
-                label: '20',
-                value: 20
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
+            label: 'User problem',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
             connected: false
-          },
-          {
-            key: 'userChatInput',
-            type: 'target',
-            label: '用户问题',
-            required: true,
-            valueType: 'string',
-            connected: true
           }
         ],
         outputs: [
           {
-            key: 'isEmpty',
-            label: '搜索结果为空',
+            key: 'userChatInput',
+            label: 'User problem',
             type: 'source',
-            valueType: 'boolean',
-            targets: [
-              {
-                moduleId: '2752oj',
-                key: 'switch'
-              }
-            ]
-          },
-          {
-            key: 'unEmpty',
-            label: '搜索结果不为空',
-            type: 'source',
-            valueType: 'boolean',
+            valueType: 'string',
             targets: [
               {
                 moduleId: 'chatModule',
-                key: 'switch'
-              }
-            ]
-          },
-          {
-            key: 'quoteQA',
-            label: 'Cited content',
-            description:
-              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的trigger',
-            type: 'source',
-            valueType: 'datasetQuote',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'quoteQA'
+                key: 'userChatInput'
               }
             ]
           }
@@ -445,27 +853,502 @@ export const appTemplates: (AppItemType & {
       },
       {
         moduleId: 'chatModule',
-        name: 'AI 对话',
+        name: 'AI dialogue',
+        avatar: '/imgs/module/AI.png',
         flowType: 'chatNode',
         showStatus: true,
         position: {
-          x: 1546.0823206390796,
-          y: 1008.9827344021824
+          x: 981.9682828103937,
+          y: 890.014595014464
         },
         inputs: [
           {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
             key: 'model',
-            type: 'custom',
-            label: '对话模型',
+            type: 'selectChatModel',
+            label: 'Dialog',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
             value: 'gpt-3.5-turbo-16k',
-            list: [],
-            connected: true
+            connected: false
           },
           {
             key: 'temperature',
-            type: 'slider',
+            type: 'hidden',
+            label: 'temperature',
+            value: 0,
+            valueType: 'number',
+            min: 0,
+            max: 10,
+            step: 1,
+            markList: [
+              {
+                label: 'rigorous',
+                value: 0
+              },
+              {
+                label: 'Disperse',
+                value: 10
+              }
+            ],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'maxToken',
+            type: 'hidden',
+            label: 'The upper limit',
+            value: 8000,
+            valueType: 'number',
+            min: 100,
+            max: 4000,
+            step: 50,
+            markList: [
+              {
+                label: '100',
+                value: 100
+              },
+              {
+                label: '4000',
+                value: 4000
+              }
+            ],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'isResponseAnswerText',
+            type: 'hidden',
+            label: 'Return to AI content',
+            value: true,
+            valueType: 'boolean',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'quoteTemplate',
+            type: 'hidden',
+            label: 'Quote content template',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'quotePrompt',
+            type: 'hidden',
+            label: 'Quote content prompt words',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'aiSettings',
+            type: 'aiSettings',
+            label: '',
+            valueType: 'any',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'systemPrompt',
+            type: 'textarea',
+            label: 'System prompt',
+            max: 300,
+            valueType: 'string',
+            description:
+              'The guidance of the model fixed can guide the model to chat direction by adjusting the content.This content will be fixed at the beginning of the context.Can use variables, such as {Language}}',
+            placeholder:
+              'The guidance of the model fixed can guide the model to chat direction by adjusting the content.This content will be fixed at the beginning of the context.Can use variables, such as {Language}}',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            value:
+              'Please translate my question directly into {Language}}, no need to answer the question.',
+            connected: false
+          },
+          {
+            key: 'history',
+            type: 'numberInput',
+            label: 'core.module.input.label.chat history',
+            required: true,
+            min: 0,
+            max: 30,
+            valueType: 'chatHistory',
+            value: 6,
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'quoteQA',
+            type: 'target',
+            label: 'Cited content',
+            description: "Object number format, structure:\n [{Q: 'Questions', A: 'Answer'}]",
+            valueType: 'datasetQuote',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'userChatInput',
+            type: 'target',
+            label: 'core.module.input.label.user question',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          }
+        ],
+        outputs: [
+          {
+            key: 'answerText',
+            label: 'AI回复',
+            description: '将在 stream 回复完毕后触发',
+            valueType: 'string',
+            type: 'source',
+            targets: []
+          },
+          {
+            key: 'finish',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
+            valueType: 'boolean',
+            type: 'source',
+            targets: []
+          },
+          {
+            key: 'history',
+            label: 'New context',
+            description:
+              'Taking the historical record of this reply content, return as a new context',
+            valueType: 'chatHistory',
+            type: 'source',
+            targets: []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'CQ',
+    avatar: '/imgs/module/cq.png',
+    name: 'Problem Classification + Knowledge Base',
+    intro:
+      'First classify the users problems, and then perform different operations according to different types of problems',
+    type: AppTypeEnum.advanced,
+    modules: [
+      {
+        moduleId: '7z5g5h',
+        name: 'User problem (dialog entrance)',
+        avatar: '/imgs/module/userChatInput.png',
+        flowType: 'questionInput',
+        position: {
+          x: -269.50851681351924,
+          y: 1657.6123698022448
+        },
+        inputs: [
+          {
+            key: 'userChatInput',
+            type: 'systemInput',
+            valueType: 'string',
+            label: 'User problem',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          }
+        ],
+        outputs: [
+          {
+            key: 'userChatInput',
+            label: 'User problem',
+            type: 'source',
+            valueType: 'string',
+            targets: [
+              {
+                moduleId: '79iwqi',
+                key: 'userChatInput'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        moduleId: 'remuj3',
+        name: 'question category',
+        avatar: '/imgs/module/cq.png',
+        flowType: 'classifyQuestion',
+        showStatus: true,
+        position: {
+          x: 730.6899384278805,
+          y: 1079.2201234653105
+        },
+        inputs: [
+          {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'model',
+            type: 'selectCQModel',
+            valueType: 'string',
+            label: 'Classification model',
+            required: true,
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: 'gpt-3.5-turbo',
+            connected: false
+          },
+          {
+            key: 'systemPrompt',
+            type: 'textarea',
+            valueType: 'string',
+            label: 'background knowledge',
+            description:
+              'You can add some specific content introductions to better identify the type of user problem.This content is usually introduced to the model that it doesnt know.',
+            placeholder:
+              'For example:  n1. AIGC (artificial intelligence generating content) refers to the use of artificial intelligence technology to automatically generate digital content, such as text, images, music, videos, etc. n2. AIGC technology includes but not limited to natural language processing, computer vision, machine learning and deep learning.These technologies can create new content or modify existing content to meet specific creativity, education, entertainment or information needs.',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            value: '',
+            connected: false
+          },
+          {
+            key: 'history',
+            type: 'numberInput',
+            label: 'core.module.input.label.chat history',
+            required: true,
+            min: 0,
+            max: 30,
+            valueType: 'chatHistory',
+            value: 6,
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'userChatInput',
+            type: 'target',
+            label: 'core.module.input.label.user question',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          },
+          {
+            key: 'agents',
+            type: 'custom',
+            valueType: 'any',
+            label: '',
+            value: [
+              {
+                value: 'Questions about the movie "Star Trek"',
+                key: 'wqre'
+              },
+              {
+                value: 'Greeting, greetings and other issues',
+                key: 'sdfa'
+              },
+              {
+                value: 'other problems',
+                key: 'oy1c'
+              }
+            ],
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          }
+        ],
+        outputs: [
+          {
+            key: 'wqre',
+            label: '',
+            type: 'hidden',
+            targets: [
+              {
+                moduleId: 'fljhzy',
+                key: 'switch'
+              }
+            ]
+          },
+          {
+            key: 'sdfa',
+            label: '',
+            type: 'hidden',
+            targets: [
+              {
+                moduleId: 'a99p6z',
+                key: 'switch'
+              }
+            ]
+          },
+          {
+            key: 'oy1c',
+            label: '',
+            type: 'hidden',
+            targets: [
+              {
+                moduleId: 'iejcou',
+                key: 'switch'
+              }
+            ]
+          },
+          {
+            key: 'agex',
+            label: '',
+            type: 'hidden',
+            targets: []
+          }
+        ]
+      },
+      {
+        moduleId: 'a99p6z',
+        name: '指定回复',
+        avatar: '/imgs/module/reply.png',
+        flowType: 'answerNode',
+        position: {
+          x: 1294.314623049058,
+          y: 1623.9470929531146
+        },
+        inputs: [
+          {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          },
+          {
+            key: 'text',
+            type: 'textarea',
+            valueType: 'any',
+            label: '回复的内容',
+            description:
+              '可以使用 \\n 来实现连续换行。\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容。\n如传入非字符串类型数据将会自动转成字符串',
+            placeholder:
+              '可以使用 \\n 来实现连续换行。\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容。\n如传入非字符串类型数据将会自动转成字符串',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            value: '你好，有什么可以帮助你的？',
+            connected: false
+          }
+        ],
+        outputs: [
+          {
+            key: 'finish',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
+            valueType: 'boolean',
+            type: 'source',
+            targets: []
+          }
+        ]
+      },
+      {
+        moduleId: 'iejcou',
+        name: '指定回复',
+        avatar: '/imgs/module/reply.png',
+        flowType: 'answerNode',
+        position: {
+          x: 1290.9284595230658,
+          y: 1992.4810074310749
+        },
+        inputs: [
+          {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          },
+          {
+            key: 'text',
+            type: 'textarea',
+            valueType: 'any',
+            label: '回复的内容',
+            description:
+              '可以使用 \\n 来实现连续换行。\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容。\n如传入非字符串类型数据将会自动转成字符串',
+            placeholder:
+              '可以使用 \\n 来实现连续换行。\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容。\n如传入非字符串类型数据将会自动转成字符串',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            value: '你好，我仅能回答电影《星际穿越》相关问题，请问你有什么问题么？',
+            connected: false
+          }
+        ],
+        outputs: [
+          {
+            key: 'finish',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
+            valueType: 'boolean',
+            type: 'source',
+            targets: []
+          }
+        ]
+      },
+      {
+        moduleId: 'nlfwkc',
+        name: 'AI 对话',
+        avatar: '/imgs/module/AI.png',
+        flowType: 'chatNode',
+        showStatus: true,
+        position: {
+          x: 2260.436476009152,
+          y: 1104.6583548423682
+        },
+        inputs: [
+          {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          },
+          {
+            key: 'model',
+            type: 'selectChatModel',
+            label: '对话模型',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: 'gpt-3.5-turbo-16k',
+            connected: false
+          },
+          {
+            key: 'temperature',
+            type: 'hidden',
             label: '温度',
             value: 0,
+            valueType: 'number',
             min: 0,
             max: 10,
             step: 1,
@@ -479,15 +1362,18 @@ export const appTemplates: (AppItemType & {
                 value: 10
               }
             ],
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           },
           {
             key: 'maxToken',
-            type: 'custom',
+            type: 'hidden',
             label: '回复上限',
             value: 8000,
+            valueType: 'number',
             min: 100,
-            max: 16000,
+            max: 4000,
             step: 50,
             markList: [
               {
@@ -495,51 +1381,97 @@ export const appTemplates: (AppItemType & {
                 value: 100
               },
               {
-                label: '16000',
-                value: 16000
+                label: '4000',
+                value: 4000
               }
             ],
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'isResponseAnswerText',
+            type: 'hidden',
+            label: '返回AI内容',
+            value: true,
+            valueType: 'boolean',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'quoteTemplate',
+            type: 'hidden',
+            label: '引用内容模板',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'quotePrompt',
+            type: 'hidden',
+            label: '引用内容提示词',
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'aiSettings',
+            type: 'aiSettings',
+            label: '',
+            valueType: 'any',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           },
           {
             key: 'systemPrompt',
             type: 'textarea',
             label: '系统提示词',
+            max: 300,
             valueType: 'string',
             description:
               '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
             placeholder:
               '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
             value: '',
-            connected: true
+            connected: false
           },
           {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: true
+            key: 'history',
+            type: 'numberInput',
+            label: 'core.module.input.label.chat history',
+            required: true,
+            min: 0,
+            max: 30,
+            valueType: 'chatHistory',
+            value: 6,
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
           },
           {
             key: 'quoteQA',
             type: 'target',
-            label: 'Cited content',
+            label: '引用内容',
+            description: "对象数组格式，结构：\n [{q:'问题',a:'回答'}]",
             valueType: 'datasetQuote',
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'target',
-            label: 'chat record',
-            valueType: 'chatHistory',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
             connected: true
           },
           {
             key: 'userChatInput',
             type: 'target',
-            label: '用户问题',
+            label: 'core.module.input.label.user question',
             required: true,
             valueType: 'string',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
             connected: true
           }
         ],
@@ -547,152 +1479,38 @@ export const appTemplates: (AppItemType & {
           {
             key: 'answerText',
             label: 'AI回复',
-            description: '直接响应，无需配置',
-            type: 'hidden',
+            description: '将在 stream 回复完毕后触发',
+            valueType: 'string',
+            type: 'source',
             targets: []
           },
           {
             key: 'finish',
-            label: '回复结束',
-            description: 'AI 回复完成后触发',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
             valueType: 'boolean',
+            type: 'source',
+            targets: []
+          },
+          {
+            key: 'history',
+            label: '新的上下文',
+            description: '将本次回复内容拼接上历史记录，作为新的上下文返回',
+            valueType: 'chatHistory',
             type: 'source',
             targets: []
           }
         ]
       },
       {
-        moduleId: '2752oj',
-        name: '指定回复',
-        flowType: 'answerNode',
-        position: {
-          x: 1542.9271243684725,
-          y: 702.7819618017722
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: true
-          },
-          {
-            key: 'text',
-            value: '搜索结果为空',
-            type: 'textarea',
-            valueType: 'string',
-            label: '回复的内容',
-            description:
-              '可以使用 \\n 来实现换行。也可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容',
-            connected: true
-          }
-        ],
-        outputs: []
-      }
-    ]
-  },
-  {
-    id: 'askforProduct',
-    avatar: '/imgs/module/db.png',
-    name: 'Ask for Product',
-    intro:
-      'A knowledge base search is performed every time a question is asked, and the search results are injected into the LLM model for reference answers.',
-    type: AppTypeEnum.simple,
-    modules: [
-      {
-        moduleId: 'userChatInput',
-        name: '用户问题(对话入口)',
-        avatar: '/imgs/module/userChatInput.png',
-        flowType: 'questionInput',
-        position: {
-          x: -795.2276475287244,
-          y: 1018.719926297249
-        },
-        inputs: [
-          {
-            key: 'userChatInput',
-            type: 'systemInput',
-            valueType: 'string',
-            label: '用户问题',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'userChatInput',
-            label: '用户问题',
-            type: 'source',
-            valueType: 'string',
-            targets: [
-              {
-                moduleId: 'ti6yf5',
-                key: 'userChatInput'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'history',
-        name: '聊天记录',
-        avatar: '/imgs/module/history.png',
-        flowType: 'historyNode',
-        position: {
-          x: -753.7310546494796,
-          y: 175.8762430452661
-        },
-        inputs: [
-          {
-            key: 'maxContext',
-            type: 'numberInput',
-            label: '最长记录数',
-            description:
-              '该记录数不代表模型可接收这么多的历史记录，具体可接收多少历史记录，取决于模型的能力，通常建议不要超过20条。',
-            value: 6,
-            valueType: 'number',
-            min: 0,
-            max: 100,
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'hidden',
-            valueType: 'chatHistory',
-            label: '聊天记录',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'history',
-            label: '聊天记录',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'ti6yf5',
-                key: 'history'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'datasetSearch',
+        moduleId: 'fljhzy',
         name: '知识库搜索',
         avatar: '/imgs/module/db.png',
         flowType: 'datasetSearchNode',
         showStatus: true,
         position: {
-          x: 648.5490023673332,
-          y: -338.2132944090431
+          x: 1307.1997559129973,
+          y: 908.9246215273222
         },
         inputs: [
           {
@@ -708,24 +1526,13 @@ export const appTemplates: (AppItemType & {
             key: 'datasets',
             type: 'selectDataset',
             label: '关联的知识库',
-            value: [
-              {
-                datasetId: '657a776e73012a464f50940d',
-                vectorModel: {
-                  model: 'text-embedding-ada-002',
-                  name: 'Embedding-2',
-                  price: 0,
-                  defaultToken: 500,
-                  maxToken: 3000
-                }
-              }
-            ],
+            value: [],
             valueType: 'selectDataset',
             list: [],
             required: true,
             showTargetInApp: false,
             showTargetInPlugin: true,
-            connected: true
+            connected: false
           },
           {
             key: 'similarity',
@@ -748,31 +1555,18 @@ export const appTemplates: (AppItemType & {
             ],
             showTargetInApp: false,
             showTargetInPlugin: false,
-            connected: true
+            connected: false
           },
           {
             key: 'limit',
             type: 'hidden',
-            label: '单次搜索上限',
-            description: '最多取 n 条记录作为本次问题引用',
-            value: 5,
+            label: '引用上限',
+            description: '单次搜索最大的 Tokens 数量，中文约1字=1.7Tokens，英文约1字=1Tokens',
+            value: 1500,
             valueType: 'number',
-            min: 1,
-            max: 20,
-            step: 1,
-            markList: [
-              {
-                label: '1',
-                value: 1
-              },
-              {
-                label: '20',
-                value: 20
-              }
-            ],
             showTargetInApp: false,
             showTargetInPlugin: false,
-            connected: true
+            connected: false
           },
           {
             key: 'searchMode',
@@ -782,16 +1576,16 @@ export const appTemplates: (AppItemType & {
             showTargetInApp: false,
             showTargetInPlugin: false,
             value: 'embedding',
-            connected: true
+            connected: false
           },
           {
             key: 'datasetParamsModal',
             type: 'selectDatasetParamsModal',
             label: '',
-            connected: false,
             valueType: 'any',
             showTargetInApp: false,
-            showTargetInPlugin: false
+            showTargetInPlugin: false,
+            connected: false
           },
           {
             key: 'userChatInput',
@@ -801,1356 +1595,6 @@ export const appTemplates: (AppItemType & {
             valueType: 'string',
             showTargetInApp: true,
             showTargetInPlugin: true,
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'isEmpty',
-            label: '搜索结果为空',
-            type: 'source',
-            valueType: 'boolean',
-            targets: []
-          },
-          {
-            key: 'unEmpty',
-            label: '搜索结果不为空',
-            type: 'source',
-            valueType: 'boolean',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'switch'
-              }
-            ]
-          },
-          {
-            key: 'quoteQA',
-            label: '引用内容',
-            description:
-              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的触发器',
-            type: 'source',
-            valueType: 'datasetQuote',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'quoteQA'
-              }
-            ]
-          },
-          {
-            key: 'finish',
-            label: 'core.module.output.label.running done',
-            description: 'core.module.output.description.running done',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          }
-        ]
-      },
-      {
-        moduleId: 'emptyText',
-        name: '指定回复',
-        avatar: '/imgs/module/reply.png',
-        flowType: 'answerNode',
-        position: {
-          x: 1644.2958989662895,
-          y: 172.54452064355087
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'core.module.input.label.switch',
-            valueType: 'any',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: false
-          },
-          {
-            key: 'text',
-            type: 'textarea',
-            valueType: 'any',
-            value: "didn't an",
-            label: 'Reply content',
-            description:
-              'You can use \\n to achieve continuous line breaks. \n\nReply can be achieved through external module input. When external module input, the currently filled content will be overwritten. \n\nIf non-string type data is passed in, it will be automatically converted into a string.',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'finish',
-            label: 'core.module.output.label.running done',
-            description: 'core.module.output.description.running done',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          }
-        ]
-      },
-      {
-        moduleId: 'chatModule',
-        name: 'AI 对话',
-        avatar: '/imgs/module/AI.png',
-        flowType: 'chatNode',
-        showStatus: true,
-        position: {
-          x: 1266.913394072471,
-          y: 500.4863718728624
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'core.module.input.label.switch',
-            valueType: 'any',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          },
-          {
-            key: 'model',
-            type: 'selectChatModel',
-            label: 'dialogue model',
-            required: true,
-            valueType: 'string',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            value: 'gpt-3.5-turbo-16k',
-            connected: true
-          },
-          {
-            key: 'temperature',
-            type: 'hidden',
-            label: 'temperature',
-            value: 0,
-            valueType: 'number',
-            min: 0,
-            max: 10,
-            step: 1,
-            markList: [
-              {
-                label: 'rigorous',
-                value: 0
-              },
-              {
-                label: 'diverge',
-                value: 10
-              }
-            ],
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: false
-          },
-          {
-            key: 'maxToken',
-            type: 'hidden',
-            label: 'Reply limit',
-            value: 8000,
-            valueType: 'number',
-            min: 100,
-            max: 4000,
-            step: 50,
-            markList: [
-              {
-                label: '100',
-                value: 100
-              },
-              {
-                label: '4000',
-                value: 4000
-              }
-            ],
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: true
-          },
-          {
-            key: 'isResponseAnswerText',
-            type: 'hidden',
-            label: 'Return to AI content',
-            value: true,
-            valueType: 'boolean',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: true
-          },
-          {
-            key: 'quoteTemplate',
-            type: 'hidden',
-            label: 'Quote content template',
-            valueType: 'string',
-            value: '',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: false
-          },
-          {
-            key: 'quotePrompt',
-            type: 'hidden',
-            label: 'Quotation content prompt words',
-            valueType: 'string',
-            value: '',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: false
-          },
-          {
-            key: 'aiSettings',
-            type: 'aiSettings',
-            label: '',
-            connected: false,
-            valueType: 'any',
-            showTargetInApp: false,
-            showTargetInPlugin: false
-          },
-          {
-            key: 'systemPrompt',
-            type: 'textarea',
-            label: 'System prompt word',
-            max: 300,
-            valueType: 'string',
-            description:
-              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
-            placeholder:
-              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
-            value:
-              'if there are products found just provide product ids separated by comma also, stictly respond in this format, do not add any other text other than the array of ids',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          },
-          {
-            key: 'quoteQA',
-            type: 'target',
-            label: 'Quotation content',
-            description: "对象数组格式，结构：\n [{q:'问题',a:'回答'}]",
-            valueType: 'datasetQuote',
-            connected: true,
-            showTargetInApp: true,
-            showTargetInPlugin: true
-          },
-          {
-            key: 'history',
-            type: 'target',
-            label: 'core.module.input.label.chat history',
-            valueType: 'chatHistory',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          },
-          {
-            key: 'userChatInput',
-            type: 'target',
-            label: 'core.module.input.label.user question',
-            required: true,
-            valueType: 'string',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'answerText',
-            label: 'AI回复',
-            description: '将在 stream 回复完毕后触发',
-            valueType: 'string',
-            type: 'source',
-            targets: []
-          },
-          {
-            key: 'finish',
-            label: 'core.module.output.label.running done',
-            description: 'core.module.output.description.running done',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          },
-          {
-            key: 'history',
-            label: '新的上下文',
-            description: '将本次回复内容拼接上历史记录，作为新的上下文返回',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: []
-          }
-        ]
-      },
-      {
-        moduleId: 'ti6yf5',
-        name: 'AI dialogue',
-        avatar: '/imgs/module/AI.png',
-        flowType: 'chatNode',
-        showStatus: true,
-        position: {
-          x: -80.47119560888746,
-          y: -153.85124975800977
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'core.module.input.label.switch',
-            valueType: 'any',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: false
-          },
-          {
-            key: 'model',
-            type: 'selectChatModel',
-            label: 'dialogue model',
-            required: true,
-            valueType: 'string',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            value: 'gpt-3.5-turbo-1106',
-            connected: true
-          },
-          {
-            key: 'temperature',
-            type: 'hidden',
-            label: 'temperature',
-            value: 0,
-            valueType: 'number',
-            min: 0,
-            max: 10,
-            step: 1,
-            markList: [
-              {
-                label: 'rigorous',
-                value: 0
-              },
-              {
-                label: 'diverge',
-                value: 10
-              }
-            ],
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: false
-          },
-          {
-            key: 'maxToken',
-            type: 'hidden',
-            label: 'Reply limit',
-            value: 2000,
-            valueType: 'number',
-            min: 100,
-            max: 4000,
-            step: 50,
-            markList: [
-              {
-                label: '100',
-                value: 100
-              },
-              {
-                label: '4000',
-                value: 4000
-              }
-            ],
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: true
-          },
-          {
-            key: 'isResponseAnswerText',
-            type: 'hidden',
-            label: 'Return to AI content',
-            value: true,
-            valueType: 'boolean',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: true
-          },
-          {
-            key: 'quoteTemplate',
-            type: 'hidden',
-            label: 'Quote content template',
-            valueType: 'string',
-            value: '',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: false
-          },
-          {
-            key: 'quotePrompt',
-            type: 'hidden',
-            label: 'Quotation content prompt words',
-            valueType: 'string',
-            value: '',
-            showTargetInApp: false,
-            showTargetInPlugin: false,
-            connected: false
-          },
-          {
-            key: 'aiSettings',
-            type: 'aiSettings',
-            label: '',
-            connected: false,
-            valueType: 'any',
-            showTargetInApp: false,
-            showTargetInPlugin: false
-          },
-          {
-            key: 'systemPrompt',
-            type: 'textarea',
-            label: 'System prompt word',
-            max: 300,
-            valueType: 'string',
-            description:
-              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
-            placeholder:
-              'The model has a fixed guide word. By adjusting this content, you can guide the model in the chat direction. The content will be anchored at the beginning of the context. Variables can be used, such as {{language}}',
-            value:
-              'if the user input is a human interaction reply to it else he is asking for some product list product categories related to user input not the user input it self, products related to user input stickly respond as catergoties sepreated by comma',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          },
-          {
-            key: 'quoteQA',
-            type: 'target',
-            label: 'Quotation content',
-            description: "对象数组格式，结构：\n [{q:'问题',a:'回答'}]",
-            valueType: 'datasetQuote',
-            connected: false,
-            showTargetInApp: true,
-            showTargetInPlugin: true
-          },
-          {
-            key: 'history',
-            type: 'target',
-            label: 'core.module.input.label.chat history',
-            valueType: 'chatHistory',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          },
-          {
-            key: 'userChatInput',
-            type: 'target',
-            label: 'core.module.input.label.user question',
-            required: true,
-            valueType: 'string',
-            showTargetInApp: true,
-            showTargetInPlugin: true,
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'history',
-            label: '新的上下文',
-            description: '将本次回复内容拼接上历史记录，作为新的上下文返回',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'history'
-              }
-            ]
-          },
-          {
-            key: 'answerText',
-            label: 'AI回复',
-            description: '将在 stream 回复完毕后触发',
-            valueType: 'string',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'userChatInput'
-              },
-              {
-                moduleId: 'datasetSearch',
-                key: 'userChatInput'
-              }
-            ]
-          },
-          {
-            key: 'finish',
-            label: 'core.module.output.label.running done',
-            description: 'core.module.output.description.running done',
-            valueType: 'boolean',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'datasetSearch',
-                key: 'switch'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'chatGuide',
-    avatar: '/imgs/module/userGuide.png',
-    name: 'Conversation guide + variables',
-    intro:
-      'You can send a prompt at the beginning of the conversation, or ask the user to fill in some content as a variable for this conversation.',
-    type: AppTypeEnum.simple,
-    modules: [
-      {
-        moduleId: 'userGuide',
-        name: '用户引导',
-        flowType: 'userGuide',
-        position: {
-          x: 447.98520778293346,
-          y: 721.4016845336229
-        },
-        inputs: [
-          {
-            key: 'welcomeText',
-            type: 'hidden',
-            label: '开场白',
-            value: '你好，我可以为你翻译各种语言，请告诉我你需要翻译成什么语言？',
-            connected: true
-          },
-          {
-            key: 'variables',
-            type: 'hidden',
-            label: '对话框变量',
-            value: [
-              {
-                id: '35c640eb-cf22-431f-bb57-3fc21643880e',
-                key: 'language',
-                label: '目标语言',
-                type: 'input',
-                required: true,
-                maxLen: 50,
-                enums: [
-                  {
-                    value: ''
-                  }
-                ]
-              },
-              {
-                id: '2011ff08-91aa-4f60-ae69-f311ab4797b3',
-                key: 'language2',
-                label: '下拉框测试',
-                type: 'select',
-                required: false,
-                maxLen: 50,
-                enums: [
-                  {
-                    value: '英语'
-                  },
-                  {
-                    value: '法语'
-                  }
-                ]
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'questionGuide',
-            type: 'switch',
-            label: '问题引导',
-            value: false,
-            connected: true
-          }
-        ],
-        outputs: []
-      },
-      {
-        moduleId: 'userChatInput',
-        name: '用户问题(对话入口)',
-        flowType: 'questionInput',
-        position: {
-          x: 464.32198615344566,
-          y: 1602.2698463081606
-        },
-        inputs: [
-          {
-            key: 'userChatInput',
-            type: 'systemInput',
-            label: '用户问题',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'userChatInput',
-            label: '用户问题',
-            type: 'source',
-            valueType: 'string',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'userChatInput'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'history',
-        name: 'chat record',
-        flowType: 'historyNode',
-        position: {
-          x: 452.5466249541586,
-          y: 1276.3930310334215
-        },
-        inputs: [
-          {
-            key: 'maxContext',
-            type: 'numberInput',
-            label: 'Maximum number of records',
-            value: 2,
-            min: 0,
-            max: 50,
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'hidden',
-            label: 'chat record',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'history',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'chatModule',
-                key: 'history'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'chatModule',
-        name: 'AI 对话',
-        flowType: 'chatNode',
-        showStatus: true,
-        position: {
-          x: 981.9682828103937,
-          y: 890.014595014464
-        },
-        inputs: [
-          {
-            key: 'model',
-            type: 'custom',
-            label: '对话模型',
-            value: 'gpt-3.5-turbo-16k',
-            connected: true
-          },
-          {
-            key: 'temperature',
-            type: 'slider',
-            label: '温度',
-            value: 0,
-            min: 0,
-            max: 10,
-            step: 1,
-            markList: [
-              {
-                label: '严谨',
-                value: 0
-              },
-              {
-                label: '发散',
-                value: 10
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'maxToken',
-            type: 'custom',
-            label: '回复上限',
-            value: 8000,
-            min: 100,
-            max: 4000,
-            step: 50,
-            markList: [
-              {
-                label: '100',
-                value: 100
-              },
-              {
-                label: '4000',
-                value: 4000
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'systemPrompt',
-            type: 'textarea',
-            label: '系统提示词',
-            max: 300,
-            valueType: 'string',
-            description:
-              '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
-            placeholder:
-              '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
-            value: '请直接将我的问题翻译成{{language}}，不需要回答问题。',
-            connected: true
-          },
-          {
-            key: 'quoteTemplate',
-            type: 'hidden',
-            label: 'Cited content模板',
-            valueType: 'string',
-            value: '',
-            connected: true
-          },
-          {
-            key: 'quotePrompt',
-            type: 'hidden',
-            label: 'Cited content提示词',
-            valueType: 'string',
-            value: '',
-            connected: true
-          },
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: false
-          },
-          {
-            key: 'quoteQA',
-            type: 'custom',
-            label: 'Cited content',
-            description: "Object number format, structure:  n [{q: 'question', a: 'answer'}]",
-            valueType: 'datasetQuote',
-            connected: false
-          },
-          {
-            key: 'history',
-            type: 'target',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            connected: true
-          },
-          {
-            key: 'userChatInput',
-            type: 'target',
-            label: '用户问题',
-            required: true,
-            valueType: 'string',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'answerText',
-            label: 'AI回复',
-            description: '将在 stream 回复完毕后触发',
-            valueType: 'string',
-            type: 'source',
-            targets: []
-          },
-          {
-            key: 'finish',
-            label: '回复结束',
-            description: 'AI 回复完成后触发',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          },
-          {
-            key: 'history',
-            label: '新的上下文',
-            description: '将本次回复内容拼接上历史记录，作为新的上下文返回',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: []
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'CQ',
-    avatar: '/imgs/module/cq.png',
-    name: 'Question classification + knowledge base',
-    intro:
-      "First classify the user's problems, and then perform different operations based on different types of problems.",
-    type: AppTypeEnum.advanced,
-    modules: [
-      {
-        moduleId: '7z5g5h',
-        name: '用户问题(对话入口)',
-        flowType: 'questionInput',
-        position: {
-          x: 198.56612928723575,
-          y: 1622.7034463081607
-        },
-        inputs: [
-          {
-            key: 'userChatInput',
-            type: 'systemInput',
-            label: '用户问题',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'userChatInput',
-            label: '用户问题',
-            type: 'source',
-            valueType: 'string',
-            targets: [
-              {
-                moduleId: 'remuj3',
-                key: 'userChatInput'
-              },
-              {
-                moduleId: 'fljhzy',
-                key: 'userChatInput'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'xj0c9p',
-        name: 'chat record',
-        flowType: 'historyNode',
-        position: {
-          x: 1770.497690708367,
-          y: 1820.2355054321215
-        },
-        inputs: [
-          {
-            key: 'maxContext',
-            type: 'numberInput',
-            label: 'Maximum number of records',
-            value: 6,
-            min: 0,
-            max: 50,
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'hidden',
-            label: 'chat record',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'history',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'nlfwkc',
-                key: 'history'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'remuj3',
-        name: 'question category',
-        flowType: 'classifyQuestion',
-        showStatus: true,
-        position: {
-          x: 672.9092284362648,
-          y: 1077.557793775116
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: false
-          },
-          {
-            key: 'systemPrompt',
-            type: 'textarea',
-            valueType: 'string',
-            value:
-              'laf 是云开发平台，可以快速的开发应用\nlaf 是一个开源的 BaaS 开发平台（Backend as a Service)\nlaf 是一个开箱即用的 serverless 开发平台\nlaf 是一个集「函数计算」、「数据库」、「对象存储」等于一身的一站式开发平台\nlaf 可以是开源版的腾讯云开发、开源版的 Google Firebase、开源版的 UniCloud',
-            label: '系统提示词',
-            description:
-              '你可以添加一些特定内容的介绍，从而更好的识别用户的问题类型。这个内容通常是给模型介绍一个它不知道的内容。',
-            placeholder: '例如: \n1. Laf 是一个云函数开发平台……\n2. Sealos 是一个集群操作系统',
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'target',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            connected: true
-          },
-          {
-            key: 'userChatInput',
-            type: 'target',
-            label: '用户问题',
-            required: true,
-            valueType: 'string',
-            connected: true
-          },
-          {
-            key: 'agents',
-            type: 'custom',
-            label: '',
-            value: [
-              {
-                value: '打招呼、问候等问题',
-                key: 'fasw'
-              },
-              {
-                value: '“laf” 的问题',
-                key: 'fqsw'
-              },
-              {
-                value: '商务问题',
-                key: 'fesw'
-              },
-              {
-                value: '其他问题',
-                key: 'oy1c'
-              }
-            ],
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'fasw',
-            label: '',
-            type: 'hidden',
-            targets: [
-              {
-                moduleId: 'a99p6z',
-                key: 'switch'
-              }
-            ]
-          },
-          {
-            key: 'fqsw',
-            label: '',
-            type: 'hidden',
-            targets: [
-              {
-                moduleId: 'fljhzy',
-                key: 'switch'
-              }
-            ]
-          },
-          {
-            key: 'fesw',
-            label: '',
-            type: 'hidden',
-            targets: [
-              {
-                moduleId: '5v78ap',
-                key: 'switch'
-              }
-            ]
-          },
-          {
-            key: 'oy1c',
-            label: '',
-            type: 'hidden',
-            targets: [
-              {
-                moduleId: 'iejcou',
-                key: 'switch'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'a99p6z',
-        name: '指定回复',
-        flowType: 'answerNode',
-        position: {
-          x: 1304.2886011902247,
-          y: 776.1589509539264
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: true
-          },
-          {
-            key: 'text',
-            type: 'textarea',
-            valueType: 'string',
-            value: '你好，有什么可以帮助你的？',
-            label: '回复的内容',
-            description:
-              '可以使用 \\n 来实现连续换行。\n\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'finish',
-            label: '回复结束',
-            description: '回复完成后触发',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          }
-        ]
-      },
-      {
-        moduleId: 'iejcou',
-        name: '指定回复',
-        flowType: 'answerNode',
-        position: {
-          x: 1294.2531189034548,
-          y: 2127.1297123368286
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: true
-          },
-          {
-            key: 'text',
-            type: 'textarea',
-            valueType: 'string',
-            value: '你好，我仅能回答 laf 相关问题，请问你有什么问题么？',
-            label: '回复的内容',
-            description:
-              '可以使用 \\n 来实现连续换行。\n\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'finish',
-            label: '回复结束',
-            description: '回复完成后触发',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          }
-        ]
-      },
-      {
-        moduleId: 'nlfwkc',
-        name: 'AI 对话',
-        flowType: 'chatNode',
-        showStatus: true,
-        position: {
-          x: 2260.436476009152,
-          y: 1104.6583548423682
-        },
-        inputs: [
-          {
-            key: 'model',
-            type: 'custom',
-            label: '对话模型',
-            value: 'gpt-3.5-turbo-16k',
-            list: [
-              {
-                label: 'FastAI-4k',
-                value: 'gpt-3.5-turbo'
-              },
-              {
-                label: 'FastAI-instruct',
-                value: 'gpt-3.5-turbo-instruct'
-              },
-              {
-                label: 'FastAI-16k',
-                value: 'gpt-3.5-turbo-16k'
-              },
-              {
-                label: 'FastAI-Plus-8k',
-                value: 'gpt-4'
-              },
-              {
-                label: 'FastAI-Plus-32k',
-                value: 'gpt-4-32k'
-              },
-              {
-                label: '百川2-13B(测试)',
-                value: 'baichuan2-13b'
-              },
-              {
-                label: '文心一言(QPS 5)',
-                value: 'ERNIE-Bot'
-              },
-              {
-                label: '星火2.0(QPS 2)',
-                value: 'SparkDesk'
-              },
-              {
-                label: 'chatglm_pro(QPS 5)',
-                value: 'chatglm_pro'
-              },
-              {
-                label: '通义千问(QPS 5)',
-                value: 'qwen-v1'
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'temperature',
-            type: 'slider',
-            label: '温度',
-            value: 0,
-            min: 0,
-            max: 10,
-            step: 1,
-            markList: [
-              {
-                label: '严谨',
-                value: 0
-              },
-              {
-                label: '发散',
-                value: 10
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'maxToken',
-            type: 'custom',
-            label: '回复上限',
-            value: 8000,
-            min: 100,
-            max: 4000,
-            step: 50,
-            markList: [
-              {
-                label: '100',
-                value: 100
-              },
-              {
-                label: '4000',
-                value: 4000
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'systemPrompt',
-            type: 'textarea',
-            label: '系统提示词',
-            max: 300,
-            valueType: 'string',
-            description:
-              '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
-            placeholder:
-              '模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可使用变量，例如 {{language}}',
-            value: '知识库是关于 laf 的内容。',
-            connected: true
-          },
-          {
-            key: 'quoteTemplate',
-            type: 'hidden',
-            label: 'Quote content prompt words',
-            valueType: 'string',
-            value: '',
-            connected: true
-          },
-          {
-            key: 'quotePrompt',
-            type: 'hidden',
-            label: 'Quote content prompt words',
-            valueType: 'string',
-            value: '',
-            connected: true
-          },
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: true
-          },
-          {
-            key: 'quoteQA',
-            type: 'custom',
-            label: 'Cited content',
-            description: "Object number format, structure:  n [{q: 'question', a: 'answer'}]",
-            valueType: 'datasetQuote',
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'target',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            connected: true
-          },
-          {
-            key: 'userChatInput',
-            type: 'target',
-            label: '用户问题',
-            required: true,
-            valueType: 'string',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'answerText',
-            label: 'AI回复',
-            description: '将在 stream 回复完毕后触发',
-            valueType: 'string',
-            type: 'source',
-            targets: []
-          },
-          {
-            key: 'finish',
-            label: '回复结束',
-            description: 'AI 回复完成后触发',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          },
-          {
-            key: 'history',
-            label: '新的上下文',
-            description: '将本次回复内容拼接上历史记录，作为新的上下文返回',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: []
-          }
-        ]
-      },
-      {
-        moduleId: 's4v9su',
-        name: 'chat record',
-        flowType: 'historyNode',
-        position: {
-          x: 193.3803955457983,
-          y: 1316.251200765746
-        },
-        inputs: [
-          {
-            key: 'maxContext',
-            type: 'numberInput',
-            label: 'Maximum record number',
-            value: 2,
-            min: 0,
-            max: 50,
-            connected: true
-          },
-          {
-            key: 'history',
-            type: 'hidden',
-            label: 'chat record',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'history',
-            label: 'chat record',
-            valueType: 'chatHistory',
-            type: 'source',
-            targets: [
-              {
-                moduleId: 'remuj3',
-                key: 'history'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        moduleId: 'fljhzy',
-        name: '知识库搜索',
-        flowType: 'datasetSearchNode',
-        showStatus: true,
-        position: {
-          x: 1305.5374262228029,
-          y: 1120.0404921820218
-        },
-        inputs: [
-          {
-            key: 'datasets',
-            type: 'custom',
-            label: '关联的知识库',
-            value: [],
-            list: [],
-            connected: true
-          },
-          {
-            key: 'similarity',
-            type: 'slider',
-            label: '相似度',
-            value: 0.76,
-            min: 0,
-            max: 1,
-            step: 0.01,
-            markList: [
-              {
-                label: '100',
-                value: 100
-              },
-              {
-                label: '1',
-                value: 1
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'limit',
-            type: 'slider',
-            label: '单次搜索上限',
-            description: '最多取 n 条记录作为本次问题引用',
-            value: 5,
-            min: 1,
-            max: 20,
-            step: 1,
-            markList: [
-              {
-                label: '1',
-                value: 1
-              },
-              {
-                label: '20',
-                value: 20
-              }
-            ],
-            connected: true
-          },
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
-            valueType: 'any',
-            connected: true
-          },
-          {
-            key: 'userChatInput',
-            type: 'target',
-            label: '用户问题',
-            required: true,
-            valueType: 'string',
             connected: true
           }
         ],
@@ -2181,9 +1625,9 @@ export const appTemplates: (AppItemType & {
           },
           {
             key: 'quoteQA',
-            label: 'Cited content',
+            label: '引用内容',
             description:
-              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的trigger',
+              '始终返回数组，如果希望搜索结果为空时执行额外操作，需要用到上面的两个输入以及目标模块的触发器',
             type: 'source',
             valueType: 'datasetQuote',
             targets: [
@@ -2192,38 +1636,65 @@ export const appTemplates: (AppItemType & {
                 key: 'quoteQA'
               }
             ]
+          },
+          {
+            key: 'finish',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
+            valueType: 'boolean',
+            type: 'source',
+            targets: []
           }
         ]
       },
       {
         moduleId: 'q9equb',
         name: '用户引导',
+        avatar: '/imgs/module/userGuide.png',
         flowType: 'userGuide',
         position: {
-          x: 191.4857498376603,
-          y: 856.6847387508401
+          x: -272.66416216517086,
+          y: 842.9928682053646
         },
         inputs: [
           {
             key: 'welcomeText',
             type: 'hidden',
+            valueType: 'string',
             label: '开场白',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
             value:
-              '你好，我是 laf 助手，有什么可以帮助你的？\n[laf 是什么？有什么用？]\n[laf 在线体验地址]\n[官网地址是多少]',
-            connected: true
+              '你好，我是电影《星际穿越》 AI 助手，有什么可以帮助你的？\n[导演是谁]\n[剧情介绍]\n[票房分析]',
+            connected: false
           },
           {
             key: 'variables',
             type: 'hidden',
+            valueType: 'any',
             label: '对话框变量',
             value: [],
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           },
           {
             key: 'questionGuide',
+            valueType: 'boolean',
             type: 'switch',
             label: '问题引导',
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
+          },
+          {
+            key: 'tts',
+            type: 'hidden',
+            valueType: 'any',
+            label: '语音播报',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           }
         ],
         outputs: []
@@ -2231,6 +1702,7 @@ export const appTemplates: (AppItemType & {
       {
         moduleId: 'tc90wz',
         name: '指定回复',
+        avatar: '/imgs/module/reply.png',
         flowType: 'answerNode',
         position: {
           x: 2262.720467249169,
@@ -2240,64 +1712,32 @@ export const appTemplates: (AppItemType & {
           {
             key: 'switch',
             type: 'target',
-            label: 'trigger',
+            label: 'core.module.input.label.switch',
             valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
             connected: true
           },
           {
             key: 'text',
             type: 'textarea',
-            valueType: 'string',
-            value: "Sorry, I can't find your problem. Please describe your problem in more detail.",
-            label: '回复的内容',
-            description:
-              '可以使用 \\n 来实现连续换行。\n\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容',
-            connected: true
-          }
-        ],
-        outputs: [
-          {
-            key: 'finish',
-            label: '回复结束',
-            description: '回复完成后触发',
-            valueType: 'boolean',
-            type: 'source',
-            targets: []
-          }
-        ]
-      },
-      {
-        moduleId: '5v78ap',
-        name: '指定回复',
-        flowType: 'answerNode',
-        position: {
-          x: 1294.814522053934,
-          y: 1822.7626988141562
-        },
-        inputs: [
-          {
-            key: 'switch',
-            type: 'target',
-            label: 'trigger',
             valueType: 'any',
-            connected: true
-          },
-          {
-            key: 'text',
-            type: 'textarea',
-            valueType: 'string',
-            value: '这是一个商务问题',
             label: '回复的内容',
             description:
-              '可以使用 \\n 来实现连续换行。\n\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容',
-            connected: true
+              '可以使用 \\n 来实现连续换行。\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容。\n如传入非字符串类型数据将会自动转成字符串',
+            placeholder:
+              '可以使用 \\n 来实现连续换行。\n可以通过外部模块输入实现回复，外部模块输入时会覆盖当前填写的内容。\n如传入非字符串类型数据将会自动转成字符串',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            value: '对不起，我找不到你的问题，请更加详细的描述你的问题。',
+            connected: false
           }
         ],
         outputs: [
           {
             key: 'finish',
-            label: '回复结束',
-            description: '回复完成后触发',
+            label: 'core.module.output.label.running done',
+            description: 'core.module.output.description.running done',
             valueType: 'boolean',
             type: 'source',
             targets: []
@@ -2307,17 +1747,21 @@ export const appTemplates: (AppItemType & {
       {
         moduleId: '9act94',
         name: '用户问题(对话入口)',
+        avatar: '/imgs/module/userChatInput.png',
         flowType: 'questionInput',
         position: {
-          x: 1827.2213090948171,
-          y: 2132.138812501788
+          x: 1902.0261451535691,
+          y: 1826.2701495060023
         },
         inputs: [
           {
             key: 'userChatInput',
             type: 'systemInput',
+            valueType: 'string',
             label: '用户问题',
-            connected: true
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            connected: false
           }
         ],
         outputs: [
@@ -2329,6 +1773,93 @@ export const appTemplates: (AppItemType & {
             targets: [
               {
                 moduleId: 'nlfwkc',
+                key: 'userChatInput'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        moduleId: '79iwqi',
+        name: 'core.module.template.cfr',
+        avatar: '/imgs/module/cfr.svg',
+        flowType: 'cfr',
+        showStatus: true,
+        position: {
+          x: 149.7113934317785,
+          y: 1312.2668782737812
+        },
+        inputs: [
+          {
+            key: 'switch',
+            type: 'target',
+            label: 'core.module.input.label.switch',
+            valueType: 'any',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'model',
+            type: 'selectExtractModel',
+            label: 'core.module.input.label.aiModel',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: false,
+            showTargetInPlugin: false,
+            value: 'gpt-3.5-turbo',
+            connected: false
+          },
+          {
+            key: 'systemPrompt',
+            type: 'textarea',
+            label: 'core.module.input.label.cfr background',
+            max: 300,
+            valueType: 'string',
+            description: 'core.module.input.description.cfr background',
+            placeholder: 'core.module.input.placeholder.cfr background',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            value: '关于电影《星际穿越》的讨论。',
+            connected: false
+          },
+          {
+            key: 'history',
+            type: 'numberInput',
+            label: 'core.module.input.label.chat history',
+            required: true,
+            min: 0,
+            max: 30,
+            valueType: 'chatHistory',
+            value: 6,
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: false
+          },
+          {
+            key: 'userChatInput',
+            type: 'target',
+            label: 'core.module.input.label.user question',
+            required: true,
+            valueType: 'string',
+            showTargetInApp: true,
+            showTargetInPlugin: true,
+            connected: true
+          }
+        ],
+        outputs: [
+          {
+            key: 'system_text',
+            label: 'core.module.output.label.cfr result',
+            valueType: 'string',
+            type: 'source',
+            targets: [
+              {
+                moduleId: 'remuj3',
+                key: 'userChatInput'
+              },
+              {
+                moduleId: 'fljhzy',
                 key: 'userChatInput'
               }
             ]

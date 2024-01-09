@@ -8,9 +8,9 @@ import { pushChatBill } from '@/service/support/wallet/bill/push';
 import { BillSourceEnum } from '@fastgpt/global/support/wallet/bill/constants';
 import type { ChatItemType } from '@fastgpt/global/core/chat/type';
 import { authApp } from '@fastgpt/service/support/permission/auth/app';
-import { authUser } from '@/service/support/permission/auth/user';
 import { dispatchModules } from '@/service/moduleDispatch';
-import { authUserNotVisitor } from '@fastgpt/service/support/permission/auth/user';
+import { authCert } from '@fastgpt/service/support/permission/auth/common';
+import { getUserAndAuthBalance } from '@fastgpt/service/support/user/controller';
 
 export type Props = {
   history: ChatItemType[];
@@ -39,26 +39,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!Array.isArray(modules)) {
       throw new Error('history is not array');
     }
-    const { userId } = await authUserNotVisitor({ req, authToken: true });
+
     /* user auth */
-    const [{ teamId, tmbId }, { user }] = await Promise.all([
+    const [_, { teamId, tmbId }] = await Promise.all([
       authApp({ req, authToken: true, appId, per: 'r' }),
-      authUser({
-        authToken: true,
-        minBalance: 0
+      authCert({
+        req,
+        authToken: true
       })
     ]);
+
+    // auth balance
+    const user = await getUserAndAuthBalance({
+      tmbId,
+      minBalance: 0
+    });
+
     /* start process */
     const { responseData } = await dispatchModules({
       res,
+      mode: 'test',
       teamId,
       tmbId,
       user,
       appId,
       modules,
       variables,
-      params: {
-        history,
+      histories: history,
+      startParams: {
         userChatInput: prompt
       },
       stream: true,
@@ -94,6 +102,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 export const config = {
   api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    },
     responseLimit: '20mb'
   }
 };

@@ -8,6 +8,7 @@ import { FlowModuleTemplateType } from '@fastgpt/global/core/module/type';
 import { ModuleTemplateTypeEnum } from '@fastgpt/global/core/module/constants';
 import { GET } from '@fastgpt/service/common/api/plusRequest';
 import type { PluginTemplateType } from '@fastgpt/global/core/plugin/type.d';
+import { FastGPTProUrl } from '@fastgpt/service/common/system/constants';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<any>) {
   try {
@@ -16,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     const [userPlugins, plusPlugins] = await Promise.all([
       MongoPlugin.find({ teamId }).lean(),
-      global.systemEnv.pluginBaseUrl ? GET<PluginTemplateType[]>('/core/plugin/getTemplates') : []
+      FastGPTProUrl ? GET<PluginTemplateType[]>('/core/plugin/getTemplates') : []
     ]);
 
     const data: FlowModuleTemplateType[] = [
@@ -33,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       })),
       ...(global.communityPlugins?.map((plugin) => ({
         id: plugin.id,
-        templateType: ModuleTemplateTypeEnum.communityPlugin,
+        templateType: plugin.templateType ?? ModuleTemplateTypeEnum.other,
         flowType: FlowNodeTypeEnum.pluginModule,
         avatar: plugin.avatar,
         name: plugin.name,

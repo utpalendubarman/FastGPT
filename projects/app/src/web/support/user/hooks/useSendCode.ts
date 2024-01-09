@@ -1,28 +1,32 @@
 import { useState, useMemo, useCallback } from 'react';
 import { sendAuthCode } from '@/web/support/user/api';
-import { UserAuthTypeEnum } from '@/constants/common';
+import { UserAuthTypeEnum } from '@fastgpt/global/support/user/constant';
 import { useToast } from '@/web/common/hooks/useToast';
 import { feConfigs } from '@/web/common/system/staticData';
 import { getErrText } from '@fastgpt/global/common/error/utils';
+import { useTranslation } from 'next-i18next';
 
 let timer: any;
 
 export const useSendCode = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [codeSending, setCodeSending] = useState(false);
   const [codeCountDown, setCodeCountDown] = useState(0);
   const sendCodeText = useMemo(() => {
+    if (codeSending) return t('support.user.auth.Sending Code');
     if (codeCountDown >= 10) {
-      return `${codeCountDown}s Resend`;
+      return `${codeCountDown}s后重新获取`;
     }
     if (codeCountDown > 0) {
-      return `0${codeCountDown}s Resend`;
+      return `0${codeCountDown}s后重新获取`;
     }
-    return 'get verification code';
-  }, [codeCountDown]);
+    return '获取验证码';
+  }, [codeCountDown, codeSending, t]);
 
   const sendCode = useCallback(
     async ({ username, type }: { username: string; type: `${UserAuthTypeEnum}` }) => {
+      if (codeCountDown > 0) return;
       setCodeSending(true);
       try {
         await sendAuthCode({
@@ -40,19 +44,19 @@ export const useSendCode = () => {
           });
         }, 1000);
         toast({
-          title: 'The verification code has been sent',
+          title: '验证码已发送',
           status: 'success',
           position: 'top'
         });
       } catch (error: any) {
         toast({
-          title: getErrText(error, 'Verification code sending abnormalities'),
+          title: getErrText(error, '验证码发送异常'),
           status: 'error'
         });
       }
       setCodeSending(false);
     },
-    [toast]
+    [codeCountDown, toast]
   );
 
   return {

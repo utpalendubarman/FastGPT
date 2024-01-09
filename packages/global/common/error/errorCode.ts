@@ -6,6 +6,7 @@ import pluginErr from './code/plugin';
 import outLinkErr from './code/outLink';
 import teamErr from './code/team';
 import userErr from './code/user';
+import commonErr from './code/common';
 
 export const ERROR_CODE: { [key: number]: string } = {
   400: '请求失败',
@@ -61,26 +62,26 @@ export const ERROR_RESPONSE: Record<
   [ERROR_ENUM.unAuthorization]: {
     code: 403,
     statusText: ERROR_ENUM.unAuthorization,
-    message: 'Credential error',
+    message: '凭证错误',
     data: null
   },
   [ERROR_ENUM.insufficientQuota]: {
     code: 510,
     statusText: ERROR_ENUM.insufficientQuota,
-    message: 'Insufficient account balance',
+    message: '账号余额不足',
     data: null
   },
   [ERROR_ENUM.unAuthModel]: {
     code: 511,
     statusText: ERROR_ENUM.unAuthModel,
-    message: 'No permission to operate this model',
+    message: '无权操作该模型',
     data: null
   },
 
   [ERROR_ENUM.unAuthFile]: {
     code: 513,
     statusText: ERROR_ENUM.unAuthFile,
-    message: "Don't have permission to read the file",
+    message: '无权阅读该文件',
     data: null
   },
   [ERROR_ENUM.unAuthApiKey]: {
@@ -96,5 +97,6 @@ export const ERROR_RESPONSE: Record<
   ...outLinkErr,
   ...teamErr,
   ...userErr,
-  ...pluginErr
+  ...pluginErr,
+  ...commonErr
 };

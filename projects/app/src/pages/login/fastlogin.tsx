@@ -52,7 +52,7 @@ const FastLogin = ({
         if (!res) {
           toast({
             status: 'warning',
-            title: 'Login exception'
+            title: '登录异常'
           });
           return setTimeout(() => {
             router.replace('/login');
@@ -62,7 +62,7 @@ const FastLogin = ({
       } catch (error) {
         toast({
           status: 'warning',
-          title: getErrText(error, 'Login exception')
+          title: getErrText(error, '登录异常')
         });
         setTimeout(() => {
           router.replace('/login');

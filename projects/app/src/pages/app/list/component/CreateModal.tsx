@@ -24,11 +24,8 @@ import { useRequest } from '@/web/common/hooks/useRequest';
 import { feConfigs } from '@/web/common/system/staticData';
 import Avatar from '@/components/Avatar';
 import MyTooltip from '@/components/MyTooltip';
-import Image from 'next/image';
 import MyModal from '@/components/MyModal';
 import { useTranslation } from 'next-i18next';
-
-import { useUserStore } from '@/web/support/user/useUserStore';
 
 type FormType = {
   avatar: string;
@@ -50,8 +47,6 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       templateId: appTemplates[0].id
     }
   });
-
-  const { userInfo, setUserInfo } = useUserStore();
 
   const { File, onOpen: onOpenSelectFile } = useSelectFile({
     fileType: '.jpg,.png',
@@ -80,97 +75,23 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     [setValue, toast]
   );
 
-  const [appName, setAppName] = useState('');
-  const [appAvatar, setAppAvatar] = useState('');
-
   const { mutate: onclickCreate, isLoading: creating } = useRequest({
     mutationFn: async (data: FormType) => {
       const template = appTemplates.find((item) => item.id === data.templateId);
       if (!template) {
         return Promise.reject('The template does not exist');
       }
-
-      if (data.templateId == 'simpleChat') {
-        data.avatar = '/imgs/module/AI.png';
-      }
-
-      if (data.templateId == 'simpleDatasetChat') {
-        data.avatar = '/imgs/module/db.png';
-      }
-
-      if (data.templateId == 'chatGuide') {
-        data.avatar = '/imgs/module/userGuide.png';
-      }
-
-      if (data.templateId == 'CQ') {
-        data.avatar = '/imgs/module/cq.png';
-      }
-
-      setAppAvatar(data.avatar);
-      setAppName(data.name);
-
       return postCreateApp({
         avatar: data.avatar,
         name: data.name,
         type: template.type,
-        mid: data.id,
         modules: template.modules || []
       });
     },
     onSuccess(id: string) {
-      console.log(id);
-      try {
-        const rqst = {
-          name: 'Default Link',
-          responseDetail: true,
-          limit: { QPM: 100, credit: -1 },
-          style: {
-            font: 'sans-serif',
-            font_color: 'black',
-            accent: '#E2E8F0',
-            border_radius: 7,
-            show_header: true
-          },
-          appId: id,
-          type: 'share'
-        };
-
-        fetch('../api/support/outLink/create', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(rqst)
-        })
-          .then((res) => {
-            return res.json();
-          })
-          .then((res) => {
-            const r = {
-              app: id,
-              userid: userInfo?._id,
-              share: res.data,
-              name: appName,
-              avatar: appAvatar
-            };
-            fetch('https://app-dev.onwintop.com/api/mapshare.php', {
-              method: 'POST',
-              body: JSON.stringify(r)
-            })
-              .then((out) => {
-                return out.json();
-              })
-              .then((out) => {
-                console.log(out);
-                router.push(`/app/detail?appId=${id}`);
-                onSuccess();
-                onClose();
-              });
-          });
-      } catch (error) {
-        console.log(error);
-      }
+      router.push(`/app/detail?appId=${id}`);
+      onSuccess();
+      onClose();
     },
     successToast: 'Successful creation',
     errorToast: 'Create an abnormal application'
@@ -186,11 +107,19 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     >
       <ModalBody>
         <Box color={'myGray.800'} fontWeight={'bold'}>
-          Choose a resounding name
+          Take a loud name
         </Box>
         <Flex mt={3} alignItems={'center'}>
-          <MyTooltip label={'Click to set avatar'}>
-            <Image src={'/favicon.png'} alt={''} width={32} height={32} />
+          <MyTooltip label={'Click to set the avatar'}>
+            <Avatar
+              flexShrink={0}
+              src={getValues('avatar')}
+              w={['28px', '32px']}
+              h={['28px', '32px']}
+              cursor={'pointer'}
+              borderRadius={'md'}
+              onClick={onOpenSelectFile}
+            />
           </MyTooltip>
           <Input
             flex={1}
@@ -198,14 +127,14 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             autoFocus
             bg={'myWhite.600'}
             {...register('name', {
-              required: 'The application name cannot be empty'
+              required: 'The application name cannot be empty~'
             })}
           />
         </Flex>
         {!feConfigs?.hide_app_flow && (
           <>
             <Box mt={[4, 7]} mb={[0, 3]} color={'myGray.800'} fontWeight={'bold'}>
-              Choose from templates
+              Select from the template
             </Box>
             <Grid
               userSelect={'none'}
@@ -231,7 +160,6 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                       })}
                   onClick={() => {
                     setValue('templateId', item.id);
-                    setValue('id', item.id);
                     setRefresh((state) => !state);
                   }}
                 >
@@ -252,11 +180,11 @@ const CreateModal = ({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       </ModalBody>
 
       <ModalFooter>
-        <Button variant={'base'} mr={3} onClick={onClose}>
+        <Button variant={'whiteBase'} mr={3} onClick={onClose}>
           Cancel
         </Button>
         <Button isLoading={creating} onClick={handleSubmit((data) => onclickCreate(data))}>
-          Confirm creation
+          Confirm the creation
         </Button>
       </ModalFooter>
 

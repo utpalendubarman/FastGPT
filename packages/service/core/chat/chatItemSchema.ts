@@ -31,6 +31,16 @@ const ChatItemSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: userCollectionName
   },
+  teamId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
+    required: true
+  },
   time: {
     type: Date,
     default: () => new Date()
@@ -44,8 +54,15 @@ const ChatItemSchema = new Schema({
     type: String,
     default: ''
   },
-  userFeedback: {
+  userGoodFeedback: {
     type: String
+  },
+  userFeedback: String,
+  userBadFeedback: {
+    type: String
+  },
+  customFeedbacks: {
+    type: [String]
   },
   adminFeedback: {
     type: {
@@ -63,11 +80,14 @@ const ChatItemSchema = new Schema({
 });
 
 try {
+  ChatItemSchema.index({ dataId: -1 });
   ChatItemSchema.index({ time: -1 });
-  ChatItemSchema.index({ userId: 1 });
   ChatItemSchema.index({ appId: 1 });
   ChatItemSchema.index({ chatId: 1 });
-  ChatItemSchema.index({ userFeedback: 1 });
+  ChatItemSchema.index({ userGoodFeedback: 1 });
+  ChatItemSchema.index({ userBadFeedback: 1 });
+  ChatItemSchema.index({ customFeedbacks: 1 });
+  ChatItemSchema.index({ adminFeedback: 1 });
 } catch (error) {
   console.log(error);
 }

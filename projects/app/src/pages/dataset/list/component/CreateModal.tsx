@@ -89,11 +89,10 @@ const CreateModal = ({ onClose, parentId }: { onClose: () => void; parentId?: st
     >
       <ModalBody>
         <>
-          <Box mb={1} color={'myGray.800'} fontWeight={'bold'} style={{ display: 'none' }}>
+          <Box mb={1} color={'myGray.800'} fontWeight={'bold'}>
             {t('core.dataset.Dataset Type')}
           </Box>
           <MyRadio
-            style={{ display: 'none' }}
             gridGap={2}
             gridTemplateColumns={'repeat(1,1fr)'}
             list={[
@@ -103,13 +102,13 @@ const CreateModal = ({ onClose, parentId }: { onClose: () => void; parentId?: st
                 icon: 'core/dataset/commonDataset',
                 desc: t('core.dataset.Common Dataset Desc')
               },
-              ...(true
+              ...(feConfigs.isPlus
                 ? [
                     {
-                      title: 'Website Crawl',
+                      title: t('core.dataset.Website Dataset'),
                       value: DatasetTypeEnum.websiteDataset,
                       icon: 'core/dataset/websiteDataset',
-                      desc: 'Create dataset from complete website'
+                      desc: t('core.dataset.Website Dataset Desc')
                     }
                   ]
                 : [])
@@ -185,7 +184,7 @@ const CreateModal = ({ onClose, parentId }: { onClose: () => void; parentId?: st
       </ModalBody>
 
       <ModalFooter>
-        <Button variant={'base'} mr={3} onClick={onClose}>
+        <Button variant={'whiteBase'} mr={3} onClick={onClose}>
           {t('common.Close')}
         </Button>
         <Button isLoading={creating} onClick={handleSubmit((data) => onclickCreate(data))}>

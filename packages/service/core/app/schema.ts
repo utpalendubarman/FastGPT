@@ -13,15 +13,21 @@ export const appCollectionName = 'apps';
 const AppSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'user'
+  },
+  teamId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
     required: true
   },
   name: {
     type: String,
     required: true
-  },
-  mid: {
-    type: String
   },
   type: {
     type: String,

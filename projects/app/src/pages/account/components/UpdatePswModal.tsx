@@ -45,11 +45,11 @@ const UpdatePswModal = ({ onClose }: { onClose: () => void }) => {
     >
       <ModalBody>
         <Flex alignItems={'center'}>
-          <Box flex={'0 0 70px'}>Current Password</Box>
+          <Box flex={'0 0 70px'}>旧密码:</Box>
           <Input flex={1} type={'password'} {...register('oldPsw', { required: true })}></Input>
         </Flex>
         <Flex alignItems={'center'} mt={5}>
-          <Box flex={'0 0 70px'}>New Password</Box>
+          <Box flex={'0 0 70px'}>新密码:</Box>
           <Input
             flex={1}
             type={'password'}
@@ -57,13 +57,13 @@ const UpdatePswModal = ({ onClose }: { onClose: () => void }) => {
               required: true,
               maxLength: {
                 value: 20,
-                message: 'Password must be at least 4 characters and at most 20 characters'
+                message: '密码最少 4 位最多 20 位'
               }
             })}
           ></Input>
         </Flex>
         <Flex alignItems={'center'} mt={5}>
-          <Box flex={'0 0 70px'}>Confirm Password</Box>
+          <Box flex={'0 0 70px'}>确认密码:</Box>
           <Input
             flex={1}
             type={'password'}
@@ -71,18 +71,18 @@ const UpdatePswModal = ({ onClose }: { onClose: () => void }) => {
               required: true,
               maxLength: {
                 value: 20,
-                message: 'Password must be at least 4 characters and at most 20 characters'
+                message: '密码最少 4 位最多 20 位'
               }
             })}
           ></Input>
         </Flex>
       </ModalBody>
       <ModalFooter>
-        <Button mr={3} variant={'base'} onClick={onClose}>
-          Cancel
+        <Button mr={3} variant={'whiteBase'} onClick={onClose}>
+          取消
         </Button>
         <Button isLoading={isLoading} onClick={handleSubmit((data) => onSubmit(data))}>
-          Confirm
+          确认
         </Button>
       </ModalFooter>
     </MyModal>

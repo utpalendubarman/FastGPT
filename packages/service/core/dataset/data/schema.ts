@@ -15,9 +15,15 @@ import {
 export const DatasetDataCollectionName = 'dataset.datas';
 
 const DatasetDataSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId
-    // required: true
+  teamId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamCollectionName,
+    required: true
+  },
+  tmbId: {
+    type: Schema.Types.ObjectId,
+    ref: TeamMemberCollectionName,
+    required: true
   },
   datasetId: {
     type: Schema.Types.ObjectId,
@@ -65,7 +71,6 @@ const DatasetDataSchema = new Schema({
     ],
     default: []
   },
-  // metadata
   updateTime: {
     type: Date,
     default: () => new Date()
@@ -80,9 +85,9 @@ const DatasetDataSchema = new Schema({
 });
 
 try {
-  DatasetDataSchema.index({ teamId: 1 });
   DatasetDataSchema.index({ datasetId: 1 });
   DatasetDataSchema.index({ collectionId: 1 });
+  DatasetDataSchema.index({ updateTime: -1 });
   // full text index
   DatasetDataSchema.index({ datasetId: 1, fullTextToken: 'text' });
   DatasetDataSchema.index({ inited: 1 });

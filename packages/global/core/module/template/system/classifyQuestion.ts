@@ -4,12 +4,13 @@ import {
   FlowNodeTypeEnum
 } from '../../node/constant';
 import { FlowModuleTemplateType } from '../../type.d';
-import { ModuleDataTypeEnum, ModuleInputKeyEnum, ModuleTemplateTypeEnum } from '../../constants';
+import { ModuleIOValueTypeEnum, ModuleInputKeyEnum, ModuleTemplateTypeEnum } from '../../constants';
 import {
   Input_Template_History,
-  Input_Template_TFSwitch,
+  Input_Template_Switch,
   Input_Template_UserChatInput
 } from '../input';
+import { Output_Template_UserChatInput } from '../output';
 
 export const ClassifyQuestionModule: FlowModuleTemplateType = {
   id: FlowNodeTypeEnum.classifyQuestion,
@@ -24,11 +25,11 @@ export const ClassifyQuestionModule: FlowModuleTemplateType = {
 类型4: 其他问题`,
   showStatus: true,
   inputs: [
-    Input_Template_TFSwitch,
+    Input_Template_Switch,
     {
       key: ModuleInputKeyEnum.aiModel,
-      type: FlowNodeInputTypeEnum.selectChatModel,
-      valueType: ModuleDataTypeEnum.string,
+      type: FlowNodeInputTypeEnum.selectCQModel,
+      valueType: ModuleIOValueTypeEnum.string,
       label: '分类模型',
       required: true,
       showTargetInApp: false,
@@ -37,8 +38,7 @@ export const ClassifyQuestionModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.aiSystemPrompt,
       type: FlowNodeInputTypeEnum.textarea,
-      valueType: ModuleDataTypeEnum.string,
-      value: '',
+      valueType: ModuleIOValueTypeEnum.string,
       label: '背景知识',
       description:
         '你可以添加一些特定内容的介绍，从而更好的识别用户的问题类型。这个内容通常是给模型介绍一个它不知道的内容。',
@@ -52,20 +52,20 @@ export const ClassifyQuestionModule: FlowModuleTemplateType = {
     {
       key: ModuleInputKeyEnum.agents,
       type: FlowNodeInputTypeEnum.custom,
-      valueType: ModuleDataTypeEnum.any,
+      valueType: ModuleIOValueTypeEnum.any,
       label: '',
       value: [
         {
           value: '打招呼',
-          key: 'fasw'
+          key: 'wqre'
         },
         {
           value: '关于 xxx 的问题',
-          key: 'fqsw'
+          key: 'sdfa'
         },
         {
           value: '其他问题',
-          key: 'fesw'
+          key: 'agex'
         }
       ],
       showTargetInApp: false,
@@ -73,21 +73,22 @@ export const ClassifyQuestionModule: FlowModuleTemplateType = {
     }
   ],
   outputs: [
+    Output_Template_UserChatInput,
     // custom output
     {
-      key: 'fasw',
+      key: 'wqre',
       label: '',
       type: FlowNodeOutputTypeEnum.hidden,
       targets: []
     },
     {
-      key: 'fqsw',
+      key: 'sdfa',
       label: '',
       type: FlowNodeOutputTypeEnum.hidden,
       targets: []
     },
     {
-      key: 'fesw',
+      key: 'agex',
       label: '',
       type: FlowNodeOutputTypeEnum.hidden,
       targets: []

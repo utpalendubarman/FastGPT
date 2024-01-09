@@ -1,4 +1,5 @@
 import axios, { Method, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { FastGPTProUrl } from '../system/constants';
 
 interface ConfigType {
   headers?: { [key: string]: string };
@@ -70,8 +71,9 @@ instance.interceptors.request.use(requestStart, (err) => Promise.reject(err));
 instance.interceptors.response.use(responseSuccess, (err) => Promise.reject(err));
 
 export function request(url: string, data: any, config: ConfigType, method: Method): any {
-  if (!global.systemEnv?.pluginBaseUrl) {
-    return Promise.reject('该功能为商业版特有...');
+  if (!FastGPTProUrl) {
+    console.log('未部署商业版接口', url);
+    return Promise.reject('The The request was denied...');
   }
 
   /* 去空 */
@@ -83,7 +85,7 @@ export function request(url: string, data: any, config: ConfigType, method: Meth
 
   return instance
     .request({
-      baseURL: global.systemEnv.pluginBaseUrl,
+      baseURL: FastGPTProUrl,
       url,
       method,
       data: ['POST', 'PUT'].includes(method) ? data : null,

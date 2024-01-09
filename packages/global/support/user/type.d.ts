@@ -1,4 +1,4 @@
-import { InformTypeEnum } from './constant';
+import { InformTypeEnum, UserStatusEnum } from './constant';
 import { TeamItemType } from './team/type';
 
 export type UserModelSchema = {
@@ -12,22 +12,15 @@ export type UserModelSchema = {
   openaiKey: string;
   createTime: number;
   timezone: string;
+  status: `${UserStatusEnum}`;
   openaiAccount?: {
     key: string;
     baseUrl: string;
-  };
-  limit: {
-    exportKbTime?: Date;
-    datasetMaxCount?: number;
   };
 };
 
 export type UserType = {
   _id: string;
-  phone: string;
-  email: string;
-  token: string;
-  fullname: string;
   username: string;
   avatar: string;
   balance: number;

@@ -3,7 +3,6 @@ import { OutLinkTypeEnum } from './constant';
 export type OutLinkSchema = {
   _id: string;
   shareId: string;
-  userId: string;
   teamId: string;
   tmbId: string;
   appId: string;
@@ -18,7 +17,6 @@ export type OutLinkSchema = {
     credit: number;
     hookUrl?: string;
   };
-  style: any;
 };
 
 export type OutLinkEditType = {
@@ -26,5 +24,4 @@ export type OutLinkEditType = {
   name: string;
   responseDetail: OutLinkSchema['responseDetail'];
   limit: OutLinkSchema['limit'];
-  style: any;
 };

@@ -88,10 +88,10 @@ function checkRes(data: ResponseDataType) {
  * 响应错误
  */
 function responseError(err: any) {
-  console.log('error->', 'Request errors', err);
+  console.log('error->', '请求错误', err);
 
   if (!err) {
-    return Promise.reject({ message: 'unknown mistake' });
+    return Promise.reject({ message: '未知错误' });
   }
   if (typeof err === 'string') {
     return Promise.reject({ message: err });
@@ -99,10 +99,14 @@ function responseError(err: any) {
   // 有报错响应
   if (err?.code in TOKEN_ERROR_CODE) {
     clearToken();
-    window.location.replace(
-      `/login?lastRoute=${encodeURIComponent(location.pathname + location.search)}`
-    );
-    return Promise.reject({ message: 'Token expires, log in again' });
+
+    if (window.location.pathname !== '/chat/share') {
+      window.location.replace(
+        `/login?lastRoute=${encodeURIComponent(location.pathname + location.search)}`
+      );
+    }
+
+    return Promise.reject({ message: '无权操作' });
   }
   if (err?.response?.data) {
     return Promise.reject(err?.response?.data);

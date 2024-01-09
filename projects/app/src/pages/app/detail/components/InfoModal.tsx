@@ -66,18 +66,18 @@ const InfoModal = ({
       onSuccess && onSuccess();
       onClose();
       toast({
-        title: 'update completed',
+        title: '更新成功',
         status: 'success'
       });
     },
-    errorToast: 'Update failure'
+    errorToast: '更新失败'
   });
 
   // 提交保存表单失败
   const saveSubmitError = useCallback(() => {
     // deep search message
     const deepSearch = (obj: any): string => {
-      if (!obj) return 'Submit the form error';
+      if (!obj) return '提交表单错误';
       if (!!obj.message) {
         return obj.message;
       }
@@ -110,7 +110,7 @@ const InfoModal = ({
         setRefresh((state) => !state);
       } catch (err: any) {
         toast({
-          title: getErrText(err, 'Avatar selection is abnormal'),
+          title: getErrText(err, '头像选择异常'),
           status: 'warning'
         });
       }
@@ -126,16 +126,16 @@ const InfoModal = ({
       title={t('core.app.setting')}
     >
       <ModalBody>
-        <Box>Avatar & Name</Box>
+        <Box>头像 & 名称</Box>
         <Flex mt={2} alignItems={'center'}>
           <Avatar
             src={getValues('avatar')}
             w={['26px', '34px']}
             h={['26px', '34px']}
             cursor={'pointer'}
-            borderRadius={'lg'}
+            borderRadius={'md'}
             mr={4}
-            title={'Click to switch avatar'}
+            title={'点击切换头像'}
             onClick={() => onOpenSelectFile()}
           />
           <FormControl>
@@ -143,13 +143,13 @@ const InfoModal = ({
               bg={'myWhite.600'}
               placeholder={'给应用设置一个名称'}
               {...register('name', {
-                required: 'The display name cannot be empty'
+                required: '展示名称不能为空'
               })}
             ></Input>
           </FormControl>
         </Flex>
         <Box mt={4} mb={1}>
-          Description
+          应用介绍
         </Box>
         {/* <Box color={'myGray.500'} mb={2} fontSize={'sm'}>
             该介绍主要用于记忆和在应用市场展示
@@ -157,18 +157,28 @@ const InfoModal = ({
         <Textarea
           rows={4}
           maxLength={500}
-          placeholder={'Introduction to your AI application'}
+          placeholder={'给你的 AI 应用一个介绍'}
           bg={'myWhite.600'}
           {...register('intro')}
         />
+        <Box mt={4}>
+          <Box mb={1}>{t('user.Permission')}</Box>
+          <PermissionRadio
+            value={getValues('permission')}
+            onChange={(e) => {
+              setValue('permission', e);
+              setRefresh(!refresh);
+            }}
+          />
+        </Box>
       </ModalBody>
 
       <ModalFooter>
-        <Button variant={'base'} mr={3} onClick={onClose}>
-          Cancel
+        <Button variant={'whiteBase'} mr={3} onClick={onClose}>
+          取消
         </Button>
         <Button isLoading={btnLoading} onClick={saveUpdateModel}>
-          Update
+          保存
         </Button>
       </ModalFooter>
 

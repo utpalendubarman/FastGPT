@@ -15,22 +15,26 @@ const OutLink = ({ appId }: { appId: string }) => {
 
   return (
     <Box pt={[1, 5]}>
-      {/* <MyRadio
-          gridTemplateColumns={['repeat(1,1fr)', 'repeat(auto-fill, minmax(0, 360px))']}
+      <Box fontWeight={'bold'} fontSize={['md', 'xl']} mb={2} px={[4, 8]}>
+        外部使用途径
+      </Box>
+      <Box pb={[5, 7]} px={[4, 8]} borderBottom={theme.borders.base}>
+        <MyRadio
+          gridTemplateColumns={['repeat(1,1fr)', 'repeat(auto-fill, minmax(0, 400px))']}
           iconSize={'20px'}
           list={[
             {
-              icon: 'support/outlink/shareLight',
-              title: 'No login window',
-              desc: 'Share the link with other users and use it directly without logging in',
+              icon: '/imgs/modal/shareFill.svg',
+              title: '免登录窗口',
+              desc: '分享链接给其他用户，无需登录即可直接进行使用',
               value: OutLinkTypeEnum.share
             },
-            // {
-            //   icon: 'apikeyFill',
-            //   title: 'API access',
-            //   desc: 'Connect to existing systems through API, or Qiwei, Feishu, etc.',
-            //   value: OutLinkTypeEnum.apikey
-            // }
+            {
+              icon: 'support/outlink/apikeyFill',
+              title: 'API 访问',
+              desc: '通过 API 接入到已有系统中，或企微、飞书等',
+              value: OutLinkTypeEnum.apikey
+            }
             // {
             //   icon: 'support/outlink/iframeLight',
             //   title: '网页嵌入',
@@ -40,7 +44,8 @@ const OutLink = ({ appId }: { appId: string }) => {
           ]}
           value={linkType}
           onChange={(e) => setLinkType(e as `${OutLinkTypeEnum}`)}
-        /> */}
+        />
+      </Box>
 
       {linkType === OutLinkTypeEnum.share && <Share appId={appId} />}
       {linkType === OutLinkTypeEnum.apikey && <API appId={appId} />}
